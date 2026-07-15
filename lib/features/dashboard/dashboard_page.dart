@@ -1,39 +1,139 @@
-import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
 import 'package:attendance_management_system/features/auth/login/login_page.dart';
+import 'package:attendance_management_system/features/testing/test_page.dart';
 import 'package:flutter/material.dart';
 
-class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key, required this.title});
+import 'widgets/dashboard_header.dart';
+import 'widgets/dashboard_section.dart';
+import 'widgets/stat_card.dart';
+import 'widgets/statistics_grid.dart';
+import 'widgets/quick_action_card.dart';
+import 'widgets/quick_actions_grid.dart';
+import 'widgets/attendance_session_card.dart';
 
-  final String title;
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
 
-  @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Container(
-        child: Column(
-          children: [
-            PrimaryButton(
-              text: 'Login',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return LoginPage();
-                    },
-                  ),
+      appBar: AppBar(
+        title: const Text("Dashboard"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.login),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return LoginPage();
+                  },
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.science),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return TestPage();
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+
+      body: ListView(
+        children: [
+          DashboardHeader(userName: "Dr. John Doe", role: "Lecturer"),
+
+          DashboardSection(
+            title: "Statistics",
+
+            child: StatisticsGrid(
+              children: [
+                StatCard(title: "Students", value: "520", icon: Icons.people),
+
+                StatCard(title: "Courses", value: "8", icon: Icons.menu_book),
+
+                StatCard(
+                  title: "Attendance",
+                  value: "94%",
+                  icon: Icons.fact_check,
+                ),
+
+                StatCard(title: "Reports", value: "12", icon: Icons.bar_chart),
+              ],
+            ),
+          ),
+
+          DashboardSection(
+            title: "Quick Actions",
+
+            child: QuickActionsGrid(
+              children: [
+                QuickActionCard(
+                  title: "Start Attendance",
+                  icon: Icons.play_circle_fill,
+                  onTap: () {},
+                ),
+
+                QuickActionCard(
+                  title: "Scan QR",
+                  icon: Icons.qr_code_scanner,
+                  onTap: () {},
+                ),
+
+                QuickActionCard(
+                  title: "Generate QR",
+                  icon: Icons.qr_code,
+                  onTap: () {},
+                ),
+
+                QuickActionCard(
+                  title: "Reports",
+                  icon: Icons.analytics_outlined,
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+
+          DashboardSection(
+            title: "Today's Sessions",
+            actionText: "View All",
+
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+
+              itemCount: 3,
+
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+
+              itemBuilder: (_, index) {
+                return AttendanceSessionCard(
+                  courseCode: "CSC 401",
+
+                  courseTitle: "Software Engineering",
+
+                  time: "09:00 AM",
+
+                  students: 120,
+
+                  onTap: () {},
                 );
               },
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }

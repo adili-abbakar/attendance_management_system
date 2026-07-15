@@ -1,7 +1,9 @@
+import 'package:attendance_management_system/core/utils/validators.dart';
+import 'package:attendance_management_system/data/models/auth/user.dart';
+import 'package:attendance_management_system/data/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/buttons/primary_button.dart';
-
 import '../widgets/auth_card.dart';
 import '../widgets/auth_footer.dart';
 import '../widgets/auth_header.dart';
@@ -19,7 +21,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _fullNameController = TextEditingController();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _staffIdController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -27,9 +29,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _isLoading = false;
 
+  String? _emailError;
+  String? _staffIdError;
+
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
     _staffIdController.dispose();
     _passwordController.dispose();
@@ -37,15 +42,78 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _register() {
+  void _clearForm() {
+    _nameController.clear();
+    _emailController.clear();
+    _staffIdController.clear();
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+
+    _emailError = null;
+    _staffIdError = null;
+  }
+
+  Future<void> _register() async {
+    if (_isLoading) return;
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
+      _emailError = null;
+      _staffIdError = null;
     });
 
-    // TODO:
-    // Register user
+    try {
+      final result = await AuthService.instance.register(
+        User(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          staffId: _staffIdController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (result.success) {
+        setState(() => _isLoading = false);
+
+        _clearForm();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        Navigator.pop(context);
+
+        return;
+      }
+
+      setState(() {
+        _isLoading = false;
+        _emailError = result.emailError;
+        _staffIdError = result.staffIdError;
+      });
+
+      _formKey.currentState!.validate();
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -65,16 +133,11 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 32),
 
               CustomTextField(
-                controller: _fullNameController,
+                controller: _nameController,
                 label: 'Full Name',
                 hint: 'Enter your full name',
                 prefixIcon: Icons.person_outline_rounded,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Full name is required';
-                  }
-                  return null;
-                },
+                validator: Validators.name,
               ),
 
               const SizedBox(height: 20),
@@ -85,11 +148,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 hint: 'Enter your email',
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: Icons.email_outlined,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Email is required';
+                validator: (value) => _emailError ?? Validators.email(value),
+                onChanged: (_) {
+                  if (_emailError != null) {
+                    setState(() => _emailError = null);
                   }
-                  return null;
                 },
               ),
 
@@ -100,11 +163,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 label: 'Staff ID',
                 hint: 'Enter your staff ID',
                 prefixIcon: Icons.badge_outlined,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Staff ID is required';
+                validator: (value) =>
+                    _staffIdError ?? Validators.staffId(value),
+                onChanged: (_) {
+                  if (_staffIdError != null) {
+                    setState(() => _staffIdError = null);
                   }
-                  return null;
                 },
               ),
 
@@ -113,16 +177,11 @@ class _RegisterPageState extends State<RegisterPage> {
               PasswordField(
                 controller: _passwordController,
                 label: 'Password',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password is required';
+                validator: Validators.password,
+                onChanged: (_) {
+                  if (_confirmPasswordController.text.isNotEmpty) {
+                    _formKey.currentState?.validate();
                   }
-
-                  if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
-                  }
-
-                  return null;
                 },
               ),
 
@@ -131,17 +190,8 @@ class _RegisterPageState extends State<RegisterPage> {
               PasswordField(
                 controller: _confirmPasswordController,
                 label: 'Confirm Password',
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-
-                  if (value != _passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-
-                  return null;
-                },
+                validator: (value) =>
+                    Validators.confirmPassword(value, _passwordController.text),
               ),
 
               const SizedBox(height: 32),
@@ -159,9 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
               AuthFooter(
                 text: 'Already have an account?',
                 actionText: 'Login',
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),

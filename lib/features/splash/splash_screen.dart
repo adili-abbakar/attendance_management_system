@@ -1,8 +1,5 @@
-import 'package:attendance_management_system/core/widgets/buttons/loading_button.dart';
 import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
-import 'package:attendance_management_system/core/widgets/buttons/secondary_button.dart';
 import 'package:flutter/material.dart';
-import '../../core/widgets/buttons/app_text_button.dart';
 import '../dashboard/dashboard_page.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -76,7 +73,7 @@ class SplashScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    const DashboardPage(title: 'Dashboard'),
+                                    const DashboardPage(),
                               ),
                             );
                           },

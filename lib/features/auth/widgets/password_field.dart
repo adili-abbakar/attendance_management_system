@@ -6,12 +6,13 @@ class PasswordField extends StatefulWidget {
     required this.label,
     this.controller,
     this.validator,
+    this.onChanged,
   });
 
   final String label;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
-
+  final ValueChanged<String>? onChanged;
   @override
   State<PasswordField> createState() => _PasswordFieldState();
 }
@@ -25,6 +26,7 @@ class _PasswordFieldState extends State<PasswordField> {
       controller: widget.controller,
       validator: widget.validator,
       obscureText: _obscure,
+      onChanged: widget.onChanged,
       decoration: InputDecoration(
         labelText: widget.label,
         prefixIcon: const Icon(Icons.lock_outline),

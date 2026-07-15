@@ -1,8 +1,22 @@
-import './app/theme/app_theme.dart';
-import './features/splash/splash_screen.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-void main() {
+import 'package:attendance_management_system/app/theme/app_theme.dart';
+import 'package:attendance_management_system/features/splash/splash_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'data/database/database_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
+  await DatabaseService.instance.database;
+
   runApp(const MyApp());
 }
 
