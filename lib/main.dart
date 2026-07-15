@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:attendance_management_system/app/theme/app_theme.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:provider/provider.dart';
 
 import 'data/database/database_service.dart';
 
@@ -17,7 +19,12 @@ Future<void> main() async {
 
   await DatabaseService.instance.database;
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

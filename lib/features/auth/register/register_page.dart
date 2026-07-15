@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/core/utils/validators.dart';
 import 'package:attendance_management_system/data/models/auth/user.dart';
-import 'package:attendance_management_system/data/services/auth_service.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/buttons/primary_button.dart';
@@ -10,6 +10,7 @@ import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/password_field.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -26,11 +27,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _staffIdController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
-  bool _isLoading = false;
-
-  String? _emailError;
-  String? _staffIdError;
 
   @override
   void dispose() {
@@ -49,23 +45,18 @@ class _RegisterPageState extends State<RegisterPage> {
     _passwordController.clear();
     _confirmPasswordController.clear();
 
-    _emailError = null;
-    _staffIdError = null;
+    _formKey.currentState?.reset();
   }
 
   Future<void> _register() async {
-    if (_isLoading) return;
+    final provider = context.read<AuthProvider>();
+
+    if (provider.isLoading) return;
 
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-      _emailError = null;
-      _staffIdError = null;
-    });
-
     try {
-      final result = await AuthService.instance.register(
+      final success = await provider.register(
         User(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
@@ -76,9 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
-      if (result.success) {
-        setState(() => _isLoading = false);
-
+      if (success) {
         _clearForm();
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,23 +78,11 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         Navigator.pop(context);
-
-        return;
+      } else {
+        _formKey.currentState!.validate();
       }
-
-      setState(() {
-        _isLoading = false;
-        _emailError = result.emailError;
-        _staffIdError = result.staffIdError;
-      });
-
-      _formKey.currentState!.validate();
     } catch (e) {
       if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -118,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
     return AuthLayout(
       child: AuthCard(
         child: Form(
@@ -142,38 +120,38 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
+              // Email field
               CustomTextField(
                 controller: _emailController,
                 label: 'Email Address',
                 hint: 'Enter your email',
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: Icons.email_outlined,
-                validator: (value) => _emailError ?? Validators.email(value),
+                validator: (value) =>
+                    authProvider.emailError ?? Validators.email(value),
                 onChanged: (_) {
-                  if (_emailError != null) {
-                    setState(() => _emailError = null);
-                  }
+                  authProvider.clearEmailError();
                 },
               ),
 
               const SizedBox(height: 20),
 
+              // Staff Id field
               CustomTextField(
                 controller: _staffIdController,
                 label: 'Staff ID',
                 hint: 'Enter your staff ID',
                 prefixIcon: Icons.badge_outlined,
                 validator: (value) =>
-                    _staffIdError ?? Validators.staffId(value),
+                    authProvider.staffIdError ?? Validators.staffId(value),
                 onChanged: (_) {
-                  if (_staffIdError != null) {
-                    setState(() => _staffIdError = null);
-                  }
+                  authProvider.clearStaffIdError();
                 },
               ),
 
               const SizedBox(height: 20),
 
+              // Password field
               PasswordField(
                 controller: _passwordController,
                 label: 'Password',
@@ -187,6 +165,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
+              // Confirm Password field
               PasswordField(
                 controller: _confirmPasswordController,
                 label: 'Confirm Password',
@@ -199,7 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
               PrimaryButton(
                 text: 'Create Account',
                 icon: Icons.person_add_alt_1_rounded,
-                isLoading: _isLoading,
+                isLoading: authProvider.isLoading,
                 isIconLeading: false,
                 onPressed: _register,
               ),

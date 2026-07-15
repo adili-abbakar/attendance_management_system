@@ -1,28 +1,48 @@
 import 'package:flutter/material.dart';
-
 import '../models/auth/user.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService = AuthService.instance;
-
-  User? _currentUser;
-
-  User? get currentUser => _currentUser;
-
   bool _isLoading = false;
+  String? _emailError;
+  String? _staffIdError;
 
   bool get isLoading => _isLoading;
+  String? get emailError => _emailError;
+  String? get staffIdError => _staffIdError;
 
-  Future<void> login(String email, String password) async {
-    // TODO
+  Future<bool> register(User user) async {
+    _isLoading = true;
+    _emailError = null;
+    _staffIdError = null;
+
+    notifyListeners();
+
+    try {
+      final result = await AuthService.instance.register(user);
+
+      _isLoading = false;
+      _emailError = result.emailError;
+      _staffIdError = result.staffIdError;
+
+      notifyListeners();
+
+      return result.success;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+
+      rethrow;
+    }
   }
 
-  Future<void> register(User user) async {
-    // TODO
+  void clearEmailError() {
+    _emailError = null;
+    notifyListeners();
   }
 
-  Future<void> logout() async {
-    // TODO
+  void clearStaffIdError() {
+    _staffIdError = null;
+    notifyListeners();
   }
 }
