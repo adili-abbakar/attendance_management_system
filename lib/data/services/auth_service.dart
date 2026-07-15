@@ -1,6 +1,7 @@
 import 'package:attendance_management_system/data/database/tables/user_table.dart';
 import 'package:attendance_management_system/data/results/auth/register_result.dart';
 import 'package:attendance_management_system/data/results/auth/update_result.dart';
+import 'package:bcrypt/bcrypt.dart';
 import '../database/database_service.dart';
 import '../models/auth/user.dart';
 
@@ -45,7 +46,10 @@ class AuthService {
       );
     }
 
-    final userId = await db.insert(UserTable.tableName, user.toMap());
+    final hashedPassword = BCrypt.hashpw(user.password, BCrypt.gensalt());
+    final newUser = user.copyWith(password: hashedPassword);
+
+    final userId = await db.insert(UserTable.tableName, newUser.toMap());
 
     return RegisterResult(success: true, userId: userId);
   }
@@ -95,7 +99,7 @@ class AuthService {
 
     final emailResult = await db.query(
       UserTable.tableName,
-      where: '{$UserTable.email} = ? AND {$UserTable.id} != ?',
+      where: '${UserTable.email} = ? AND ${UserTable.id} != ?',
       whereArgs: [user.email, user.id],
     );
 
@@ -121,14 +125,19 @@ class AuthService {
       );
     }
 
+    String password = user.password;
+    if (!password.startsWith(r'$2')) {
+      password = BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+    final existingUser = user.copyWith(password: password);
+
     await db.update(
       UserTable.tableName,
-      user.toMap(),
+      existingUser.toMap(),
       where: '${UserTable.id} = ?',
       whereArgs: [user.id],
     );
 
     return const UpdateResult(success: true);
-
   }
 }

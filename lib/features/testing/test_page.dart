@@ -1,6 +1,7 @@
 import 'package:attendance_management_system/core/utils/validators.dart';
 import 'package:attendance_management_system/data/models/auth/user.dart';
 import 'package:attendance_management_system/data/services/auth_service.dart';
+import 'package:attendance_management_system/features/auth/widgets/password_field.dart';
 import 'package:flutter/material.dart';
 
 class TestPage extends StatefulWidget {
@@ -293,13 +294,9 @@ class _TestPageState extends State<TestPage> {
 
               const SizedBox(height: 16),
 
-              TextFormField(
+              PasswordField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  prefixIcon: Icon(Icons.lock_outline),
-                ),
+                label: 'Password',
                 validator: Validators.password,
               ),
 
