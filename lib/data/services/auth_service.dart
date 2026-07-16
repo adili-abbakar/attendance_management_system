@@ -1,6 +1,7 @@
 import 'package:attendance_management_system/data/database/tables/user_table.dart';
 import 'package:attendance_management_system/data/results/auth/register_result.dart';
 import 'package:attendance_management_system/data/results/auth/update_result.dart';
+import 'package:attendance_management_system/data/services/session_service.dart';
 import 'package:bcrypt/bcrypt.dart';
 import '../database/database_service.dart';
 import '../models/auth/user.dart';
@@ -54,13 +55,51 @@ class AuthService {
     return RegisterResult(success: true, userId: userId);
   }
 
-  Future<User?> login({required String email, required String password}) async {
-    // TODO
-    return null;
+  Future<User?> login({
+    required String identifier,
+    required String password,
+  }) async {
+    final db = await _databaseService.database;
+
+    final result = await db.query(
+      UserTable.tableName,
+      where: '${UserTable.email} = ? OR ${UserTable.staffId} = ?',
+      whereArgs: [identifier, identifier],
+      limit: 1,
+    );
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    final user = User.fromMap(result.first);
+
+    if (!BCrypt.checkpw(password, user.password)) {
+      return null;
+    }
+
+    return user;
   }
 
   Future<void> logout() async {
-    // TODO
+    await SessionService.instance.logout();
+  }
+
+  Future<User?> getUser(int id) async {
+    final db = await _databaseService.database;
+
+    final result = await db.query(
+      UserTable.tableName,
+      where: "${UserTable.id} = ?",
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return User.fromMap(result.first);
   }
 
   Future<List<User>> getUsers() async {

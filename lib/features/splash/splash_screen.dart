@@ -1,12 +1,39 @@
 import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/auth/login/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../dashboard/dashboard_page.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLogin();
+  }
+
+  Future<void> _checkLogin() async {
+    final auth = context.read<AuthProvider>();
+
+    if (await auth.isLoggedIn()) {
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardPage()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {  
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
@@ -68,12 +95,11 @@ class SplashScreen extends StatelessWidget {
                           text: 'Continue',
                           icon: Icons.arrow_forward,
                           isIconLeading: false,
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const DashboardPage(),
+                                builder: (_) => const LoginPage(),
                               ),
                             );
                           },

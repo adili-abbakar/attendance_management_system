@@ -1,10 +1,7 @@
 class Validators {
   Validators._();
 
-  // ==========================
   // Required
-  // ==========================
-
   static String? required(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required.';
@@ -12,10 +9,7 @@ class Validators {
     return null;
   }
 
-  // ==========================
   // Email
-  // ==========================
-
   static String? email(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required.';
@@ -30,10 +24,7 @@ class Validators {
     return null;
   }
 
-  // ==========================
   // Password
-  // ==========================
-
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required.';
@@ -58,10 +49,7 @@ class Validators {
     return null;
   }
 
-  // ==========================
   // Name
-  // ==========================
-
   static String? name(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Name is required.';
@@ -74,10 +62,7 @@ class Validators {
     return null;
   }
 
-  // ==========================
   // Staff ID
-  // ==========================
-
   static String? staffId(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Staff ID is required.';
@@ -85,6 +70,15 @@ class Validators {
 
     if (value.trim().length < 4) {
       return 'Staff ID is too short.';
+    }
+
+    return null;
+  }
+
+  // Login Identifier
+  static String? loginIdentifier(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email or Staff ID is required.';
     }
 
     return null;

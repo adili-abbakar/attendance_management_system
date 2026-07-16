@@ -188,7 +188,9 @@ class _RegisterPageState extends State<RegisterPage> {
               AuthFooter(
                 text: 'Already have an account?',
                 actionText: 'Login',
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),

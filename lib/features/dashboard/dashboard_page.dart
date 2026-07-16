@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/features/auth/login/login_page.dart';
 import 'package:attendance_management_system/features/testing/test_page.dart';
 import 'package:flutter/material.dart';
@@ -16,38 +17,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.login),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return LoginPage();
-                  },
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.science),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return TestPage();
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-
+      appBar: AppBarWidget(title: 'Dashboard'),
       body: ListView(
         children: [
           DashboardHeader(userName: "Dr. John Doe", role: "Lecturer"),

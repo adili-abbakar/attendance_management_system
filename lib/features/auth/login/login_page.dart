@@ -1,7 +1,10 @@
+import 'package:attendance_management_system/core/utils/validators.dart';
 import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/auth/register/register_page.dart';
+import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_card.dart';
 import '../widgets/auth_header.dart';
@@ -19,31 +22,53 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    final provider = context.read<AuthProvider>();
 
-    // TODO:
-    // Authenticate user
+    if (provider.isLoading) return;
+
+    try {
+      final success = await provider.login(
+        identifier: _identifierController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardPage()),
+          (route) => false,
+        );
+      } else {
+        _formKey.currentState!.validate();
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     return AuthLayout(
       child: AuthCard(
         child: Form(
@@ -59,17 +84,14 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 32),
 
               CustomTextField(
-                controller: _emailController,
-                label: 'Email Address',
-                hint: 'Enter your email',
+                controller: _identifierController,
+                label: 'Email or Staff ID',
+                hint: 'Enter your email or staff id',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email is required';
-                  }
-
-                  return null;
+                validator: Validators.loginIdentifier,
+                onChanged: (_) {
+                  context.read<AuthProvider>().clearLoginError();
                 },
               ),
 
@@ -84,6 +106,9 @@ class _LoginPageState extends State<LoginPage> {
                   }
 
                   return null;
+                },
+                onChanged: (_) {
+                  context.read<AuthProvider>().clearLoginError();
                 },
               ),
 
@@ -102,10 +127,37 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 20),
 
+              if (authProvider.loginError != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          authProvider.loginError!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
               PrimaryButton(
                 text: 'Login',
                 icon: Icons.login_rounded,
-                isLoading: _isLoading,
+                isLoading: authProvider.isLoading,
                 isIconLeading: false,
                 onPressed: _login,
               ),
@@ -115,9 +167,9 @@ class _LoginPageState extends State<LoginPage> {
               AuthFooter(
                 text: "Don't have an account?",
                 actionText: "Register",
-                onPressed: () {
-                  // TODO:
-                  Navigator.push(
+                onPressed: () async {
+                  context.read<AuthProvider>().resetLoginState();
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) {
@@ -125,6 +177,10 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                   );
+                  _identifierController.clear();
+                  _passwordController.clear();
+
+                  context.read<AuthProvider>().resetLoginState();
                 },
               ),
             ],
