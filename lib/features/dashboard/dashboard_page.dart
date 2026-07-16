@@ -1,7 +1,9 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
+import 'package:attendance_management_system/data/models/auth/user.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/dashboard_section.dart';
 import 'widgets/stat_card.dart';
@@ -10,8 +12,15 @@ import 'widgets/quick_action_card.dart';
 import 'widgets/quick_actions_grid.dart';
 import 'widgets/attendance_session_card.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  User? get user => context.read<AuthProvider>().currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +29,7 @@ class DashboardPage extends StatelessWidget {
       endDrawer: const AppDrawer(),
       body: ListView(
         children: [
-          DashboardHeader(userName: "Dr. John Doe", role: "Lecturer"),
+          DashboardHeader(userName: user?.name ?? 'Guest', role: "Lecturer"),
 
           DashboardSection(
             title: "Statistics",

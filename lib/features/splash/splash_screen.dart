@@ -23,6 +23,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final auth = context.read<AuthProvider>();
 
     if (await auth.isLoggedIn()) {
+      await auth.loadCurrentUser();
+
       if (!mounted) return;
 
       Navigator.pushReplacement(

@@ -36,6 +36,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadCurrentUser() async {
+    final user = await authUser();
+
+    _currentUser = user;
+
+    notifyListeners();
+  }
+
   Future<bool> register(User user) async {
     _isLoading = true;
     _emailError = null;
@@ -100,7 +108,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await AuthService.instance.logout();
 
-    // Reset provider state if needed
+    _currentUser = null;
     _loginError = null;
     _isLoading = false;
 

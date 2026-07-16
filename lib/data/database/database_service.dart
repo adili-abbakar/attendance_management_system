@@ -22,14 +22,14 @@ class DatabaseService {
     final databasePath = await getDatabasesPath();
 
     final path = join(databasePath, 'attendance_management.db');
-    print('Database Path: $path');
+    // print('Database Path: $path');
     return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    print('Creating Database....');
+    // print('Creating Database....');
     await db.execute(UserTable.createTable);
-    print('Users table created successfully.');
+    // print('Users table created successfully.');
   }
 
   Future<void> closeDatabase() async {

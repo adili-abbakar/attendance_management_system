@@ -1,7 +1,9 @@
 import 'package:attendance_management_system/core/widgets/auth_tile.dart';
+import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/courses/course_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -10,7 +12,7 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-
+    final user = context.read<AuthProvider>().currentUser;
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -30,7 +32,7 @@ class AppDrawer extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   Text(
-                    "Dr. John Doe",
+                    user?.name ?? 'Guest',
                     style: text.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
