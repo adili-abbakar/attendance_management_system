@@ -19,6 +19,8 @@ class CourseProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   String? get error => _error;
+  String? _courseCodeError;
+  String? get courseCodeError => _courseCodeError;
 
   Future<void> loadCourses() async {
     _setLoading(true);
@@ -34,29 +36,61 @@ class CourseProvider extends ChangeNotifier {
   }
 
   Future<bool> createCourse(Course course) async {
+    _error = null;
+    _courseCodeError = null;
+
+    notifyListeners();
+
     try {
-      await _service.createCourse(course);
+      final result = await _service.createCourse(
+        _normalizeCourse(course.copyWith(createdAt: DateTime.now())),
+      );
+
+      if (!result.success) {
+        _courseCodeError = result.courseCodeError;
+
+        notifyListeners();
+
+        return false;
+      }
 
       await loadCourses();
 
       return true;
     } catch (e) {
       _error = e.toString();
+
       notifyListeners();
+
       return false;
     }
   }
 
   Future<bool> updateCourse(Course course) async {
+    _error = null;
+    _courseCodeError = null;
+
+    notifyListeners();
+
     try {
-      await _service.updateCourse(course);
+     final result = await _service.updateCourse(_normalizeCourse(course));
+
+      if (!result.success) {
+        _courseCodeError = result.courseCodeError;
+
+        notifyListeners();
+
+        return false;
+      }
 
       await loadCourses();
 
       return true;
     } catch (e) {
       _error = e.toString();
+
       notifyListeners();
+
       return false;
     }
   }
@@ -94,5 +128,20 @@ class CourseProvider extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  void clearCourseCodeError() {
+    _courseCodeError = null;
+    notifyListeners();
+  }
+
+  Course _normalizeCourse(Course course) {
+    return course.copyWith(
+      code: course.code.trim().toUpperCase(),
+      title: course.title.trim(),
+      level: course.level.trim(),
+      academicSession: course.academicSession.trim(),
+      updatedAt: DateTime.now(),
+    );
   }
 }

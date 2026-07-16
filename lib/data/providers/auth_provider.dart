@@ -113,6 +113,9 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
 
     notifyListeners();
+
+    print('Logged out provide');
+
   }
 
   Future<bool> isLoggedIn() async {

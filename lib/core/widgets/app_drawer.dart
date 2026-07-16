@@ -118,22 +118,7 @@ class AppDrawer extends StatelessWidget {
 
             const Divider(),
 
-            Padding(
-              padding: const EdgeInsets.all(12),
-
-              child: AuthTile(),
-              //  ListTile(
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(12),
-              //   ),
-
-              //   leading: const Icon(Icons.logout_rounded, color: Colors.red),
-
-              //   title: const Text("Logout"),
-
-              //   onTap: () {},
-              // ),
-            ),
+            Padding(padding: const EdgeInsets.all(12), child: AuthTile()),
           ],
         ),
       ),
