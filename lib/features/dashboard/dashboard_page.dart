@@ -1,6 +1,5 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
-import 'package:attendance_management_system/features/auth/login/login_page.dart';
-import 'package:attendance_management_system/features/testing/test_page.dart';
+import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 import 'widgets/dashboard_header.dart';
@@ -18,6 +17,7 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarWidget(title: 'Dashboard'),
+      endDrawer: const AppDrawer(),
       body: ListView(
         children: [
           DashboardHeader(userName: "Dr. John Doe", role: "Lecturer"),
