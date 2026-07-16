@@ -21,6 +21,7 @@ Future<void> main() async {
 
   await DatabaseService.instance.database;
 
+  // await DatabaseService.instance.deleteDatabaseFile();
   runApp(
     MultiProvider(
       providers: [

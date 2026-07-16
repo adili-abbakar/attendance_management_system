@@ -1,13 +1,14 @@
+import 'package:attendance_management_system/data/models/course.dart';
 import 'package:flutter/material.dart';
 
 class DeleteCourseDialog extends StatelessWidget {
   const DeleteCourseDialog({
     super.key,
-    required this.courseTitle,
+    required this.course,
     required this.onDelete,
   });
 
-  final String courseTitle;
+  final Course course;
   final VoidCallback onDelete;
 
   @override
@@ -18,7 +19,7 @@ class DeleteCourseDialog extends StatelessWidget {
       title: const Text("Delete Course"),
 
       content: Text(
-        'Are you sure you want to delete "$courseTitle"?\n\n'
+        'Are you sure you want to delete "${course.code} - ${course.title}"?\n\n'
         'This action cannot be undone.',
       ),
 

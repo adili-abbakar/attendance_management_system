@@ -4,6 +4,7 @@ import 'package:attendance_management_system/core/widgets/empty_state.dart';
 import 'package:attendance_management_system/data/models/course.dart';
 import 'package:attendance_management_system/data/providers/course_provider.dart';
 import 'package:attendance_management_system/features/courses/widgets/course_form_dialog.dart';
+import 'package:attendance_management_system/features/courses/widgets/delete_course_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,6 +50,53 @@ class _CoursePageState extends State<CoursePage> {
               updatedAt: DateTime.now(),
             ),
           );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showEditCourseDialog(Course course) async {
+    await showDialog(
+      context: context,
+      builder: (_) => CourseFormDialog(
+        initialCode: course.code,
+        initialTitle: course.title,
+        initialLevel: course.level,
+        initialSemester: course.semester,
+        initialSession: course.academicSession,
+
+        onSave: (code, title, level, semester, session) async {
+          return context.read<CourseProvider>().updateCourse(
+            course.copyWith(
+              code: code,
+              title: title,
+              level: level,
+              semester: semester,
+              academicSession: session,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showDeleteCourseDialog(Course course) async {
+    await showDialog(
+      context: context,
+      builder: (_) => DeleteCourseDialog(
+        course: course,
+        onDelete: () async {
+          final success = await context.read<CourseProvider>().deleteCourse(
+            course.id!,
+          );
+
+          if (!mounted) return;
+
+          if (!success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to delete course.')),
+            );
+          }
         },
       ),
     );
@@ -137,9 +185,10 @@ class _CoursePageState extends State<CoursePage> {
                                   onTap: () {},
 
                                   // We'll implement these next.
-                                  onEdit: () {},
+                                  onEdit: () => _showEditCourseDialog(course),
 
-                                  onDelete: () {},
+                                  onDelete: () =>
+                                      _showDeleteCourseDialog(course),
                                 ),
                               )
                               .toList(),
