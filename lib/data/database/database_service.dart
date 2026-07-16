@@ -1,4 +1,5 @@
 import 'package:attendance_management_system/data/database/tables/course_table.dart';
+import 'package:attendance_management_system/data/database/tables/level_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -31,6 +32,7 @@ class DatabaseService {
     // print('Creating Database....');
     await db.execute(UserTable.createTable);
     await db.execute(CourseTable.createTable);
+    await db.execute(LevelTable.createTable);
     // print('tables created successfully.');
   }
 

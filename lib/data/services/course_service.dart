@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
 import 'package:attendance_management_system/data/database/tables/course_table.dart';
-import 'package:attendance_management_system/data/results/course/create_result.dart';
+import 'package:attendance_management_system/data/results/course/course_result.dart';
 
 import '../models/course.dart';
 
@@ -38,7 +38,7 @@ class CourseService {
     return Course.fromMap(result.first);
   }
 
-  Future<CreateCourseResult> createCourse(Course course) async {
+  Future<CourseResult> createCourse(Course course) async {
     final db = await DatabaseService.instance.database;
 
     final existing = await db.query(
@@ -52,7 +52,7 @@ class CourseService {
     );
 
     if (existing.isNotEmpty) {
-      return const CreateCourseResult(
+      return const CourseResult(
         success: false,
         courseCodeError:
             'This course already exists for the selected semester and academic session.',
@@ -61,10 +61,10 @@ class CourseService {
 
     await db.insert(CourseTable.tableName, course.toMap());
 
-    return const CreateCourseResult(success: true);
+    return const CourseResult(success: true);
   }
 
-  Future<CreateCourseResult> updateCourse(Course course) async {
+  Future<CourseResult> updateCourse(Course course) async {
     final db = await DatabaseService.instance.database;
 
     final existing = await db.query(
@@ -84,7 +84,7 @@ class CourseService {
     );
 
     if (existing.isNotEmpty) {
-      return const CreateCourseResult(
+      return const CourseResult(
         success: false,
         courseCodeError:
             'This course already exists for the selected semester and academic session.',
@@ -98,7 +98,7 @@ class CourseService {
       whereArgs: [course.id],
     );
 
-    return const CreateCourseResult(success: true);
+    return const CourseResult(success: true);
   }
   
   Future<bool> deleteCourse(int id) async {

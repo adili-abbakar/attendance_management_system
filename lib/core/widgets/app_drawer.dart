@@ -2,6 +2,7 @@ import 'package:attendance_management_system/core/widgets/auth_tile.dart';
 import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/courses/course_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
+import 'package:attendance_management_system/features/levels/level_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -77,6 +78,19 @@ class AppDrawer extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const CoursePage()),
+                      );
+                    },
+                  ),
+
+                  _DrawerTile(
+                    icon: Icons.school_outlined,
+                    title: "Levels",
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LevelPage()),
                       );
                     },
                   ),
