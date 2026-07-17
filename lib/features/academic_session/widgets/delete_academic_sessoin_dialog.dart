@@ -1,14 +1,14 @@
-import 'package:attendance_management_system/data/models/level.dart';
+import 'package:attendance_management_system/data/models/academic_session.dart';
 import 'package:flutter/material.dart';
 
-class DeleteLevelDialog extends StatelessWidget {
-  const DeleteLevelDialog({
+class DeleteAcademicSessionDialog extends StatelessWidget {
+  const DeleteAcademicSessionDialog({
     super.key,
-    required this.level,
+    required this.academicSession,
     required this.onDelete,
   });
 
-  final Level level;
+  final AcademicSession academicSession;
   final VoidCallback onDelete;
 
   @override
@@ -16,10 +16,10 @@ class DeleteLevelDialog extends StatelessWidget {
     return AlertDialog(
       icon: const Icon(Icons.delete_outline, size: 48, color: Colors.red),
 
-      title: const Text("Delete Level"),
+      title: const Text("Delete session"),
 
       content: Text(
-        'Are you sure you want to delete "${level.name} "?\n\n'
+        'Are you sure you want to delete "${academicSession.name} "?\n\n'
         'This action cannot be undone.',
       ),
 

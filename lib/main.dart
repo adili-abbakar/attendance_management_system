@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:attendance_management_system/app/theme/app_theme.dart';
+import 'package:attendance_management_system/data/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/data/providers/course_provider.dart';
 import 'package:attendance_management_system/data/providers/level_provider.dart';
+import 'package:attendance_management_system/data/services/academic_session_service.dart';
 import 'package:attendance_management_system/data/services/course_service.dart';
 import 'package:attendance_management_system/data/services/level_service.dart';
 import 'package:attendance_management_system/features/splash/splash_screen.dart';
@@ -33,6 +35,10 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => LevelProvider(LevelService.instance),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              AcademicSessionProvider(AcademicSessionSerivce.instance),
         ),
       ],
       child: const MyApp(),

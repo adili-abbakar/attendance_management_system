@@ -116,7 +116,7 @@ class _LevelPageState extends State<LevelPage> {
                       StatCard(
                         title: "Total Levels",
                         value: levels.length.toString(),
-                        icon: Icons.menu_book,
+                        icon: Icons.school,
                       ),
                     ],
                   ),
@@ -137,7 +137,7 @@ class _LevelPageState extends State<LevelPage> {
                         const EmptyState(
                           title: "No Levels",
                           message: "Create your first level.",
-                          icon: Icons.menu_book_outlined,
+                          icon: Icons.school_outlined,
                         )
                       else
                         LevelGrid(

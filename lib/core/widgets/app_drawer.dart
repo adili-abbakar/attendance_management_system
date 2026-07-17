@@ -1,5 +1,6 @@
 import 'package:attendance_management_system/core/widgets/auth_tile.dart';
 import 'package:attendance_management_system/data/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/academic_session/academic_session_page.dart';
 import 'package:attendance_management_system/features/courses/course_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:attendance_management_system/features/levels/level_page.dart';
@@ -91,6 +92,21 @@ class AppDrawer extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const LevelPage()),
+                      );
+                    },
+                  ),
+
+                  _DrawerTile(
+                    icon: Icons.calendar_month_rounded,
+                    title: "Academic Sessions",
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AcademicSessionPage(),
+                        ),
                       );
                     },
                   ),
