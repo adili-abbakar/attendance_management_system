@@ -25,17 +25,26 @@ class DatabaseService {
     final databasePath = await getDatabasesPath();
 
     final path = join(databasePath, 'attendance_management.db');
-    // print('Database Path: $path');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+
+    return await openDatabase(
+      path,
+      version: 1,
+
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
+
+      onCreate: _onCreate,
+    );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // print('Creating Database....');
     await db.execute(UserTable.createTable);
-    await db.execute(CourseTable.createTable);
+
     await db.execute(LevelTable.createTable);
     await db.execute(AcademicSessionTable.createTable);
-    // print('tables created successfully.');
+
+    await db.execute(CourseTable.createTable);
   }
 
   Future<void> closeDatabase() async {

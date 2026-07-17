@@ -1,11 +1,14 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
+import 'package:attendance_management_system/data/database/tables/academic_session_table.dart';
 import 'package:attendance_management_system/data/database/tables/course_table.dart';
+import 'package:attendance_management_system/data/database/tables/level_table.dart';
 import 'package:attendance_management_system/data/results/course/course_result.dart';
 
 import '../models/course.dart';
 
 class CourseService {
   CourseService._();
+
   static final CourseService instance = CourseService._();
 
   final DatabaseService _databaseService = DatabaseService.instance;
@@ -13,10 +16,26 @@ class CourseService {
   Future<List<Course>> getCourses() async {
     final db = await _databaseService.database;
 
-    final result = await db.query(
-      CourseTable.tableName,
-      orderBy: '${CourseTable.id} DESC',
-    );
+    final result = await db.rawQuery('''
+      SELECT
+        c.*,
+
+        l.id AS level_id,
+        l.name AS level_name,
+
+        s.id AS academic_session_id,
+        s.name AS academic_session_name
+
+      FROM ${CourseTable.tableName} c
+
+      INNER JOIN ${LevelTable.tableName} l
+        ON c.${CourseTable.levelId} = l.${LevelTable.id}
+
+      INNER JOIN ${AcademicSessionTable.tableName} s
+        ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
+
+      ORDER BY c.${CourseTable.id} DESC
+    ''');
 
     return result.map((e) => Course.fromMap(e)).toList();
   }
@@ -24,11 +43,30 @@ class CourseService {
   Future<Course?> getCourse(int id) async {
     final db = await _databaseService.database;
 
-    final result = await db.query(
-      CourseTable.tableName,
-      where: "${CourseTable.id} = ?",
-      whereArgs: [id],
-      limit: 1,
+    final result = await db.rawQuery(
+      '''
+      SELECT
+        c.*,
+
+        l.id AS level_id,
+        l.name AS level_name,
+
+        s.id AS academic_session_id,
+        s.name AS academic_session_name
+
+      FROM ${CourseTable.tableName} c
+
+      INNER JOIN ${LevelTable.tableName} l
+        ON c.${CourseTable.levelId} = l.${LevelTable.id}
+
+      INNER JOIN ${AcademicSessionTable.tableName} s
+        ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
+
+      WHERE c.${CourseTable.id} = ?
+
+      LIMIT 1
+    ''',
+      [id],
     );
 
     if (result.isEmpty) {
@@ -39,15 +77,21 @@ class CourseService {
   }
 
   Future<CourseResult> createCourse(Course course) async {
-    final db = await DatabaseService.instance.database;
+    final db = await _databaseService.database;
 
     final existing = await db.query(
       CourseTable.tableName,
       where:
           '${CourseTable.code} = ? AND '
           '${CourseTable.semester} = ? AND '
-          '${CourseTable.academicSession} = ?',
-      whereArgs: [course.code, course.semester, course.academicSession],
+          '${CourseTable.levelId} = ? AND '
+          '${CourseTable.academicSessionId} = ?',
+      whereArgs: [
+        course.code,
+        course.semester,
+        course.levelId,
+        course.academicSessionId,
+      ],
       limit: 1,
     );
 
@@ -55,7 +99,7 @@ class CourseService {
       return const CourseResult(
         success: false,
         courseCodeError:
-            'This course already exists for the selected semester and academic session.',
+            'This course already exists for the selected level, semester and academic session.',
       );
     }
 
@@ -65,19 +109,21 @@ class CourseService {
   }
 
   Future<CourseResult> updateCourse(Course course) async {
-    final db = await DatabaseService.instance.database;
+    final db = await _databaseService.database;
 
     final existing = await db.query(
       CourseTable.tableName,
       where:
           '${CourseTable.code} = ? AND '
           '${CourseTable.semester} = ? AND '
-          '${CourseTable.academicSession} = ? AND '
+          '${CourseTable.levelId} = ? AND '
+          '${CourseTable.academicSessionId} = ? AND '
           '${CourseTable.id} != ?',
       whereArgs: [
         course.code,
         course.semester,
-        course.academicSession,
+        course.levelId,
+        course.academicSessionId,
         course.id,
       ],
       limit: 1,
@@ -87,7 +133,7 @@ class CourseService {
       return const CourseResult(
         success: false,
         courseCodeError:
-            'This course already exists for the selected semester and academic session.',
+            'This course already exists for the selected level, semester and academic session.',
       );
     }
 
@@ -100,7 +146,7 @@ class CourseService {
 
     return const CourseResult(success: true);
   }
-  
+
   Future<bool> deleteCourse(int id) async {
     final db = await _databaseService.database;
 

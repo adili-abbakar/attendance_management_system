@@ -14,12 +14,14 @@ class CourseProvider extends ChangeNotifier {
 
   String? _error;
 
+  String? _courseCodeError;
+
   List<Course> get courses => _courses;
 
   bool get isLoading => _isLoading;
 
   String? get error => _error;
-  String? _courseCodeError;
+
   String? get courseCodeError => _courseCodeError;
 
   Future<void> loadCourses() async {
@@ -73,7 +75,7 @@ class CourseProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-     final result = await _service.updateCourse(_normalizeCourse(course));
+      final result = await _service.updateCourse(_normalizeCourse(course));
 
       if (!result.success) {
         _courseCodeError = result.courseCodeError;
@@ -97,7 +99,11 @@ class CourseProvider extends ChangeNotifier {
 
   Future<bool> deleteCourse(int id) async {
     try {
-      await _service.deleteCourse(id);
+      final success = await _service.deleteCourse(id);
+
+      if (!success) {
+        return false;
+      }
 
       _courses.removeWhere((course) => course.id == id);
 
@@ -106,6 +112,7 @@ class CourseProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
+
       notifyListeners();
 
       return false;
@@ -125,13 +132,13 @@ class CourseProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
+  void clearCourseCodeError() {
+    _courseCodeError = null;
     notifyListeners();
   }
 
-  void clearCourseCodeError() {
-    _courseCodeError = null;
+  void _setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
   }
 
@@ -139,8 +146,8 @@ class CourseProvider extends ChangeNotifier {
     return course.copyWith(
       code: course.code.trim().toUpperCase(),
       title: course.title.trim(),
-      level: course.level.trim(),
-      academicSession: course.academicSession.trim(),
+      levelId: course.levelId,
+      academicSessionId: course.academicSessionId,
       updatedAt: DateTime.now(),
     );
   }
