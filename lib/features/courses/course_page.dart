@@ -1,10 +1,16 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
+import 'package:attendance_management_system/data/models/academic_session.dart';
 import 'package:attendance_management_system/data/models/course.dart';
+import 'package:attendance_management_system/data/models/level.dart';
+import 'package:attendance_management_system/data/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/data/providers/course_provider.dart';
+import 'package:attendance_management_system/data/providers/level_provider.dart';
+import 'package:attendance_management_system/features/academic_session/widgets/academic_session_form_dialog.dart';
 import 'package:attendance_management_system/features/courses/widgets/course_form_dialog.dart';
 import 'package:attendance_management_system/features/courses/widgets/delete_course_dialog.dart';
+import 'package:attendance_management_system/features/levels/widgets/level_form_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,20 +43,66 @@ class _CoursePageState extends State<CoursePage> {
     await showDialog(
       context: context,
       builder: (_) => CourseFormDialog(
-        onSave: (code, title, level, semester, session) async {
-          return context.read<CourseProvider>().createCourse(
-            Course(
-              code: code,
-              title: title,
-              level: level,
-              semester: semester,
-              academicSession: session,
-              isActive: true,
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
+        onAddLevel: () async {
+          await showDialog(
+            context: context,
+            builder: (_) => LevelFormDialog(
+              onSave: (name) async {
+                return context.read<LevelProvider>().createLevel(
+                  Level(
+                    name: name,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
+              },
             ),
           );
+
+          await context.read<LevelProvider>().loadLevels();
         },
+        onAddAcademicSession: () async {
+          await showDialog(
+            context: context,
+            builder: (_) => AcademicSessionFormDialog(
+              onSave: (name) async {
+                return context
+                    .read<AcademicSessionProvider>()
+                    .createAcademicSession(
+                      AcademicSession(
+                        name: name,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      ),
+                    );
+              },
+            ),
+          );
+
+          await context.read<AcademicSessionProvider>().loadAcademicSessions();
+        },
+        onSave:
+            (
+              String code,
+              String title,
+              int levelId,
+              int semester,
+              int academicSessionId,
+            ) async {
+              return context.read<CourseProvider>().createCourse(
+                Course(
+                  code: code,
+                  title: title,
+                  levelId: levelId,
+                  academicSessionId: academicSessionId,
+                  semester: semester,
+
+                  isActive: true,
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                ),
+              );
+            },
       ),
     );
   }
@@ -61,21 +113,66 @@ class _CoursePageState extends State<CoursePage> {
       builder: (_) => CourseFormDialog(
         initialCode: course.code,
         initialTitle: course.title,
-        initialLevel: course.level,
+        initialLevelId: course.levelId,
         initialSemester: course.semester,
-        initialSession: course.academicSession,
-
-        onSave: (code, title, level, semester, session) async {
-          return context.read<CourseProvider>().updateCourse(
-            course.copyWith(
-              code: code,
-              title: title,
-              level: level,
-              semester: semester,
-              academicSession: session,
+        initialAcademicSessionId: course.academicSessionId,
+        onAddLevel: () async {
+          await showDialog(
+            context: context,
+            builder: (_) => LevelFormDialog(
+              onSave: (name) async {
+                return context.read<LevelProvider>().createLevel(
+                  Level(
+                    name: name,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
+              },
             ),
           );
+
+          await context.read<LevelProvider>().loadLevels();
         },
+        onAddAcademicSession: () async {
+          await showDialog(
+            context: context,
+            builder: (_) => AcademicSessionFormDialog(
+              onSave: (name) async {
+                return context
+                    .read<AcademicSessionProvider>()
+                    .createAcademicSession(
+                      AcademicSession(
+                        name: name,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      ),
+                    );
+              },
+            ),
+          );
+
+          await context.read<AcademicSessionProvider>().loadAcademicSessions();
+        },
+
+        onSave:
+            (
+              String code,
+              String title,
+              int levelId,
+              int semester,
+              int academicSessionId,
+            ) async {
+              return context.read<CourseProvider>().updateCourse(
+                course.copyWith(
+                  code: code,
+                  title: title,
+                  levelId: levelId,
+                  semester: semester,
+                  academicSessionId: academicSessionId,
+                ),
+              );
+            },
       ),
     );
   }
@@ -104,59 +201,62 @@ class _CoursePageState extends State<CoursePage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CourseProvider>();
-    final courses = provider.courses;
+    final courseProvider = context.watch<CourseProvider>();
+    final courses = courseProvider.courses;
 
-    final semesterOneCount = courses.where((e) => e.semester == 1).length;
+    final semesterOneCount = courses
+        .where((course) => course.semester == 1)
+        .length;
 
-    final semesterTwoCount = courses.where((e) => e.semester == 2).length;
+    final semesterTwoCount = courses
+        .where((course) => course.semester == 2)
+        .length;
 
-    final activeCount = courses.where((e) => e.isActive).length;
+    final activeCount = courses.where((course) => course.isActive).length;
 
     return Scaffold(
-      appBar: const AppBarWidget(title: "Courses"),
+      appBar: const AppBarWidget(title: 'Courses'),
       endDrawer: const AppDrawer(),
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateCourseDialog,
         icon: const Icon(Icons.add),
-        label: const Text("Add Course"),
+        label: const Text('Add Course'),
       ),
 
-      body: provider.isLoading
+      body: courseProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
                 DashboardSection(
-                  title: "Statistics",
+                  title: 'Statistics',
                   child: StatisticsGrid(
                     children: [
                       StatCard(
-                        title: "Total Courses",
+                        title: 'Total Courses',
                         value: courses.length.toString(),
                         icon: Icons.menu_book,
                       ),
                       StatCard(
-                        title: "Semester 1",
+                        title: 'Semester 1',
                         value: semesterOneCount.toString(),
                         icon: Icons.looks_one,
                       ),
                       StatCard(
-                        title: "Semester 2",
+                        title: 'Semester 2',
                         value: semesterTwoCount.toString(),
                         icon: Icons.looks_two,
                       ),
                       StatCard(
-                        title: "Active",
+                        title: 'Active',
                         value: activeCount.toString(),
                         icon: Icons.check_circle_outline,
                       ),
                     ],
                   ),
                 ),
-
                 DashboardSection(
-                  title: "Manage Courses",
+                  title: 'Manage Courses',
                   child: Column(
                     children: [
                       CourseSearchBar(
@@ -168,8 +268,8 @@ class _CoursePageState extends State<CoursePage> {
 
                       if (courses.isEmpty)
                         const EmptyState(
-                          title: "No Courses",
-                          message: "Create your first course.",
+                          title: 'No Courses',
+                          message: 'Create your first course.',
                           icon: Icons.menu_book_outlined,
                         )
                       else
@@ -179,14 +279,13 @@ class _CoursePageState extends State<CoursePage> {
                                 (course) => CourseCard(
                                   code: course.code,
                                   title: course.title,
-                                  level: course.level,
+                                  level: course.levelName ?? '-',
                                   semester: course.semester,
-                                  session: course.academicSession,
+                                  session: course.academicSessionName ?? '-',
                                   onTap: () {},
-
-                                  // We'll implement these next.
-                                  onEdit: () => _showEditCourseDialog(course),
-
+                                  onEdit: () => _showEditCourseDialog(
+                                    course,
+                                  ),
                                   onDelete: () =>
                                       _showDeleteCourseDialog(course),
                                 ),
@@ -196,7 +295,6 @@ class _CoursePageState extends State<CoursePage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
               ],
             ),

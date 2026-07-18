@@ -15,8 +15,13 @@ class CourseCard extends StatelessWidget {
 
   final String code;
   final String title;
+
+  /// Display name from the joined Level table.
   final String level;
+
   final int semester;
+
+  /// Display name from the joined Academic Session table.
   final String session;
 
   final VoidCallback onTap;
@@ -30,23 +35,18 @@ class CourseCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-
       child: InkWell(
         onTap: onTap,
-
         child: Padding(
           padding: const EdgeInsets.all(20),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               Row(
                 children: [
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: colors.primaryContainer,
-
                     child: Icon(Icons.menu_book_rounded, color: colors.primary),
                   ),
 
@@ -64,7 +64,6 @@ class CourseCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       PopupMenuItem(
                         onTap: onDelete,
                         child: const Row(
@@ -96,15 +95,13 @@ class CourseCard extends StatelessWidget {
               Wrap(
                 spacing: 12,
                 runSpacing: 8,
-
                 children: [
                   Chip(
-                    avatar: const Icon(Icons.school, size: 18),
-                    label: Text("Level $level"),
+                    avatar: const Icon(Icons.school_outlined, size: 18),
+                    label: Text(level),
                   ),
-
                   Chip(
-                    avatar: const Icon(Icons.calendar_today, size: 18),
+                    avatar: const Icon(Icons.calendar_today_outlined, size: 18),
                     label: Text("Semester $semester"),
                   ),
                 ],

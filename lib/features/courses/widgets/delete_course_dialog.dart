@@ -9,7 +9,7 @@ class DeleteCourseDialog extends StatelessWidget {
   });
 
   final Course course;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,8 @@ class DeleteCourseDialog extends StatelessWidget {
       title: const Text("Delete Course"),
 
       content: Text(
-        'Are you sure you want to delete "${course.code} - ${course.title}"?\n\n'
+        'Are you sure you want to delete '
+        '"${course.code} - ${course.title}"?\n\n'
         'This action cannot be undone.',
       ),
 
@@ -31,9 +32,9 @@ class DeleteCourseDialog extends StatelessWidget {
 
         FilledButton(
           style: FilledButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            onDelete();
+            await onDelete();
           },
           child: const Text("Delete"),
         ),

@@ -1,28 +1,36 @@
+import 'package:attendance_management_system/data/providers/academic_session_provider.dart';
+import 'package:attendance_management_system/data/providers/level_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CourseFormDialog extends StatefulWidget {
   const CourseFormDialog({
     super.key,
     this.initialCode,
     this.initialTitle,
-    this.initialLevel,
+    this.initialLevelId,
     this.initialSemester,
-    this.initialSession,
+    this.initialAcademicSessionId,
     required this.onSave,
+    required this.onAddLevel,
+    required this.onAddAcademicSession,
   });
 
   final String? initialCode;
   final String? initialTitle;
-  final String? initialLevel;
+  final int? initialLevelId;
   final int? initialSemester;
-  final String? initialSession;
+  final int? initialAcademicSessionId;
+
+  final Future<void> Function() onAddLevel;
+  final Future<void> Function() onAddAcademicSession;
 
   final Future<bool> Function(
     String code,
     String title,
-    String level,
+    int levelId,
     int semester,
-    String session,
+    int academicSessionId,
   )
   onSave;
 
@@ -35,13 +43,12 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
 
   late final TextEditingController codeController;
   late final TextEditingController titleController;
-  late final TextEditingController sessionController;
 
-  late String level;
+  late int levelId;
   late int semester;
+  late int academicSessionId;
 
   bool _isSaving = false;
-
   String? _generalError;
 
   @override
@@ -49,22 +56,22 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     super.initState();
 
     codeController = TextEditingController(text: widget.initialCode ?? '');
-
     titleController = TextEditingController(text: widget.initialTitle ?? '');
 
-    sessionController = TextEditingController(
-      text: widget.initialSession ?? '',
-    );
-
-    level = widget.initialLevel ?? '100';
+    levelId = widget.initialLevelId ?? 0;
+    academicSessionId = widget.initialAcademicSessionId ?? 0;
     semester = widget.initialSemester ?? 1;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<LevelProvider>().loadLevels();
+      await context.read<AcademicSessionProvider>().loadAcademicSessions();
+    });
   }
 
   @override
   void dispose() {
     codeController.dispose();
     titleController.dispose();
-    sessionController.dispose();
     super.dispose();
   }
 
@@ -74,16 +81,16 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
-      _generalError = null;
       _isSaving = true;
+      _generalError = null;
     });
 
     final success = await widget.onSave(
       codeController.text.trim(),
       titleController.text.trim(),
-      level,
+      levelId,
       semester,
-      sessionController.text.trim(),
+      academicSessionId,
     );
 
     if (!mounted) return;
@@ -95,7 +102,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
 
     setState(() {
       _generalError =
-          'This course already exists for the selected semester and academic session.';
+          'This course already exists for the selected level, semester and academic session.';
       _isSaving = false;
     });
   }
@@ -104,32 +111,41 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
 
-    return AlertDialog(
-      title: Text(widget.initialCode == null ? "Add Course" : "Edit Course"),
+    final levelProvider = context.watch<LevelProvider>();
+    final sessionProvider = context.watch<AcademicSessionProvider>();
 
+    final levels = levelProvider.levels;
+    final sessions = sessionProvider.academicSessions;
+
+    if (levels.isNotEmpty && !levels.any((level) => level.id == levelId)) {
+      levelId = levels.first.id!;
+    }
+
+    if (sessions.isNotEmpty &&
+        !sessions.any((session) => session.id == academicSessionId)) {
+      academicSessionId = sessions.first.id!;
+    }
+
+    return AlertDialog(
+      title: Text(widget.initialCode == null ? 'Add Course' : 'Edit Course'),
       content: SizedBox(
         width: width > 600 ? 450 : double.maxFinite,
-
         child: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-
               children: [
                 TextFormField(
                   controller: codeController,
                   enabled: !_isSaving,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: "Course Code"),
+                  decoration: const InputDecoration(labelText: 'Course Code'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return "Course code is required";
+                      return 'Course code is required';
                     }
-
                     return null;
                   },
                 ),
@@ -139,29 +155,72 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                 TextFormField(
                   controller: titleController,
                   enabled: !_isSaving,
-                  decoration: const InputDecoration(labelText: "Course Title"),
+                  decoration: const InputDecoration(labelText: 'Course Title'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return "Course title is required";
+                      return 'Course title is required';
                     }
-
                     return null;
                   },
                 ),
 
                 const SizedBox(height: 16),
 
-                DropdownButtonFormField<String>(
-                  value: level,
-                  decoration: const InputDecoration(labelText: "Level"),
-                  items: const ['100', '200', '300', '400', '500']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                DropdownButtonFormField<int>(
+                  value: levels.isEmpty ? null : levelId,
+                  decoration: const InputDecoration(labelText: 'Level'),
+                  items: levels
+                      .map(
+                        (level) => DropdownMenuItem(
+                          value: level.id,
+                          child: Text(level.name),
+                        ),
+                      )
                       .toList(),
                   onChanged: _isSaving
                       ? null
                       : (value) {
+                          if (value == null) return;
+
                           setState(() {
-                            level = value!;
+                            levelId = value;
+                          });
+                        },
+                ),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _isSaving
+                        ? null
+                        : () async {
+                            await widget.onAddLevel();
+
+                            if (!mounted) return;
+
+                            await context.read<LevelProvider>().loadLevels();
+                          },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add New Level'),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<int>(
+                  value: semester,
+                  decoration: const InputDecoration(labelText: 'Semester'),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('1st Semester')),
+                    DropdownMenuItem(value: 2, child: Text('2nd Semester')),
+                  ],
+                  onChanged: _isSaving
+                      ? null
+                      : (value) {
+                          if (value == null) return;
+
+                          setState(() {
+                            semester = value;
                           });
                         },
                 ),
@@ -169,37 +228,46 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<int>(
-                  value: semester,
-                  decoration: const InputDecoration(labelText: "Semester"),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text("1st Semester")),
-                    DropdownMenuItem(value: 2, child: Text("2nd Semester")),
-                  ],
+                  value: sessions.isEmpty ? null : academicSessionId,
+                  decoration: const InputDecoration(
+                    labelText: 'Academic Session',
+                  ),
+                  items: sessions
+                      .map(
+                        (session) => DropdownMenuItem(
+                          value: session.id,
+                          child: Text(session.name),
+                        ),
+                      )
+                      .toList(),
                   onChanged: _isSaving
                       ? null
                       : (value) {
+                          if (value == null) return;
+
                           setState(() {
-                            semester = value!;
+                            academicSessionId = value;
                           });
                         },
                 ),
 
-                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _isSaving
+                        ? null
+                        : () async {
+                            await widget.onAddAcademicSession();
 
-                TextFormField(
-                  controller: sessionController,
-                  enabled: !_isSaving,
-                  decoration: const InputDecoration(
-                    labelText: "Academic Session",
-                    hintText: "2025/2026",
+                            if (!mounted) return;
+
+                            await context
+                                .read<AcademicSessionProvider>()
+                                .loadAcademicSessions();
+                          },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add New Academic Session'),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return "Academic session is required";
-                    }
-
-                    return null;
-                  },
                 ),
 
                 if (_generalError != null) ...[
@@ -214,9 +282,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                     child: Row(
                       children: [
                         const Icon(Icons.error_outline, color: Colors.red),
-
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: Text(
                             _generalError!,
@@ -232,13 +298,11 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
           ),
         ),
       ),
-
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text("Cancel"),
+          child: const Text('Cancel'),
         ),
-
         FilledButton.icon(
           onPressed: _isSaving ? null : _save,
           icon: _isSaving
@@ -248,8 +312,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.save),
-
-          label: Text(_isSaving ? "Saving..." : "Save"),
+          label: Text(_isSaving ? 'Saving...' : 'Save'),
         ),
       ],
     );

@@ -5,23 +5,16 @@ import '../services/course_service.dart';
 
 class CourseProvider extends ChangeNotifier {
   final CourseService _service;
-
+  
   CourseProvider(this._service);
-
   List<Course> _courses = [];
-
   bool _isLoading = false;
-
   String? _error;
-
   String? _courseCodeError;
 
   List<Course> get courses => _courses;
-
   bool get isLoading => _isLoading;
-
   String? get error => _error;
-
   String? get courseCodeError => _courseCodeError;
 
   Future<void> loadCourses() async {
