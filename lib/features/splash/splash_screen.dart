@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {  
+  Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
@@ -60,37 +60,41 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.fact_check_rounded,
-                        size: iconSize.clamp(80.0, 140.0),
-                        color: colors.primary,
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      Text(
-                        'Attendance Management',
-                        textAlign: TextAlign.center,
-                        style: textTheme.headlineMedium?.copyWith(
-                          fontSize: titleSize.clamp(28.0, 42.0),
-                          fontWeight: FontWeight.bold,
-                          color: colors.onSurface,
+                      SizedBox(
+                        width: iconSize.clamp(300.0, 460.0),
+                        height: iconSize.clamp(300.0, 460.0),
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: Image.asset(
+                            'assets/images/welcome.png',
+                            color: colors.primary,
+                          ),
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
-                      Text(
-                        'Smart • Fast • Reliable',
-                        textAlign: TextAlign.center,
-                        style: textTheme.bodyLarge?.copyWith(
-                          fontSize: subtitleSize.clamp(16.0, 20.0),
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
+                      // Text(
+                      //   'Attendance Management',
+                      //   textAlign: TextAlign.center,
+                      //   style: textTheme.headlineMedium?.copyWith(
+                      //     fontSize: titleSize.clamp(28.0, 42.0),
+                      //     fontWeight: FontWeight.bold,
+                      //     color: colors.onSurface,
+                      //   ),
+                      // ),
 
-                      const SizedBox(height: 48),
+                      // const SizedBox(height: 12),
 
+                      // Text(
+                      //   'Smart • Fast • Reliable',
+                      //   textAlign: TextAlign.center,
+                      //   style: textTheme.bodyLarge?.copyWith(
+                      //     fontSize: subtitleSize.clamp(16.0, 20.0),
+                      //     color: colors.onSurfaceVariant,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 48),
                       SizedBox(
                         width: double.infinity,
                         child: PrimaryButton(

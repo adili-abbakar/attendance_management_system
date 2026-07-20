@@ -98,32 +98,44 @@ class AuthLayout extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.fact_check_rounded,
-                              size: iconSize,
-                              color: colors.primary,
-                            ),
+                            // Icon(
+                            //   Icons.fact_check_rounded,
+                            //   size: iconSize,
+                            //   color: colors.primary,
+                            // ),
 
-                            const SizedBox(height: 32),
+                            // const SizedBox(height: 32),
 
-                            Text(
-                              'Attendance\nManagement System',
-                              textAlign: TextAlign.center,
-                              style: text.displaySmall?.copyWith(
-                                fontSize: titleSize,
-                                fontWeight: FontWeight.bold,
-                                color: colors.onPrimaryContainer,
-                              ),
-                            ),
+                            // Text(
+                            //   'Attendance\nManagement System',
+                            //   textAlign: TextAlign.center,
+                            //   style: text.displaySmall?.copyWith(
+                            //     fontSize: titleSize,
+                            //     fontWeight: FontWeight.bold,
+                            //     color: colors.onPrimaryContainer,
+                            //   ),
+                            // ),
 
-                            const SizedBox(height: 20),
+                            // const SizedBox(height: 20),
 
-                            Text(
-                              'Fast • Secure • Reliable',
-                              textAlign: TextAlign.center,
-                              style: text.titleMedium?.copyWith(
-                                color: colors.onPrimaryContainer.withValues(
-                                  alpha: .85,
+                            // Text(
+                            //   'Fast • Secure • Reliable',
+                            //   textAlign: TextAlign.center,
+                            //   style: text.titleMedium?.copyWith(
+                            //     color: colors.onPrimaryContainer.withValues(
+                            //       alpha: .85,
+                            //     ),
+                            //   ),
+                            // ),
+
+                             SizedBox(
+                              width: iconSize.clamp(300.0, 460.0),
+                              height: iconSize.clamp(300.0, 460.0),
+                              child: FittedBox(
+                                fit: BoxFit.cover,
+                                child: Image.asset(
+                                  'assets/images/welcome.png',
+                                  color: colors.primary,
                                 ),
                               ),
                             ),
