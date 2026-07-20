@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -49,8 +49,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // Responsive sizing
             final iconSize = shortestSide * 0.22;
-            final titleSize = shortestSide * 0.085;
-            final subtitleSize = shortestSide * 0.045;
+            // final titleSize = shortestSide * 0.085;
+            // final subtitleSize = shortestSide * 0.045;
 
             return Center(
               child: Padding(

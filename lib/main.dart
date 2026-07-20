@@ -5,9 +5,11 @@ import 'package:attendance_management_system/data/providers/academic_session_pro
 import 'package:attendance_management_system/data/providers/auth_provider.dart';
 import 'package:attendance_management_system/data/providers/course_provider.dart';
 import 'package:attendance_management_system/data/providers/level_provider.dart';
+import 'package:attendance_management_system/data/providers/student_provider.dart';
 import 'package:attendance_management_system/data/services/academic_session_service.dart';
 import 'package:attendance_management_system/data/services/course_service.dart';
 import 'package:attendance_management_system/data/services/level_service.dart';
+import 'package:attendance_management_system/data/services/student_service.dart';
 import 'package:attendance_management_system/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -39,6 +41,9 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) =>
               AcademicSessionProvider(AcademicSessionSerivce.instance),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => StudentProvider(StudentService.instance),
         ),
       ],
       child: const MyApp(),

@@ -12,7 +12,7 @@ class AuthLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
+    // final text = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -47,11 +47,11 @@ class AuthLayout extends StatelessWidget {
                 ? 100
                 : 150;
 
-            final double titleSize = isPhone
-                ? 32
-                : isTablet
-                ? 40
-                : 48;
+            // final double titleSize = isPhone
+            //     ? 32
+            //     : isTablet
+            //     ? 40
+            //     : 48;
 
             // ==========================
             // Phone & Tablet

@@ -4,6 +4,7 @@ import 'package:attendance_management_system/features/academic_session/academic_
 import 'package:attendance_management_system/features/courses/course_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:attendance_management_system/features/levels/level_page.dart';
+import 'package:attendance_management_system/features/students/student_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -114,7 +115,14 @@ class AppDrawer extends StatelessWidget {
                   _DrawerTile(
                     icon: Icons.people_outline,
                     title: "Students",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const StudentPage()),
+                      );
+                    },
                   ),
 
                   _DrawerTile(
