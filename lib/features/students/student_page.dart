@@ -1,9 +1,10 @@
+import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
+import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/data/models/student.dart';
 import 'package:attendance_management_system/data/providers/student_provider.dart';
 import 'package:attendance_management_system/features/students/widgets/delete_student_dialog.dart';
 import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
 import 'package:attendance_management_system/features/students/widgets/student_form_dialog.dart';
-import 'package:attendance_management_system/features/students/widgets/student_header.dart';
 import 'package:attendance_management_system/features/students/widgets/student_pagination.dart';
 import 'package:attendance_management_system/features/students/widgets/student_search_bar.dart';
 import 'package:attendance_management_system/features/students/widgets/student_table.dart';
@@ -162,18 +163,17 @@ class _StudentPageState extends State<StudentPage> {
     }
 
     return Scaffold(
+      appBar: AppBarWidget(title: 'Students'),
+      endDrawer: AppDrawer(),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            StudentHeader(onAddStudent: _showAddStudentDialog),
-
-            const SizedBox(height: 24),
-
             StudentSearchBar(
               controller: _searchController,
               onChanged: _applySearch,
+              onAddStudent: _showAddStudentDialog,
             ),
 
             const SizedBox(height: 24),

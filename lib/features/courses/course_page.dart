@@ -30,6 +30,8 @@ class CoursePage extends StatefulWidget {
 }
 
 class _CoursePageState extends State<CoursePage> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -261,6 +263,7 @@ class _CoursePageState extends State<CoursePage> {
                     children: [
                       CourseSearchBar(
                         onChanged: (_) {},
+                        controller: _searchController,
                         onAddPressed: _showCreateCourseDialog,
                       ),
 
@@ -283,9 +286,7 @@ class _CoursePageState extends State<CoursePage> {
                                   semester: course.semester,
                                   session: course.academicSessionName ?? '-',
                                   onTap: () {},
-                                  onEdit: () => _showEditCourseDialog(
-                                    course,
-                                  ),
+                                  onEdit: () => _showEditCourseDialog(course),
                                   onDelete: () =>
                                       _showDeleteCourseDialog(course),
                                 ),

@@ -16,25 +16,15 @@ class StudentHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Students',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
                 'Manage students enrolled in the system',
                 style: theme.textTheme.bodyMedium,
               ),
+              const SizedBox(height: 6),
             ],
           ),
         ),
 
-        FilledButton.icon(
-          onPressed: onAddStudent,
-          icon: const Icon(Icons.person_add_alt_1),
-          label: const Text('Add Student'),
-        ),
+        
       ],
     );
   }
