@@ -104,6 +104,10 @@ class _StudentPageState extends State<StudentPage> {
     );
   }
 
+  Future<void> _showImportDialog() async {
+    return;
+  }
+
   Future<void> _showEditStudentDialog(Student student) async {
     await showDialog(
       context: context,
@@ -174,6 +178,7 @@ class _StudentPageState extends State<StudentPage> {
               controller: _searchController,
               onChanged: _applySearch,
               onAddStudent: _showAddStudentDialog,
+              onImportStudents: _showImportDialog,
             ),
 
             const SizedBox(height: 24),
