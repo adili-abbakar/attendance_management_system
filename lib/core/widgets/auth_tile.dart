@@ -1,5 +1,5 @@
-import 'package:attendance_management_system/data/providers/auth_provider.dart';
-import 'package:attendance_management_system/features/auth/login/login_page.dart';
+import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/auth/pages/login/login_page.dart';
 import 'package:attendance_management_system/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

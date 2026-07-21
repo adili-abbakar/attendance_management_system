@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:attendance_management_system/app/theme/app_theme.dart';
-import 'package:attendance_management_system/data/providers/academic_session_provider.dart';
-import 'package:attendance_management_system/data/providers/auth_provider.dart';
-import 'package:attendance_management_system/data/providers/course_provider.dart';
-import 'package:attendance_management_system/data/providers/level_provider.dart';
-import 'package:attendance_management_system/data/providers/student_provider.dart';
-import 'package:attendance_management_system/data/services/academic_session_service.dart';
-import 'package:attendance_management_system/data/services/course_service.dart';
-import 'package:attendance_management_system/data/services/level_service.dart';
-import 'package:attendance_management_system/data/services/student_service.dart';
+import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
+import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
+import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
+import 'package:attendance_management_system/features/students/providers/student_provider.dart';
+import 'package:attendance_management_system/features/academic_session/services/academic_session_service.dart';
+import 'package:attendance_management_system/features/courses/services/course_service.dart';
+import 'package:attendance_management_system/features/levels/services/level_service.dart';
+import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:attendance_management_system/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';

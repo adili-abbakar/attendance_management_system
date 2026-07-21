@@ -1,11 +1,11 @@
-import 'package:attendance_management_system/data/database/tables/academic_session_table.dart';
-import 'package:attendance_management_system/data/database/tables/course_table.dart';
-import 'package:attendance_management_system/data/database/tables/level_table.dart';
-import 'package:attendance_management_system/data/database/tables/student_table.dart';
+import 'package:attendance_management_system/features/academic_session/tables/academic_session_table.dart';
+import 'package:attendance_management_system/features/courses/tables/course_table.dart';
+import 'package:attendance_management_system/features/levels/tables/level_table.dart';
+import 'package:attendance_management_system/features/students/tables/student_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'tables/user_table.dart';
+import '../../features/auth/tables/user_table.dart';
 
 class DatabaseService {
   DatabaseService._();

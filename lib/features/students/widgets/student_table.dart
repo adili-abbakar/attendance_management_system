@@ -1,4 +1,4 @@
-import 'package:attendance_management_system/data/models/student.dart';
+import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:flutter/material.dart';
 
 class StudentTable extends StatelessWidget {

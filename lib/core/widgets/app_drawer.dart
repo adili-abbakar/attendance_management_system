@@ -1,10 +1,10 @@
 import 'package:attendance_management_system/core/widgets/auth_tile.dart';
-import 'package:attendance_management_system/data/providers/auth_provider.dart';
-import 'package:attendance_management_system/features/academic_session/academic_session_page.dart';
-import 'package:attendance_management_system/features/courses/course_page.dart';
+import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/academic_session/pages/academic_session_page.dart';
+import 'package:attendance_management_system/features/courses/pages/course_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
-import 'package:attendance_management_system/features/levels/level_page.dart';
-import 'package:attendance_management_system/features/students/student_page.dart';
+import 'package:attendance_management_system/features/levels/pages/level_page.dart';
+import 'package:attendance_management_system/features/students/pages/student_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/core/utils/validators.dart';
-import 'package:attendance_management_system/data/models/auth/user.dart';
-import 'package:attendance_management_system/data/services/auth_service.dart';
+import 'package:attendance_management_system/features/auth/models/user.dart';
+import 'package:attendance_management_system/features/auth/services/auth_service.dart';
 import 'package:attendance_management_system/features/auth/widgets/password_field.dart';
 import 'package:flutter/material.dart';
 

@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
-import 'package:attendance_management_system/data/providers/auth_provider.dart';
-import 'package:attendance_management_system/features/auth/login/login_page.dart';
+import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/auth/pages/login/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../dashboard/dashboard_page.dart';

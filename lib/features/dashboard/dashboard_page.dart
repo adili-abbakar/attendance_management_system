@@ -1,7 +1,7 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/data/models/auth/user.dart';
-import 'package:attendance_management_system/data/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/auth/models/user.dart';
+import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'widgets/dashboard_header.dart';
