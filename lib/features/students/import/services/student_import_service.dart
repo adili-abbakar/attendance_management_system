@@ -11,7 +11,7 @@ import 'package:attendance_management_system/features/students/import/results/st
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:csv/csv.dart';
 import 'package:excel_plus/excel_plus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart';
 
 class StudentImportService {
   StudentImportService._();
@@ -269,8 +269,8 @@ class StudentImportService {
   Future<StudentValidationResult> validateAgainstDatabase(
     List<Student> students,
   ) async {
-    final existingAdmissionNumbers = await StudentService.instance
-        .existingAdmissionNumbers(
+    final existingStudents = await StudentService.instance
+        .getStudentsByAdmissionNumbers(
           students.map((e) => e.admissionNumber).toList(),
         );
 
@@ -279,7 +279,7 @@ class StudentImportService {
     final errors = <String>[];
 
     for (final student in students) {
-      if (existingAdmissionNumbers.contains(student.admissionNumber)) {
+      if (existingStudents.containsKey(student.admissionNumber)) {
         errors.add(student.admissionNumber);
 
         warnings.add(
@@ -316,10 +316,13 @@ class StudentImportService {
     );
   }
 
-  Future<int> importStudents(List<Student> students) async {
+  Future<int> importStudents(
+    List<Student> students, {
+    DatabaseExecutor? executor,
+  }) async {
     if (students.isEmpty) return 0;
 
-    final db = await DatabaseService.instance.database;
+    final db = executor ?? await DatabaseService.instance.database;
 
     final batch = db.batch();
 

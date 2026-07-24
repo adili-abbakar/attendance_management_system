@@ -2,6 +2,7 @@ import 'package:attendance_management_system/data/database/database_service.dart
 import 'package:attendance_management_system/features/students/tables/student_table.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/results/student_result.dart';
+import 'package:sqflite/sqflite.dart';
 
 class StudentService {
   StudentService._();
@@ -21,9 +22,8 @@ class StudentService {
     return result.map((e) => Student.fromMap(e)).toList();
   }
 
-  Future<Student?> getStudent(int id) async {
-    final db = await _databaseService.database;
-
+  Future<Student?> getStudent(int id, {DatabaseExecutor? executor}) async {
+    final db = executor ?? await _databaseService.database;
     final result = await db.query(
       StudentTable.tableName,
       where: '${StudentTable.id} = ?',
@@ -38,8 +38,11 @@ class StudentService {
     return Student.fromMap(result.first);
   }
 
-  Future<StudentResult> createStudent(Student student) async {
-    final db = await _databaseService.database;
+  Future<StudentResult> createStudent(
+    Student student, {
+    DatabaseExecutor? executor,
+  }) async {
+    final db = executor ?? await _databaseService.database;
 
     final existing = await db.query(
       StudentTable.tableName,
@@ -55,9 +58,9 @@ class StudentService {
       );
     }
 
-    await db.insert(StudentTable.tableName, student.toMap());
+    final id = await db.insert(StudentTable.tableName, student.toMap());
 
-    return const StudentResult(success: true);
+    return StudentResult(success: true, student: student.copyWith(id: id));
   }
 
   Future<StudentResult> updateStudent(Student student) async {
@@ -122,5 +125,29 @@ class StudentService {
     return result
         .map((row) => row[StudentTable.admissionNumber] as String)
         .toSet();
+  }
+
+  Future<Map<String, Student>> getStudentsByAdmissionNumbers(
+    List<String> admissionNumbers, {
+    DatabaseExecutor? executor,
+  }) async {
+    if (admissionNumbers.isEmpty) {
+      return {};
+    }
+
+    final db = executor ?? await _databaseService.database;
+
+    final placeholders = List.filled(admissionNumbers.length, '?').join(',');
+
+    final result = await db.query(
+      StudentTable.tableName,
+      where: '${StudentTable.admissionNumber} IN ($placeholders)',
+      whereArgs: admissionNumbers,
+    );
+
+    return {
+      for (final row in result)
+        row[StudentTable.admissionNumber] as String: Student.fromMap(row),
+    };
   }
 }
