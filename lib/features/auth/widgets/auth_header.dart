@@ -21,8 +21,8 @@ class AuthHeader extends StatelessWidget {
     final shortestSide = size.shortestSide;
 
     final iconSize = shortestSide * 0.22;
-    final titleSize = shortestSide * 0.085;
-    final subtitleSize = shortestSide * 0.045;
+    // final titleSize = shortestSide * 0.085;
+    // final subtitleSize = shortestSide * 0.045;
 
     return Column(
       children: [

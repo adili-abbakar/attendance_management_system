@@ -8,6 +8,7 @@ import 'package:attendance_management_system/features/students/dialogs/student_f
 import 'package:attendance_management_system/features/students/widgets/student_pagination.dart';
 import 'package:attendance_management_system/features/students/widgets/student_search_bar.dart';
 import 'package:attendance_management_system/features/students/widgets/student_table.dart';
+import 'package:attendance_management_system/features/students/dialogs/import_students_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -105,7 +106,16 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   Future<void> _showImportDialog() async {
-    return;
+    final imported = await showDialog<bool>(
+      context: context,
+      builder: (_) => const ImportStudentsDialog(),
+    );
+
+    if (!mounted) return;
+
+    if (imported == true) {
+      _applySearch(_searchController.text);
+    }
   }
 
   Future<void> _showEditStudentDialog(Student student) async {
@@ -160,12 +170,6 @@ class _StudentPageState extends State<StudentPage> {
   Widget build(BuildContext context) {
     final provider = context.watch<StudentProvider>();
 
-    if (_filteredStudents.isEmpty &&
-        provider.students.isNotEmpty &&
-        _searchController.text.isEmpty) {
-      _filteredStudents = provider.students;
-    }
-
     return Scaffold(
       appBar: AppBarWidget(title: 'Students'),
       endDrawer: AppDrawer(),
@@ -191,6 +195,29 @@ class _StudentPageState extends State<StudentPage> {
             else if (_filteredStudents.isEmpty)
               EmptyStudents(onAddStudent: _showAddStudentDialog)
             else ...[
+              StudentPagination(
+                currentPage: _currentPage,
+                totalPages: _totalPages,
+                totalItems: _filteredStudents.length,
+                itemsPerPage: _itemsPerPage,
+                onPrevious: _currentPage == 1
+                    ? null
+                    : () {
+                        setState(() {
+                          _currentPage--;
+                        });
+                      },
+                onNext: _currentPage == _totalPages
+                    ? null
+                    : () {
+                        setState(() {
+                          _currentPage++;
+                        });
+                      },
+              ),
+
+              const SizedBox(height: 20),
+
               StudentTable(
                 students: _currentStudents,
                 onEdit: _showEditStudentDialog,

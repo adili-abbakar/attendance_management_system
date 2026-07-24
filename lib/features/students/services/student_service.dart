@@ -15,7 +15,7 @@ class StudentService {
 
     final result = await db.query(
       StudentTable.tableName,
-      orderBy: '${StudentTable.fullName} ASC',
+      orderBy: '${StudentTable.updatedAt} DESC',
     );
 
     return result.map((e) => Student.fromMap(e)).toList();
@@ -99,5 +99,28 @@ class StudentService {
     );
 
     return rows > 0;
+  }
+
+  Future<Set<String>> existingAdmissionNumbers(
+    List<String> admissionNumbers,
+  ) async {
+    if (admissionNumbers.isEmpty) {
+      return {};
+    }
+
+    final db = await _databaseService.database;
+
+    final placeholders = List.filled(admissionNumbers.length, '?').join(',');
+
+    final result = await db.query(
+      StudentTable.tableName,
+      columns: [StudentTable.admissionNumber],
+      where: '${StudentTable.admissionNumber} IN ($placeholders)',
+      whereArgs: admissionNumbers,
+    );
+
+    return result
+        .map((row) => row[StudentTable.admissionNumber] as String)
+        .toSet();
   }
 }
