@@ -134,8 +134,10 @@ class AddCourseStudentsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addSelectedStudents() async {
-    if (_selectedStudentIds.isEmpty) return;
+  Future<int> addSelectedStudents() async {
+    if (_selectedStudentIds.isEmpty) {
+      return 0;
+    }
 
     final now = DateTime.now();
 
@@ -146,11 +148,15 @@ class AddCourseStudentsProvider extends ChangeNotifier {
         )
         .toList();
 
+    final addedCount = enrollments.length;
+
     await CourseEnrollmentService.instance.enrollStudents(enrollments);
 
     await loadStudents();
 
     clearSelection();
+
+    return addedCount;
   }
 
   void _applyFilters({bool notify = true}) {

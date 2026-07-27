@@ -43,11 +43,30 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
           content: Text(
             '${result.student!.fullName} created and enrolled successfully.',
           ),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
 
     return result;
+  }
+
+  Future<void> _addSelectedStudents() async {
+    final provider = context.read<AddCourseStudentsProvider>();
+
+    final added = await provider.addSelectedStudents();
+
+    if (!mounted) return;
+
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$added student${added == 1 ? '' : 's'} added successfully.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -155,12 +174,11 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                           ),
 
                           const SizedBox(height: 20),
-
                           AddStudentActions(
                             selectedCount: provider.selectedCount,
                             isLoading: provider.isLoading,
                             onCancel: () => Navigator.pop(context),
-                            onAddStudents: provider.addSelectedStudents,
+                            onAddStudents: _addSelectedStudents,
                           ),
                         ],
                       ),
