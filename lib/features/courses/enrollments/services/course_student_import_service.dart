@@ -27,10 +27,6 @@ class CourseStudentImportService {
     return StudentImportService.instance.validateStudents(students);
   }
 
-  // ----------------------------------------------------------
-  // Everything below is COURSE-SPECIFIC and will be implemented
-  // ----------------------------------------------------------
-
   Future<StudentImportResult> validateImport(
     List<Student> students,
     int courseId,

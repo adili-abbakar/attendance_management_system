@@ -12,6 +12,10 @@ class Course {
   final String? levelName;
   final String? academicSessionName;
 
+  /// Number of students enrolled in this course.
+  /// Populated when reading courses from the database.
+  final int studentCount;
+
   final int semester;
   final bool isActive;
 
@@ -26,6 +30,7 @@ class Course {
     required this.academicSessionId,
     this.levelName,
     this.academicSessionName,
+    this.studentCount = 0,
     required this.semester,
     required this.isActive,
     required this.createdAt,
@@ -40,6 +45,7 @@ class Course {
     int? academicSessionId,
     String? levelName,
     String? academicSessionName,
+    int? studentCount,
     int? semester,
     bool? isActive,
     DateTime? createdAt,
@@ -53,6 +59,7 @@ class Course {
       academicSessionId: academicSessionId ?? this.academicSessionId,
       levelName: levelName ?? this.levelName,
       academicSessionName: academicSessionName ?? this.academicSessionName,
+      studentCount: studentCount ?? this.studentCount,
       semester: semester ?? this.semester,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
@@ -71,6 +78,8 @@ class Course {
 
       levelName: map['level_name'] as String?,
       academicSessionName: map['academic_session_name'] as String?,
+
+      studentCount: (map['student_count'] as int?) ?? 0,
 
       semester: map['semester'] as int,
 
@@ -105,6 +114,7 @@ class Course {
       academicSessionId: 1,
       levelName: null,
       academicSessionName: null,
+      studentCount: 0,
       semester: 1,
       isActive: true,
       createdAt: now,

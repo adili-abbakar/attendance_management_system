@@ -2,7 +2,10 @@ import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
 import 'package:attendance_management_system/features/academic_session/models/academic_session.dart';
+
 import 'package:attendance_management_system/features/courses/models/course.dart';
+import 'package:attendance_management_system/features/courses/pages/course_details_page.dart';
+import 'package:attendance_management_system/features/courses/providers/course_details_provider.dart';
 import 'package:attendance_management_system/features/levels/models/level.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
@@ -18,9 +21,9 @@ import '../../dashboard/widgets/dashboard_section.dart';
 import '../../dashboard/widgets/stat_card.dart';
 import '../../dashboard/widgets/statistics_grid.dart';
 
-import '../widgets/course_card.dart';
-import '../widgets/course_grid.dart';
-import '../widgets/course_search_bar.dart';
+import '../widgets/course_page/course_card.dart';
+import '../widgets/course_page/course_grid.dart';
+import '../widgets/course_page/course_search_bar.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
@@ -285,7 +288,22 @@ class _CoursePageState extends State<CoursePage> {
                                   level: course.levelName ?? '-',
                                   semester: course.semester,
                                   session: course.academicSessionName ?? '-',
-                                  onTap: () {},
+                                  studentCount: course.studentCount,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChangeNotifierProvider(
+                                          create: (_) =>
+                                              CourseDetailsProvider(course)
+                                                ..loadStudents(),
+                                          child: CourseDetailsPage(
+                                            course: course,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                   onEdit: () => _showEditCourseDialog(course),
                                   onDelete: () =>
                                       _showDeleteCourseDialog(course),

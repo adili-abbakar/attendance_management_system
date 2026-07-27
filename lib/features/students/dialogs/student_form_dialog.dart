@@ -1,4 +1,5 @@
 import 'package:attendance_management_system/features/students/models/student.dart';
+import 'package:attendance_management_system/features/students/results/student_result.dart';
 import 'package:flutter/material.dart';
 
 class StudentFormDialog extends StatefulWidget {
@@ -6,7 +7,7 @@ class StudentFormDialog extends StatefulWidget {
 
   final Student? student;
 
-  final Future<bool> Function(Student student) onSave;
+  final Future<StudentResult> Function(Student student) onSave;
 
   @override
   State<StudentFormDialog> createState() => _StudentFormDialogState();
@@ -31,7 +32,9 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       text: widget.student?.admissionNumber ?? '',
     );
 
-    nameController = TextEditingController(text: widget.student?.fullName ?? '');
+    nameController = TextEditingController(
+      text: widget.student?.fullName ?? '',
+    );
 
     isActive = widget.student?.isActive ?? true;
   }
@@ -43,7 +46,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
     super.dispose();
   }
 
-  Future<void> _save() async {
+Future<void> _save() async {
     if (_isSaving) return;
 
     if (!_formKey.currentState!.validate()) return;
@@ -64,21 +67,22 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       updatedAt: now,
     );
 
-    final success = await widget.onSave(student);
+    final result = await widget.onSave(student);
 
     if (!mounted) return;
 
-    if (success) {
-      Navigator.pop(context);
+    if (result.success) {
+      Navigator.pop(context, result.student);
       return;
     }
 
     setState(() {
-      _generalError = 'A student with this admission number already exists.';
+      _generalError =
+          result.admissionNumberError ??
+          'A student with this admission number already exists.';
       _isSaving = false;
     });
   }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;

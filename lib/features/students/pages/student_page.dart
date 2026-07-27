@@ -3,12 +3,13 @@ import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:attendance_management_system/features/students/dialogs/delete_student_dialog.dart';
+import 'package:attendance_management_system/features/students/results/student_result.dart';
 import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
 import 'package:attendance_management_system/features/students/dialogs/student_form_dialog.dart';
 import 'package:attendance_management_system/features/students/widgets/student_pagination.dart';
 import 'package:attendance_management_system/features/students/widgets/student_search_bar.dart';
 import 'package:attendance_management_system/features/students/widgets/student_table.dart';
-import 'package:attendance_management_system/features/students/dialogs/import_students_dialog.dart';
+import 'package:attendance_management_system/features/students/import/dialogs/import_students_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -85,24 +86,26 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   Future<void> _showAddStudentDialog() async {
-    await showDialog(
+    final result = await showDialog<Student?>(
       context: context,
       builder: (_) {
         return StudentFormDialog(
-          onSave: (student) async {
-            final success = await context.read<StudentProvider>().createStudent(
-              student,
-            );
-
-            if (success) {
-              _applySearch(_searchController.text);
-            }
-
-            return success;
+          onSave: (student) {
+            return context.read<StudentProvider>().createStudent(student);
           },
         );
       },
     );
+
+    if (!mounted) return;
+
+    if (result != null) {
+      _applySearch(_searchController.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${result.fullName} added successfully.')),
+      );
+    }
   }
 
   Future<void> _showImportDialog() async {
@@ -119,25 +122,29 @@ class _StudentPageState extends State<StudentPage> {
   }
 
   Future<void> _showEditStudentDialog(Student student) async {
-    await showDialog(
+    final result = await showDialog<Student?>(
       context: context,
       builder: (_) {
         return StudentFormDialog(
           student: student,
-          onSave: (updatedStudent) async {
-            final success = await context.read<StudentProvider>().updateStudent(
+          onSave: (updatedStudent) {
+            return context.read<StudentProvider>().updateStudent(
               updatedStudent,
             );
-
-            if (success) {
-              _applySearch(_searchController.text);
-            }
-
-            return success;
           },
         );
       },
     );
+
+    if (!mounted) return;
+
+    if (result != null) {
+      _applySearch(_searchController.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${result.fullName} updated successfully.')),
+      );
+    }
   }
 
   Future<void> _showDeleteStudentDialog(Student student) async {

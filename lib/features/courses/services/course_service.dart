@@ -3,7 +3,7 @@ import 'package:attendance_management_system/features/academic_session/tables/ac
 import 'package:attendance_management_system/features/courses/tables/course_table.dart';
 import 'package:attendance_management_system/features/levels/tables/level_table.dart';
 import 'package:attendance_management_system/features/courses/results/course_result.dart';
-
+import 'package:attendance_management_system/features/courses/enrollments/tables/course_student_table.dart';
 import '../models/course.dart';
 
 class CourseService {
@@ -17,25 +17,32 @@ class CourseService {
     final db = await _databaseService.database;
 
     final result = await db.rawQuery('''
-      SELECT
-        c.*,
+    SELECT
+      c.*,
 
-        l.id AS level_id,
-        l.name AS level_name,
+      l.id AS level_id,
+      l.name AS level_name,
 
-        s.id AS academic_session_id,
-        s.name AS academic_session_name
+      s.id AS academic_session_id,
+      s.name AS academic_session_name,
 
-      FROM ${CourseTable.tableName} c
+      COUNT(cs.${CourseStudentTable.studentId}) AS student_count
 
-      INNER JOIN ${LevelTable.tableName} l
-        ON c.${CourseTable.levelId} = l.${LevelTable.id}
+    FROM ${CourseTable.tableName} c
 
-      INNER JOIN ${AcademicSessionTable.tableName} s
-        ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
+    INNER JOIN ${LevelTable.tableName} l
+      ON c.${CourseTable.levelId} = l.${LevelTable.id}
 
-      ORDER BY c.${CourseTable.id} DESC
-    ''');
+    INNER JOIN ${AcademicSessionTable.tableName} s
+      ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
+
+    LEFT JOIN ${CourseStudentTable.tableName} cs
+      ON c.${CourseTable.id} = cs.${CourseStudentTable.courseId}
+
+    GROUP BY c.${CourseTable.id}
+
+    ORDER BY c.${CourseTable.id} DESC
+  ''');
 
     return result.map((e) => Course.fromMap(e)).toList();
   }
@@ -45,26 +52,33 @@ class CourseService {
 
     final result = await db.rawQuery(
       '''
-      SELECT
-        c.*,
+    SELECT
+      c.*,
 
-        l.id AS level_id,
-        l.name AS level_name,
+      l.id AS level_id,
+      l.name AS level_name,
 
-        s.id AS academic_session_id,
-        s.name AS academic_session_name
+      s.id AS academic_session_id,
+      s.name AS academic_session_name,
 
-      FROM ${CourseTable.tableName} c
+      COUNT(cs.${CourseStudentTable.studentId}) AS student_count
 
-      INNER JOIN ${LevelTable.tableName} l
-        ON c.${CourseTable.levelId} = l.${LevelTable.id}
+    FROM ${CourseTable.tableName} c
 
-      INNER JOIN ${AcademicSessionTable.tableName} s
-        ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
+    INNER JOIN ${LevelTable.tableName} l
+      ON c.${CourseTable.levelId} = l.${LevelTable.id}
 
-      WHERE c.${CourseTable.id} = ?
+    INNER JOIN ${AcademicSessionTable.tableName} s
+      ON c.${CourseTable.academicSessionId} = s.${AcademicSessionTable.id}
 
-      LIMIT 1
+    LEFT JOIN ${CourseStudentTable.tableName} cs
+      ON c.${CourseTable.id} = cs.${CourseStudentTable.courseId}
+
+    WHERE c.${CourseTable.id} = ?
+
+    GROUP BY c.${CourseTable.id}
+
+    LIMIT 1
     ''',
       [id],
     );

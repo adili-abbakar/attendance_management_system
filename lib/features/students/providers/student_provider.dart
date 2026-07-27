@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/features/students/results/student_result.dart';
 import 'package:flutter/material.dart';
 
 import '../models/student.dart';
@@ -37,7 +38,7 @@ class StudentProvider extends ChangeNotifier {
     _setLoading(false);
   }
 
-  Future<bool> createStudent(Student student) async {
+  Future<StudentResult> createStudent(Student student) async {
     _error = null;
     _admissionNumberError = null;
 
@@ -50,25 +51,23 @@ class StudentProvider extends ChangeNotifier {
 
       if (!result.success) {
         _admissionNumberError = result.admissionNumberError;
-
-        notifyListeners();
-
-        return false;
+      } else {
+        await loadStudents();
       }
 
-      await loadStudents();
+      notifyListeners();
 
-      return true;
+      return result;
     } catch (e) {
       _error = e.toString();
 
       notifyListeners();
 
-      return false;
+      return const StudentResult(success: false);
     }
   }
 
-  Future<bool> updateStudent(Student student) async {
+  Future<StudentResult> updateStudent(Student student) async {
     _error = null;
     _admissionNumberError = null;
 
@@ -79,21 +78,19 @@ class StudentProvider extends ChangeNotifier {
 
       if (!result.success) {
         _admissionNumberError = result.admissionNumberError;
-
-        notifyListeners();
-
-        return false;
+      } else {
+        await loadStudents();
       }
 
-      await loadStudents();
+      notifyListeners();
 
-      return true;
+      return result;
     } catch (e) {
       _error = e.toString();
 
       notifyListeners();
 
-      return false;
+      return const StudentResult(success: false);
     }
   }
 

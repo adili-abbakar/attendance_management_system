@@ -42,7 +42,6 @@ class DatabaseService {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(UserTable.createTable);
-
     await db.execute(LevelTable.createTable);
     await db.execute(AcademicSessionTable.createTable);
     await db.execute(CourseTable.createTable);
