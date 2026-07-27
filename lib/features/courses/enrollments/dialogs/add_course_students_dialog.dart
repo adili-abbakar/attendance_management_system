@@ -6,6 +6,8 @@ import 'package:attendance_management_system/features/courses/enrollments/widget
 import 'package:attendance_management_system/features/courses/enrollments/widgets/add_students/add_students_table.dart';
 import 'package:attendance_management_system/features/courses/enrollments/widgets/add_students/selected_students_bar.dart';
 import 'package:attendance_management_system/features/courses/enrollments/widgets/new_student_form.dart';
+import 'package:attendance_management_system/features/students/models/student.dart';
+import 'package:attendance_management_system/features/students/results/student_result.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,6 +28,26 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<StudentResult> _createAndEnrollStudent(Student student) async {
+    final provider = context.read<AddCourseStudentsProvider>();
+
+    final result = await provider.createAndEnrollStudent(student);
+
+    if (!mounted) return result;
+
+    if (result.success && result.student != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${result.student!.fullName} created and enrolled successfully.',
+          ),
+        ),
+      );
+    }
+
+    return result;
   }
 
   @override
@@ -144,12 +166,11 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                       ),
                     ),
 
-                    // ------------------------
-                    // NEW STUDENT TAB
-                    // ------------------------
+                    // New Student Tab
                     Center(
-                      child: NewStudentForm(
-                        onSave: provider.createAndEnrollStudent,
+                      child: SizedBox(
+                        width: 500,
+                        child: NewStudentForm(onSave: _createAndEnrollStudent),
                       ),
                     ),
                   ],

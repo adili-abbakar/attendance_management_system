@@ -90,14 +90,18 @@ class CourseStudentImportService {
 
       final enrollments = <CourseStudent>[];
 
+      // Keep track of which enrollments came from existing students.
+      final Map<int, bool> enrollmentIsExisting = {};
+
       for (final student in students) {
         Student currentStudent;
+        bool isExistingStudent = false;
 
         final existingStudent = existingStudents[student.admissionNumber];
 
         if (existingStudent != null) {
           currentStudent = existingStudent;
-          linkedExistingStudents++;
+          isExistingStudent = true;
         } else {
           final result = await StudentService.instance.createStudent(
             student,
@@ -119,6 +123,8 @@ class CourseStudentImportService {
             createdAt: DateTime.now(),
           ),
         );
+
+        enrollmentIsExisting[currentStudent.id!] = isExistingStudent;
       }
 
       final enrolledIds = await CourseEnrollmentService.instance
@@ -128,24 +134,27 @@ class CourseStudentImportService {
             executor: txn,
           );
 
-      enrollments.removeWhere((enrollment) {
+      final enrollmentsToInsert = <CourseStudent>[];
+
+      for (final enrollment in enrollments) {
         if (enrolledIds.contains(enrollment.studentId)) {
           alreadyEnrolled++;
-
-          if (linkedExistingStudents > 0) {
-            linkedExistingStudents--;
-          }
-
-          return true;
+          continue;
         }
 
-        return false;
-      });
+        if (enrollmentIsExisting[enrollment.studentId] == true) {
+          linkedExistingStudents++;
+        }
 
-      await CourseEnrollmentService.instance.enrollStudents(
-        enrollments,
-        executor: txn,
-      );
+        enrollmentsToInsert.add(enrollment);
+      }
+
+      if (enrollmentsToInsert.isNotEmpty) {
+        await CourseEnrollmentService.instance.enrollStudents(
+          enrollmentsToInsert,
+          executor: txn,
+        );
+      }
 
       return CourseStudentImportSummary(
         createdStudents: createdStudents,

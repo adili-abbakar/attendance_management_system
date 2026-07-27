@@ -42,8 +42,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     super.dispose();
   }
 
-  void _showImportStudentsDialog(Course course) {
-    showDialog(
+  Future<void> _showImportStudentsDialog(Course course) async {
+    await showDialog(
       context: context,
       builder: (_) => ChangeNotifierProvider(
         create: (context) =>
@@ -51,13 +51,14 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         child: ImportCourseStudentsDialog(courseId: course.id!),
       ),
     );
+
     if (!mounted) return;
 
-    context.read<CourseDetailsProvider>().loadStudents();
+    await context.read<CourseDetailsProvider>().loadStudents();
   }
 
-  void _showAddStudentsDialog() {
-    showDialog(
+  Future<void> _showAddStudentsDialog() async {
+    await showDialog(
       context: context,
       builder: (_) => ChangeNotifierProvider(
         create: (_) => AddCourseStudentsProvider(
@@ -67,6 +68,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         child: AddCourseStudentsDialog(courseId: widget.course.id!),
       ),
     );
+
+    if (!mounted) return;
+
+    await context.read<CourseDetailsProvider>().loadStudents();
   }
 
   Future<void> _removeStudent(Student student) async {

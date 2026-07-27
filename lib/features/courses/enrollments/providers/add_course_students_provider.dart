@@ -207,7 +207,7 @@ class AddCourseStudentsProvider extends ChangeNotifier {
 
       return result;
     } catch (e) {
-      return const StudentResult(success: false);
+      return StudentResult(success: false, admissionNumberError: e.toString());
     } finally {
       _isLoading = false;
       notifyListeners();

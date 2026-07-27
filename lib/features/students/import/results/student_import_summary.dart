@@ -10,14 +10,8 @@ class StudentImportSummary {
   final int importedCount;
   final int skippedCount;
 
-  /// Non-fatal issues.
-  /// Example:
-  /// ADM001 already exists.
   final List<String> warnings;
 
-  /// Validation issues.
-  /// Example:
-  /// Row 10 - Missing name.
   final List<String> errors;
 
   final String? generalError;
