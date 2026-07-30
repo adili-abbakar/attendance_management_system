@@ -1,6 +1,7 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
+import 'package:attendance_management_system/features/qr/dialogs/student_qr_dialog.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
@@ -64,6 +65,16 @@ class _StudentPageState extends State<StudentPage> {
         }).toList();
       }
     });
+  }
+
+  void _showStudentQr(Student student) {
+    showDialog(
+      context: context,
+      builder: (_) => StudentQrDialog(
+        fullName: student.fullName,
+        admissionNumber: student.admissionNumber,
+      ),
+    );
   }
 
   List<Student> get _currentStudents {
@@ -229,6 +240,7 @@ class _StudentPageState extends State<StudentPage> {
                 students: _currentStudents,
                 onEdit: _showEditStudentDialog,
                 onDelete: _showDeleteStudentDialog,
+                onViewQr: _showStudentQr,
               ),
 
               const SizedBox(height: 20),

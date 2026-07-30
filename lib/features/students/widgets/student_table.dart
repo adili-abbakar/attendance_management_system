@@ -7,10 +7,11 @@ class StudentTable extends StatelessWidget {
     required this.students,
     required this.onEdit,
     required this.onDelete,
+    required this.onViewQr,
   });
 
   final List<Student> students;
-
+  final ValueChanged<Student> onViewQr;
   final ValueChanged<Student> onEdit;
   final ValueChanged<Student> onDelete;
 
@@ -89,6 +90,15 @@ class StudentTable extends StatelessWidget {
                           color: Colors.red,
                         ),
                         onPressed: () => onDelete(student),
+                      ),
+
+                      IconButton(
+                        tooltip: 'QR Code',
+                        icon: Icon(
+                          Icons.qr_code,
+                          color: theme.colorScheme.primary,
+                        ),
+                        onPressed: () => onViewQr(student),
                       ),
                     ],
                   ),
