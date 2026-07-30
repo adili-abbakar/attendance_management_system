@@ -18,31 +18,38 @@ class AcademicSessionSearchBar extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: "Search sessions...",
-        prefixIcon: const Icon(Icons.search),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.search, size: 20),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
 
     final addButton = FilledButton.icon(
       onPressed: onAddPressed,
-      icon: const Icon(Icons.add),
-      label: const Text("Add session"),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        minimumSize: const Size(0, 44),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      icon: const Icon(Icons.add, size: 18),
+      label: const Text("Add Session"),
     );
 
     if (width < 600) {
       return Column(
-        children: [
-          searchField,
-          const SizedBox(height: 12),
-          SizedBox(width: double.infinity, child: addButton),
-        ],
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [searchField, const SizedBox(height: 10), addButton],
       );
     }
 
     return Row(
       children: [
         Expanded(child: searchField),
-        const SizedBox(width: 16),
+        const SizedBox(width: 10),
         addButton,
       ],
     );

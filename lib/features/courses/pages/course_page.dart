@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
@@ -12,7 +13,6 @@ import 'package:attendance_management_system/features/courses/providers/course_p
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:attendance_management_system/features/academic_session/dialogs/academic_session_form_dialog.dart';
 import 'package:attendance_management_system/features/courses/dialogs/course_form_dialog.dart';
-import 'package:attendance_management_system/features/courses/dialogs/delete_course_dialog.dart';
 import 'package:attendance_management_system/features/levels/dialogs/level_form_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -185,8 +185,9 @@ class _CoursePageState extends State<CoursePage> {
   Future<void> _showDeleteCourseDialog(Course course) async {
     await showDialog(
       context: context,
-      builder: (_) => DeleteCourseDialog(
-        course: course,
+      builder: (_) => DeleteConfirmationDialog(
+        title: 'Delete Course',
+        itemName: '${course.code} - ${course.title}',
         onDelete: () async {
           final success = await context.read<CourseProvider>().deleteCourse(
             course.id!,
@@ -222,12 +223,6 @@ class _CoursePageState extends State<CoursePage> {
     return Scaffold(
       appBar: const AppBarWidget(title: 'Courses'),
       endDrawer: const AppDrawer(),
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateCourseDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Course'),
-      ),
 
       body: courseProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -270,7 +265,7 @@ class _CoursePageState extends State<CoursePage> {
                         onAddPressed: _showCreateCourseDialog,
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
 
                       if (courses.isEmpty)
                         const EmptyState(
@@ -314,7 +309,7 @@ class _CoursePageState extends State<CoursePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
               ],
             ),
     );

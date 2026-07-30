@@ -13,17 +13,21 @@ class AcademicSessionGrid extends StatelessWidget {
     late final double ratio;
 
     if (width >= 1200) {
+      // Desktop
       columns = 4;
-      ratio = 1.9;
-    } else if (width >= 900) {
-      columns = 3;
-      ratio = 1.7;
-    } else if (width >= 600) {
-      columns = 2;
-      ratio = 1.5;
-    } else {
-      columns = 1;
       ratio = 2.1;
+    } else if (width >= 900) {
+      // Large tablet
+      columns = 3;
+      ratio = 1.9;
+    } else if (width >= 600) {
+      // Tablet
+      columns = 2;
+      ratio = 1.7;
+    } else {
+      // Phones
+      columns = 1;
+      ratio = 2.35;
     }
 
     return GridView.builder(
@@ -32,8 +36,8 @@ class AcademicSessionGrid extends StatelessWidget {
       itemCount: children.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
         childAspectRatio: ratio,
       ),
       itemBuilder: (_, index) => children[index],

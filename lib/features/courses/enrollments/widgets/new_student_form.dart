@@ -79,13 +79,16 @@ class _NewStudentFormState extends State<NewStudentForm> {
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: ListView(
-        padding: EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16),
         children: [
           TextFormField(
             controller: _admissionController,
             enabled: !_isSaving,
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(labelText: 'Admission Number'),
+            decoration: const InputDecoration(
+              labelText: 'Admission Number',
+              isDense: true,
+            ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Admission number is required';
@@ -94,12 +97,15 @@ class _NewStudentFormState extends State<NewStudentForm> {
             },
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
           TextFormField(
             controller: _nameController,
             enabled: !_isSaving,
-            decoration: const InputDecoration(labelText: 'Student Name'),
+            decoration: const InputDecoration(
+              labelText: 'Student Name',
+              isDense: true,
+            ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Student name is required';
@@ -108,10 +114,11 @@ class _NewStudentFormState extends State<NewStudentForm> {
             },
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
           SwitchListTile(
             value: _isActive,
+            dense: true,
             contentPadding: EdgeInsets.zero,
             title: const Text('Active'),
             onChanged: _isSaving
@@ -124,18 +131,18 @@ class _NewStudentFormState extends State<NewStudentForm> {
           ),
 
           if (_generalError != null) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: .08),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red),
-                  const SizedBox(width: 12),
+                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       _generalError!,
@@ -147,7 +154,7 @@ class _NewStudentFormState extends State<NewStudentForm> {
             ),
           ],
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
 
           SizedBox(
             width: double.infinity,
@@ -155,11 +162,11 @@ class _NewStudentFormState extends State<NewStudentForm> {
               onPressed: _isSaving ? null : _save,
               icon: _isSaving
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.person_add_alt_1),
+                  : const Icon(Icons.person_add_alt_1, size: 18),
               label: Text(_isSaving ? 'Adding...' : 'Create & Add Student'),
             ),
           ),

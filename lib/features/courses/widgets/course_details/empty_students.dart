@@ -17,31 +17,54 @@ class EmptyStudents extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.school_outlined, size: 72, color: colors.outline),
+            Icon(
+              Icons.school_outlined,
+              size: 56,
+              color: colors.outline,
+            ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
 
-            Text(message, style: text.titleMedium, textAlign: TextAlign.center),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: text.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             Text(
               'Import students into this course to start managing attendance.',
-              style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
               textAlign: TextAlign.center,
+              style: text.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
 
             if (onImport != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               FilledButton.icon(
                 onPressed: onImport,
-                icon: const Icon(Icons.upload_file_outlined),
-                label: const Text('Import Students'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+                icon: const Icon(
+                  Icons.upload_file_outlined,
+                  size: 18,
+                ),
+                label: const Text("Import Students"),
               ),
             ],
           ],

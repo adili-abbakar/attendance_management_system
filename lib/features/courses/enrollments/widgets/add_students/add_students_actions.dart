@@ -17,30 +17,31 @@ class AddStudentActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.of(context).size.width < 550;
+    final compact = MediaQuery.sizeOf(context).width < 550;
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: 12,
         spacing: 12,
+        runSpacing: 12,
         children: [
           Chip(
             avatar: const Icon(Icons.people_outline, size: 18),
-            label: Text('$selectedCount selected'),
+            label: Text(
+              '$selectedCount student${selectedCount == 1 ? '' : 's'} selected',
+            ),
           ),
 
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               TextButton(
                 onPressed: isLoading ? null : onCancel,
                 child: const Text('Cancel'),
               ),
-
-              const SizedBox(width: 8),
 
               FilledButton.icon(
                 onPressed: isLoading || selectedCount == 0
@@ -54,7 +55,11 @@ class AddStudentActions extends StatelessWidget {
                       )
                     : const Icon(Icons.person_add_alt_1),
                 label: Text(
-                  compact ? 'Add' : (isLoading ? 'Adding...' : 'Add Students'),
+                  isLoading
+                      ? 'Adding...'
+                      : compact
+                      ? 'Add'
+                      : 'Add Students',
                 ),
               ),
             ],

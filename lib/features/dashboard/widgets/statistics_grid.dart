@@ -15,23 +15,23 @@ class StatisticsGrid extends StatelessWidget {
     if (width >= 1200) {
       // Desktop
       columns = 4;
-      ratio = 1.3;
+      ratio = 1.45;
     } else if (width >= 900) {
-      // Large tablet
-      columns = 3;
-      ratio = 1.1;
+      // Large Tablet
+      columns = 4;
+      ratio = 1.30;
     } else if (width >= 600) {
-      // Tablet
+      // Tablet / Fold unfolded
       columns = 3;
-      ratio = 0.95;
-    } else if (width >= 300) {
-      // Phones
+      ratio = 1.10;
+    } else if (width >= 360) {
+      // Most phones
       columns = 2;
-      ratio = 0.75;
+      ratio = 1.08;
     } else {
-      // Phones
-      columns = 1;
-      ratio = 0.75;
+      // Very narrow phones (Galaxy Fold cover, etc.)
+      columns = 2;
+      ratio = 0.95;
     }
 
     return GridView.builder(
@@ -40,8 +40,8 @@ class StatisticsGrid extends StatelessWidget {
       itemCount: children.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
         childAspectRatio: ratio,
       ),
       itemBuilder: (_, index) => children[index],

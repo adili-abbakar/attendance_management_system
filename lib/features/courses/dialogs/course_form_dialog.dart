@@ -129,7 +129,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     return AlertDialog(
       title: Text(widget.initialCode == null ? 'Add Course' : 'Edit Course'),
       content: SizedBox(
-        width: width > 600 ? 450 : double.maxFinite,
+        width: width >= 600 ? 400 : double.maxFinite,
         child: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -141,7 +141,10 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                   controller: codeController,
                   enabled: !_isSaving,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'Course Code'),
+                  decoration: const InputDecoration(
+                    labelText: 'Course Code',
+                    isDense: true,
+                  ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Course code is required';
@@ -150,12 +153,15 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 TextFormField(
                   controller: titleController,
                   enabled: !_isSaving,
-                  decoration: const InputDecoration(labelText: 'Course Title'),
+                  decoration: const InputDecoration(
+                    labelText: 'Course Title',
+                    isDense: true,
+                  ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Course title is required';
@@ -164,11 +170,14 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                   },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
                   value: levels.isEmpty ? null : levelId,
-                  decoration: const InputDecoration(labelText: 'Level'),
+                  decoration: const InputDecoration(
+                    labelText: 'Level',
+                    isDense: true,
+                  ),
                   items: levels
                       .map(
                         (level) => DropdownMenuItem(
@@ -181,16 +190,20 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                       ? null
                       : (value) {
                           if (value == null) return;
-
-                          setState(() {
-                            levelId = value;
-                          });
+                          setState(() => levelId = value);
                         },
                 ),
 
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                    ),
                     onPressed: _isSaving
                         ? null
                         : () async {
@@ -200,16 +213,19 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
 
                             await context.read<LevelProvider>().loadLevels();
                           },
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, size: 18),
                     label: const Text('Add New Level'),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
                   value: semester,
-                  decoration: const InputDecoration(labelText: 'Semester'),
+                  decoration: const InputDecoration(
+                    labelText: 'Semester',
+                    isDense: true,
+                  ),
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('1st Semester')),
                     DropdownMenuItem(value: 2, child: Text('2nd Semester')),
@@ -218,19 +234,17 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                       ? null
                       : (value) {
                           if (value == null) return;
-
-                          setState(() {
-                            semester = value;
-                          });
+                          setState(() => semester = value);
                         },
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
                   value: sessions.isEmpty ? null : academicSessionId,
                   decoration: const InputDecoration(
                     labelText: 'Academic Session',
+                    isDense: true,
                   ),
                   items: sessions
                       .map(
@@ -244,16 +258,20 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                       ? null
                       : (value) {
                           if (value == null) return;
-
-                          setState(() {
-                            academicSessionId = value;
-                          });
+                          setState(() => academicSessionId = value);
                         },
                 ),
 
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                    ),
                     onPressed: _isSaving
                         ? null
                         : () async {
@@ -265,28 +283,39 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                                 .read<AcademicSessionProvider>()
                                 .loadAcademicSessions();
                           },
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, size: 18),
                     label: const Text('Add New Academic Session'),
                   ),
                 ),
 
                 if (_generalError != null) ...[
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: .08),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             _generalError!,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -298,6 +327,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
           ),
         ),
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
@@ -307,11 +337,11 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
           onPressed: _isSaving ? null : _save,
           icon: _isSaving
               ? const SizedBox(
-                  width: 18,
-                  height: 18,
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.save),
+              : const Icon(Icons.save, size: 18),
           label: Text(_isSaving ? 'Saving...' : 'Save'),
         ),
       ],

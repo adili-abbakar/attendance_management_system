@@ -1,10 +1,10 @@
+import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
 import 'package:attendance_management_system/features/levels/models/level.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:attendance_management_system/features/levels/dialogs/level_form_dialog.dart';
-import 'package:attendance_management_system/features/levels/dialogs/delete_level_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -58,9 +58,7 @@ class _LevelPageState extends State<LevelPage> {
 
         onSave: (name) async {
           return context.read<LevelProvider>().updateLevel(
-            level.copyWith(
-              name: name,
-            ),
+            level.copyWith(name: name),
           );
         },
       ),
@@ -70,8 +68,9 @@ class _LevelPageState extends State<LevelPage> {
   Future<void> _showDeleteLevelDialog(Level level) async {
     await showDialog(
       context: context,
-      builder: (_) => DeleteLevelDialog(
-        level: level,
+      builder: (_) => DeleteConfirmationDialog(
+        title: 'Delete Level',
+        itemName: level.name,
         onDelete: () async {
           final success = await context.read<LevelProvider>().deleteLevel(
             level.id!,
@@ -93,7 +92,6 @@ class _LevelPageState extends State<LevelPage> {
   Widget build(BuildContext context) {
     final provider = context.watch<LevelProvider>();
     final levels = provider.levels;
-
 
     return Scaffold(
       appBar: const AppBarWidget(title: "Levels"),
@@ -150,8 +148,7 @@ class _LevelPageState extends State<LevelPage> {
                                   // We'll implement these next.
                                   onEdit: () => _showEditLevelDialog(level),
 
-                                  onDelete: () =>
-                                      _showDeleteLevelDialog(level),
+                                  onDelete: () => _showDeleteLevelDialog(level),
                                 ),
                               )
                               .toList(),

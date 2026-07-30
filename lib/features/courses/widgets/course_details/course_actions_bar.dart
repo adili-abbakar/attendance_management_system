@@ -17,28 +17,64 @@ class CourseActionsBar extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
         child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           alignment: WrapAlignment.spaceBetween,
           children: [
             FilledButton.icon(
               onPressed: onImportStudents,
-              icon: const Icon(Icons.upload_file_outlined),
-              label: const Text('Import Students'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 40),
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+              icon: const Icon(
+                Icons.upload_file_outlined,
+                size: 18,
+              ),
+              label: const Text("Import Students"),
             ),
 
             OutlinedButton.icon(
               onPressed: onAddStudent,
-              icon: const Icon(Icons.person_add_alt_1_outlined),
-              label: const Text('Add Student'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 40),
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+              icon: const Icon(
+                Icons.person_add_alt_1_outlined,
+                size: 18,
+              ),
+              label: const Text("Add Student"),
             ),
 
             OutlinedButton.icon(
               onPressed: onRefresh,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Refresh'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 40),
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+              icon: const Icon(
+                Icons.refresh,
+                size: 18,
+              ),
+              label: const Text("Refresh"),
             ),
           ],
         ),

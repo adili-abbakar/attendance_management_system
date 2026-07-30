@@ -16,22 +16,23 @@ class AddStudentSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 500;
+
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) {
         return TextField(
           controller: controller,
+          keyboardType: TextInputType.text,
           textInputAction: TextInputAction.search,
           onChanged: onChanged,
           decoration: InputDecoration(
-            hintText: hintText,
-
+            hintText: compact ? 'Search students...' : hintText,
             prefixIcon: const Icon(Icons.search),
-
             suffixIcon: value.text.isEmpty
                 ? null
                 : IconButton(
-                    tooltip: 'Clear Search',
+                    tooltip: 'Clear search',
                     icon: const Icon(Icons.close),
                     onPressed: () {
                       controller.clear();
@@ -39,10 +40,14 @@ class AddStudentSearchBar extends StatelessWidget {
                       onClear?.call();
                     },
                   ),
-
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-
             filled: true,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       },

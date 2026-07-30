@@ -12,23 +12,24 @@ class CourseHeader extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Card(
+      margin: EdgeInsets.zero,
       elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              radius: 34,
+              radius: 26,
               backgroundColor: colors.primaryContainer,
               child: Icon(
                 Icons.menu_book_rounded,
-                size: 34,
+                size: 26,
                 color: colors.primary,
               ),
             ),
 
-            const SizedBox(width: 20),
+            const SizedBox(width: 14),
 
             Expanded(
               child: Column(
@@ -36,20 +37,25 @@ class CourseHeader extends StatelessWidget {
                 children: [
                   Text(
                     course.code,
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                    style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
 
-                  Text(course.title, style: theme.textTheme.titleMedium),
+                  Text(
+                    course.title,
+                    style: theme.textTheme.bodyLarge,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _InfoChip(
                         icon: Icons.school_outlined,
@@ -92,21 +98,22 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: color ?? colors.primary),
+          Icon(icon, size: 16, color: color ?? colors.primary),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
-          Text(label),
+          Text(label, style: text.bodySmall),
         ],
       ),
     );

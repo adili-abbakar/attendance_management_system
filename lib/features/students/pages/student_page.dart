@@ -1,9 +1,8 @@
+import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
-import 'package:attendance_management_system/features/students/dialogs/delete_student_dialog.dart';
-import 'package:attendance_management_system/features/students/results/student_result.dart';
 import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
 import 'package:attendance_management_system/features/students/dialogs/student_form_dialog.dart';
 import 'package:attendance_management_system/features/students/widgets/student_pagination.dart';
@@ -151,8 +150,9 @@ class _StudentPageState extends State<StudentPage> {
     await showDialog(
       context: context,
       builder: (_) {
-        return DeleteStudentDialog(
-          student: student,
+        return DeleteConfirmationDialog(
+          title: 'Delete Student',
+          itemName: student.fullName,
           onDelete: () async {
             await context.read<StudentProvider>().deleteStudent(student.id!);
 

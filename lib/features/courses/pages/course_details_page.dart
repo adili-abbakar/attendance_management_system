@@ -32,7 +32,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   @override
   void initState() {
     super.initState();
-
     _searchController = TextEditingController();
   }
 
@@ -119,84 +118,83 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Course Details')),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1300),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CourseHeader(course: widget.course),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1300),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CourseHeader(course: widget.course),
 
-                      const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-                      CourseStatistics(
-                        totalStudents: provider.students.length,
-                        totalAttendanceSessions: 0,
-                        averageAttendance: 0,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      CourseActionsBar(
-                        onImportStudents: () =>
-                            _showImportStudentsDialog(widget.course),
-                        onAddStudent: _showAddStudentsDialog,
-                        onRefresh: provider.loadStudents,
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      StudentSearchBar(
-                        controller: _searchController,
-                        onChanged: provider.search,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      StudentFilters(
-                        showActiveOnly: provider.showActiveOnly,
-                        sortAscending: provider.sortAscending,
-                        onShowActiveChanged: provider.setShowActiveOnly,
-                        onSortChanged: provider.setSortAscending,
-                      ),
-                      const SizedBox(height: 24),
-
-                      if (provider.isLoading)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(40),
-                            child: CircularProgressIndicator(),
-                          ),
-                        )
-                      else
-                        EnrolledStudentsTable(
-                          students: provider.paginatedStudents,
-                          onRemoveStudent: _removeStudent,
-                          startIndex:
-                              (provider.currentPage - 1) * provider.pageSize,
-                        ),
-
-                      StudentPagination(
-                        currentPage: provider.currentPage,
-                        totalPages: provider.totalPages,
-                        onPrevious: provider.currentPage > 1
-                            ? provider.previousPage
-                            : null,
-                        onNext: provider.currentPage < provider.totalPages
-                            ? provider.nextPage
-                            : null,
-                      ),
-                    ],
+                  CourseStatistics(
+                    totalStudents: provider.students.length,
+                    totalAttendanceSessions: 0,
+                    averageAttendance: 0,
                   ),
-                ),
+
+                  const SizedBox(height: 16),
+
+                  CourseActionsBar(
+                    onImportStudents: () =>
+                        _showImportStudentsDialog(widget.course),
+                    onAddStudent: _showAddStudentsDialog,
+                    onRefresh: provider.loadStudents,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  StudentSearchBar(
+                    controller: _searchController,
+                    onChanged: provider.search,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  StudentFilters(
+                    showActiveOnly: provider.showActiveOnly,
+                    sortAscending: provider.sortAscending,
+                    onShowActiveChanged: provider.setShowActiveOnly,
+                    onSortChanged: provider.setSortAscending,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (provider.isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else
+                    EnrolledStudentsTable(
+                      students: provider.paginatedStudents,
+                      onRemoveStudent: _removeStudent,
+                      startIndex:
+                          (provider.currentPage - 1) * provider.pageSize,
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  StudentPagination(
+                    currentPage: provider.currentPage,
+                    totalPages: provider.totalPages,
+                    onPrevious: provider.currentPage > 1
+                        ? provider.previousPage
+                        : null,
+                    onNext: provider.currentPage < provider.totalPages
+                        ? provider.nextPage
+                        : null,
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );

@@ -19,9 +19,10 @@ class DashboardSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           SectionTitle(
             title: title,
@@ -29,7 +30,7 @@ class DashboardSection extends StatelessWidget {
             onActionPressed: onActionPressed,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           child,
         ],

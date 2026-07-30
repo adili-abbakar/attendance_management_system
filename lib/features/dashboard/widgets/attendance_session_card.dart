@@ -23,56 +23,68 @@ class AttendanceSessionCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(14),
           child: Row(
             children: [
               CircleAvatar(
-                radius: 28,
+                radius: 22,
                 backgroundColor: colors.primaryContainer,
-                child: Icon(Icons.fact_check_rounded, color: colors.primary),
+                child: Icon(
+                  Icons.fact_check_rounded,
+                  color: colors.primary,
+                  size: 22,
+                ),
               ),
 
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       courseCode,
-                      style: text.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
 
-                    Text(courseTitle),
+                    Text(
+                      courseTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.bodyMedium,
+                    ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
 
                     Wrap(
-                      spacing: 20,
-                      runSpacing: 8,
+                      spacing: 12,
+                      runSpacing: 4,
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.schedule_outlined, size: 18),
-                            const SizedBox(width: 4),
-                            Text(time),
+                            const Icon(Icons.schedule_outlined, size: 16),
+                            const SizedBox(width: 3),
+                            Text(time, style: text.bodySmall),
                           ],
                         ),
-
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.people_outline, size: 18),
-                            const SizedBox(width: 4),
-                            Text("$students Students"),
+                            const Icon(Icons.people_outline, size: 16),
+                            const SizedBox(width: 3),
+                            Text("$students Students", style: text.bodySmall),
                           ],
                         ),
                       ],
@@ -81,7 +93,13 @@ class AttendanceSessionCard extends StatelessWidget {
                 ),
               ),
 
-              const Icon(Icons.arrow_forward_ios_rounded),
+              const SizedBox(width: 8),
+
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: colors.outline,
+              ),
             ],
           ),
         ),

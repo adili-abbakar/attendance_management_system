@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.attendance_management_system"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "30.0.15729638"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

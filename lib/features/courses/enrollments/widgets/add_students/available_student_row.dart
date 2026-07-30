@@ -16,6 +16,7 @@ class AvailableStudentRow extends DataRow {
                index.toString(),
                style: const TextStyle(fontWeight: FontWeight.w600),
              ),
+             onTap: () => onChanged(student),
            ),
 
            DataCell(
@@ -27,25 +28,41 @@ class AvailableStudentRow extends DataRow {
                student.admissionNumber,
                style: const TextStyle(fontWeight: FontWeight.w600),
              ),
+             onTap: () => onChanged(student),
            ),
 
-           DataCell(Text(student.fullName)),
+           DataCell(Text(student.fullName), onTap: () => onChanged(student)),
 
            DataCell(
-             Row(
-               mainAxisSize: MainAxisSize.min,
-               children: [
-                 Icon(
-                   student.isActive ? Icons.check_circle : Icons.cancel,
-                   size: 18,
-                   color: student.isActive ? Colors.green : Colors.red,
-                 ),
+             Builder(
+               builder: (context) {
+                 final colors = Theme.of(context).colorScheme;
+                 final statusColor = student.isActive
+                     ? Colors.green
+                     : colors.error;
 
-                 const SizedBox(width: 6),
+                 return Tooltip(
+                   message: student.isActive
+                       ? 'Active student'
+                       : 'Inactive student',
+                   child: Row(
+                     mainAxisSize: MainAxisSize.min,
+                     children: [
+                       Icon(
+                         student.isActive ? Icons.check_circle : Icons.cancel,
+                         size: 18,
+                         color: statusColor,
+                       ),
 
-                 Text(student.isActive ? 'Active' : 'Inactive'),
-               ],
+                       const SizedBox(width: 6),
+
+                       Text(student.isActive ? 'Active' : 'Inactive'),
+                     ],
+                   ),
+                 );
+               },
              ),
+             onTap: () => onChanged(student),
            ),
          ],
        );

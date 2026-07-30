@@ -16,28 +16,34 @@ class CourseStatistics extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth > 900 ? 3 : 1;
+        int columns;
+
+        if (constraints.maxWidth >= 900) {
+          columns = 3;
+        } else if (constraints.maxWidth >= 600) {
+          columns = 2;
+        } else {
+          columns = 1;
+        }
 
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: columns,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 2.8,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 3.2,
           children: [
             _StatisticCard(
               icon: Icons.people_outline,
               title: 'Students',
               value: totalStudents.toString(),
             ),
-
             _StatisticCard(
               icon: Icons.event_available_outlined,
               title: 'Attendance Sessions',
               value: totalAttendanceSessions.toString(),
             ),
-
             _StatisticCard(
               icon: Icons.analytics_outlined,
               title: 'Average Attendance',
@@ -67,20 +73,18 @@ class _StatisticCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             CircleAvatar(
-              radius: 24,
+              radius: 20,
               backgroundColor: colors.primaryContainer,
-              child: Icon(
-                icon,
-                color: colors.primary,
-              ),
+              child: Icon(icon, color: colors.primary, size: 20),
             ),
 
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
 
             Expanded(
               child: Column(
@@ -89,14 +93,16 @@ class _StatisticCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: text.bodyMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodySmall,
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
 
                   Text(
                     value,
-                    style: text.headlineSmall?.copyWith(
+                    style: text.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),

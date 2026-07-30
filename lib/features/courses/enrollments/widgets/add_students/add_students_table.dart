@@ -13,13 +13,8 @@ class AddStudentsTable extends StatelessWidget {
   });
 
   final List<Student> students;
-
-  /// IDs of selected students.
   final Set<int> selectedStudents;
-
   final ValueChanged<Student> onToggleSelection;
-
-  /// Used for continuous numbering across pages.
   final int startIndex;
 
   @override
@@ -28,50 +23,76 @@ class AddStudentsTable extends StatelessWidget {
       return const EmptyAvailableStudents();
     }
 
+    final phone = MediaQuery.sizeOf(context).width < 600;
+
+    final textTheme = Theme.of(context).textTheme;
+
+    final headingStyle = phone
+        ? textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)
+        : textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold);
+
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 28,
-          headingRowHeight: 56,
-          dataRowMinHeight: 52,
-          dataRowMaxHeight: 60,
-          columns: const [
-            DataColumn(
-              label: Text('#', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            DataColumn(label: SizedBox.shrink()),
-            DataColumn(
-              label: Text(
-                'Admission Number',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                'Student Name',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                'Status',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-          rows: List.generate(students.length, (index) {
-            final student = students[index];
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Scrollbar(
+            thumbVisibility: phone,
+            interactive: true,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: phone ? 760 : constraints.maxWidth,
+                ),
+                child: DataTable(
+                  columnSpacing: phone ? 14 : 28,
+                  horizontalMargin: phone ? 10 : 20,
+                  headingRowHeight: phone ? 46 : 56,
+                  dataRowMinHeight: phone ? 44 : 52,
+                  dataRowMaxHeight: phone ? 52 : 60,
 
-            return AvailableStudentRow(
-              index: startIndex + index,
-              student: student,
-              selected: selectedStudents.contains(student.id),
-              onChanged: onToggleSelection,
-            );
-          }),
-        ),
+                  columns: [
+                    DataColumn(
+                      label: Text('#', style: headingStyle),
+                    ),
+                    const DataColumn(
+                      label: SizedBox(width: 24),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Admission Number',
+                        style: headingStyle,
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Student Name',
+                        style: headingStyle,
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Status',
+                        style: headingStyle,
+                      ),
+                    ),
+                  ],
+
+                  rows: List.generate(students.length, (index) {
+                    final student = students[index];
+
+                    return AvailableStudentRow(
+                      index: startIndex + index,
+                      student: student,
+                      selected: selectedStudents.contains(student.id),
+                      onChanged: onToggleSelection,
+                    );
+                  }),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

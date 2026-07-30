@@ -17,14 +17,8 @@ class DashboardHeader extends StatelessWidget {
   String _greeting() {
     final hour = DateTime.now().hour;
 
-    if (hour < 12) {
-      return 'Good Morning';
-    }
-
-    if (hour < 17) {
-      return 'Good Afternoon';
-    }
-
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
   }
 
@@ -65,52 +59,70 @@ class DashboardHeader extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 28,
+            radius: 22,
             backgroundColor: colors.primaryContainer,
-            child: Icon(Icons.person, color: colors.primary),
+            child: Icon(
+              Icons.person,
+              color: colors.primary,
+              size: 22,
+            ),
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   _greeting(),
-                  style: text.bodyMedium?.copyWith(
+                  style: text.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
 
                 Text(
                   userName,
-                  style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  role,
-                  style: text.bodySmall?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w600,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
 
-                Text(
-                  _date(),
-                  style: text.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+                Wrap(
+                  spacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      role,
+                      style: text.bodySmall?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "•",
+                      style: text.bodySmall?.copyWith(
+                        color: colors.outline,
+                      ),
+                    ),
+                    Text(
+                      _date(),
+                      style: text.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -118,11 +130,25 @@ class DashboardHeader extends StatelessWidget {
 
           IconButton(
             onPressed: onNotificationPressed,
+            constraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
+            padding: EdgeInsets.zero,
+            iconSize: 22,
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.notifications_outlined),
           ),
 
           IconButton(
             onPressed: onProfilePressed,
+            constraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
+            padding: EdgeInsets.zero,
+            iconSize: 22,
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.account_circle_outlined),
           ),
         ],

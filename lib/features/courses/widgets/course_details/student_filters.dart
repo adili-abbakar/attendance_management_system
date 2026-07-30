@@ -20,24 +20,26 @@ class StudentFilters extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 8,
+      runSpacing: 8,
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           child: FilterChip(
             showCheckmark: false,
             selected: showActiveOnly,
             elevation: 0,
             pressElevation: 0,
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             side: BorderSide(
               color: showActiveOnly ? colors.primary : colors.outlineVariant,
             ),
             backgroundColor: colors.surface,
             selectedColor: colors.surfaceContainerHighest,
             avatar: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: ScaleTransition(scale: animation, child: child),
@@ -45,44 +47,46 @@ class StudentFilters extends StatelessWidget {
               child: Icon(
                 Icons.check_circle_outline,
                 key: ValueKey(showActiveOnly),
-                size: 18,
+                size: 16,
                 color: showActiveOnly
                     ? colors.primary
                     : colors.onSurfaceVariant,
               ),
             ),
-            label: const Text('Active Only'),
+            label: const Text('Active Only', style: TextStyle(fontSize: 13)),
             onSelected: onShowActiveChanged,
           ),
         ),
 
         AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           child: FilterChip(
             showCheckmark: false,
             elevation: 0,
             pressElevation: 0,
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             side: BorderSide(color: colors.outlineVariant),
             backgroundColor: colors.surface,
             selectedColor: colors.surfaceContainerHighest,
             avatar: AnimatedRotation(
               turns: sortAscending ? 0.0 : 0.5,
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeInOutCubic,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
               child: Icon(
                 Icons.arrow_downward,
-                size: 18,
+                size: 16,
                 color: colors.primary,
               ),
             ),
             label: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 180),
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: SlideTransition(
                   position: Tween<Offset>(
-                    begin: const Offset(0, 0.2),
+                    begin: const Offset(0, 0.15),
                     end: Offset.zero,
                   ).animate(animation),
                   child: child,
@@ -91,6 +95,7 @@ class StudentFilters extends StatelessWidget {
               child: Text(
                 sortAscending ? 'A → Z' : 'Z → A',
                 key: ValueKey(sortAscending),
+                style: const TextStyle(fontSize: 13),
               ),
             ),
             onSelected: (_) => onSortChanged(!sortAscending),

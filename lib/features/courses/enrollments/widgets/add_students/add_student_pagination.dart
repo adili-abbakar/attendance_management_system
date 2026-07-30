@@ -20,15 +20,15 @@ class AddStudentPagination extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final compact = MediaQuery.of(context).size.width < 500;
+    final compact = MediaQuery.sizeOf(context).width < 500;
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: 12,
         spacing: 12,
+        runSpacing: 12,
         children: [
           OutlinedButton.icon(
             onPressed: currentPage == 1 ? null : onPrevious,
@@ -43,7 +43,9 @@ class AddStudentPagination extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              '$currentPage / $totalPages',
+              compact
+                  ? '$currentPage / $totalPages'
+                  : 'Page $currentPage of $totalPages',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
@@ -51,7 +53,7 @@ class AddStudentPagination extends StatelessWidget {
           FilledButton.icon(
             onPressed: currentPage >= totalPages ? null : onNext,
             icon: const Icon(Icons.chevron_right),
-            label: Text(compact ? 'Next' : 'Next'),
+            label: const Text('Next'),
           ),
         ],
       ),

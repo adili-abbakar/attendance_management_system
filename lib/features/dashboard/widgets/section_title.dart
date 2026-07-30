@@ -15,18 +15,36 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Row(
       children: [
         Expanded(
           child: Text(
             title,
-            style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
 
         if (actionText != null)
-          TextButton(onPressed: onActionPressed, child: Text(actionText!)),
+          TextButton(
+            onPressed: onActionPressed,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(0, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Text(
+              actionText!,
+              style: text.bodyMedium?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
       ],
     );
   }

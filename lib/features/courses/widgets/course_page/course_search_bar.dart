@@ -17,44 +17,52 @@ class CourseSearchBar extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
 
     final searchField = TextField(
-      onChanged: onChanged,
       controller: controller,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: "Search courses...",
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const Icon(Icons.search, size: 20),
         suffixIcon: controller.text.isEmpty
             ? null
             : IconButton(
-                icon: const Icon(Icons.clear),
+                icon: const Icon(Icons.clear, size: 20),
+                splashRadius: 18,
                 onPressed: () {
                   controller.clear();
                   onChanged('');
                 },
               ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
 
     final addButton = FilledButton.icon(
       onPressed: onAddPressed,
-      icon: const Icon(Icons.add),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 44),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      icon: const Icon(Icons.add, size: 18),
       label: const Text("Add Course"),
     );
 
     if (width < 600) {
       return Column(
-        children: [
-          searchField,
-          const SizedBox(height: 12),
-          SizedBox(width: double.infinity, child: addButton),
-        ],
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [searchField, const SizedBox(height: 10), addButton],
       );
     }
 
     return Row(
       children: [
         Expanded(child: searchField),
-        const SizedBox(width: 16),
+        const SizedBox(width: 10),
         addButton,
       ],
     );

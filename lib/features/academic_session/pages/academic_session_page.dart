@@ -1,18 +1,16 @@
+import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
+import 'package:attendance_management_system/features/academic_session/dialogs/academic_session_form_dialog.dart';
 import 'package:attendance_management_system/features/academic_session/models/academic_session.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
-import 'package:attendance_management_system/features/academic_session/dialogs/academic_session_form_dialog.dart';
-import 'package:attendance_management_system/features/academic_session/dialogs/delete_academic_sessoin_dialog.dart';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../dashboard/widgets/dashboard_section.dart';
 import '../../dashboard/widgets/stat_card.dart';
 import '../../dashboard/widgets/statistics_grid.dart';
-
 import '../widgets/academic_session_card.dart';
 import '../widgets/academic_session_grid.dart';
 import '../widgets/academic_session_search_bar.dart';
@@ -58,7 +56,6 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
       context: context,
       builder: (_) => AcademicSessionFormDialog(
         initialName: academicSession.name,
-
         onSave: (name) async {
           return context.read<AcademicSessionProvider>().updateAcademicSession(
             academicSession.copyWith(name: name),
@@ -73,8 +70,9 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
   ) async {
     await showDialog(
       context: context,
-      builder: (_) => DeleteAcademicSessionDialog(
-        academicSession: academicSession,
+      builder: (_) => DeleteConfirmationDialog(
+        title: 'Delete Academic Session',
+        itemName: academicSession.name,
         onDelete: () async {
           final success = await context
               .read<AcademicSessionProvider>()
@@ -84,7 +82,7 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
 
           if (!success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to delete Session.')),
+              const SnackBar(content: Text('Failed to delete session.')),
             );
           }
         },
@@ -103,20 +101,21 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateAcademicSessionDialog,
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.add, size: 20),
         label: const Text("Add Session"),
       ),
 
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 DashboardSection(
                   title: "Statistics",
                   child: StatisticsGrid(
                     children: [
                       StatCard(
-                        title: "Total AcademicSessions",
+                        title: "Total Sessions",
                         value: academicSessions.length.toString(),
                         icon: Icons.calendar_month_outlined,
                       ),
@@ -133,12 +132,12 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
                         onAddPressed: _showCreateAcademicSessionDialog,
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
 
                       if (academicSessions.isEmpty)
                         const EmptyState(
                           title: "No Sessions",
-                          message: "Create your first Academic Session.",
+                          message: "Create your first academic session.",
                           icon: Icons.calendar_month_rounded,
                         )
                       else
@@ -148,12 +147,9 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
                                 (academicSession) => AcademicSessionCard(
                                   name: academicSession.name,
                                   onTap: () {},
-
-                                  // We'll implement these next.
                                   onEdit: () => _showEditAcademicSessionDialog(
                                     academicSession,
                                   ),
-
                                   onDelete: () =>
                                       _showDeleteAcademicSessionDialog(
                                         academicSession,
@@ -166,7 +162,7 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
               ],
             ),
     );

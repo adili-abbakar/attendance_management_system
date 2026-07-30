@@ -40,10 +40,10 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
     if (result.success && result.student != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text(
             '${result.student!.fullName} created and enrolled successfully.',
           ),
-          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -81,12 +81,12 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
         ? size.width * .92
         : 1100.0;
 
-    final dialogHeight = size.height * .92;
+    final dialogHeight = size.height * .90;
 
     final compact = size.width < 430;
 
     return Dialog(
-      insetPadding: const EdgeInsets.all(12),
+      insetPadding: const EdgeInsets.all(10),
       child: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
@@ -95,31 +95,36 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 12, 12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         'Add Students',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     IconButton(
+                      visualDensity: VisualDensity.compact,
+                      splashRadius: 20,
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Icons.close, size: 22),
                     ),
                   ],
                 ),
               ),
 
               TabBar(
+                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
                 tabs: [
                   Tab(
-                    icon: const Icon(Icons.people_alt_outlined),
+                    icon: const Icon(Icons.people_alt_outlined, size: 20),
                     text: compact ? null : 'Existing Students',
                   ),
                   Tab(
-                    icon: const Icon(Icons.person_add_alt_1),
+                    icon: const Icon(Icons.person_add_alt_1, size: 20),
                     text: compact ? null : 'New Student',
                   ),
                 ],
@@ -129,7 +134,7 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                 child: TabBarView(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
                           AddStudentSearchBar(
@@ -137,7 +142,7 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                             onChanged: provider.search,
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
                           AddStudentFilters(
                             showActiveOnly: provider.showActiveOnly,
@@ -146,14 +151,14 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                             onSortChanged: provider.setSortAscending,
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
                           SelectedStudentsBar(
                             selectedCount: provider.selectedCount,
                             onClearSelection: provider.clearSelection,
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
                           Expanded(
                             child: AddStudentsTable(
@@ -164,7 +169,7 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                             ),
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
 
                           AddStudentPagination(
                             currentPage: provider.currentPage,
@@ -173,7 +178,8 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                             onNext: provider.nextPage,
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 12),
+
                           AddStudentActions(
                             selectedCount: provider.selectedCount,
                             isLoading: provider.isLoading,
@@ -184,10 +190,9 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                       ),
                     ),
 
-                    // New Student Tab
                     Center(
                       child: SizedBox(
-                        width: 500,
+                        width: 460,
                         child: NewStudentForm(onSave: _createAndEnrollStudent),
                       ),
                     ),

@@ -26,37 +26,62 @@ class EnrolledStudentsTable extends StatelessWidget {
     }
 
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columnSpacing: 28,
+          headingRowHeight: 44,
+          dataRowMinHeight: 42,
+          dataRowMaxHeight: 42,
+          horizontalMargin: 12,
+          checkboxHorizontalMargin: 12,
+          columnSpacing: 18,
+          dividerThickness: .5,
           columns: const [
             DataColumn(
-              label: Text('S/N', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text(
+                'S/N',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
             ),
             DataColumn(
               label: Text(
                 'Admission Number',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
             DataColumn(
               label: Text(
                 'Student Name',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
             DataColumn(
               label: Text(
                 'Status',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
             DataColumn(
               label: Text(
                 'Actions',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],

@@ -25,21 +25,33 @@ class StudentSearchBar extends StatelessWidget {
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             hintText: hintText,
-            prefixIcon: const Icon(Icons.search),
-
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            prefixIcon: const Icon(
+              Icons.search,
+              size: 20,
+            ),
             suffixIcon: value.text.isEmpty
                 ? null
                 : IconButton(
                     tooltip: 'Clear search',
-                    icon: const Icon(Icons.close),
+                    splashRadius: 18,
+                    icon: const Icon(
+                      Icons.close,
+                      size: 20,
+                    ),
                     onPressed: () {
                       controller.clear();
                       onChanged('');
                       onClear?.call();
                     },
                   ),
-
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       },

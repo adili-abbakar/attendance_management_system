@@ -17,39 +17,41 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
     final cardColor = color ?? scheme.primary;
 
     return Card(
       elevation: 1,
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 26,
+              radius: 20,
               backgroundColor: cardColor.withValues(alpha: .12),
-              child: Icon(icon, color: cardColor),
+              child: Icon(icon, color: cardColor, size: 20),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
 
             FittedBox(
+              fit: BoxFit.scaleDown,
               child: Text(
                 value,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
 
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+              style: text.bodySmall?.copyWith(fontWeight: FontWeight.w500),
             ),
           ],
         ),

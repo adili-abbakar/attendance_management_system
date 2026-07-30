@@ -15,19 +15,19 @@ class CourseGrid extends StatelessWidget {
     if (width >= 1200) {
       // Desktop
       columns = 4;
-      ratio = .95;
+      ratio = 1.08;
     } else if (width >= 900) {
       // Large Tablet / Laptop
       columns = 3;
-      ratio = .90;
+      ratio = 1.02;
     } else if (width >= 600) {
       // Tablet
       columns = 2;
-      ratio = .88;
+      ratio = 0.98;
     } else {
       // Phone
       columns = 1;
-      ratio = 0.85;
+      ratio = 0.94;
     }
 
     return GridView.builder(
@@ -36,8 +36,8 @@ class CourseGrid extends StatelessWidget {
       itemCount: children.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
         childAspectRatio: ratio,
       ),
       itemBuilder: (_, index) => children[index],

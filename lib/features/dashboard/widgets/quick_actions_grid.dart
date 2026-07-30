@@ -9,21 +9,23 @@ class QuickActionsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
 
-    int columns = 2;
+    int columns;
 
-    if (width > 1200) {
+    if (width >= 1200) {
       columns = 4;
-    } else if (width > 700) {
+    } else if (width >= 700) {
       columns = 3;
+    } else {
+      columns = 2;
     }
 
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: columns,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1.18,
       children: children,
     );
   }

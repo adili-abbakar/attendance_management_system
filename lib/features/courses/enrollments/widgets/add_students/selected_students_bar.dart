@@ -16,33 +16,44 @@ class SelectedStudentsBar extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final compact = MediaQuery.sizeOf(context).width < 600;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: colors.primaryContainer,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 12,
         children: [
-          Icon(Icons.check_circle, color: colors.primary),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle_rounded, color: colors.primary),
 
-          const SizedBox(width: 12),
+              const SizedBox(width: 10),
 
-          Expanded(
-            child: Text(
-              '$selectedCount ${selectedCount == 1 ? "student" : "students"} selected',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+              Text(
+                '$selectedCount ${selectedCount == 1 ? "student" : "students"} selected',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
 
-          TextButton.icon(
+          FilledButton.tonalIcon(
             onPressed: onClearSelection,
             icon: const Icon(Icons.clear),
-            label: const Text('Clear Selection'),
+            label: Text(compact ? 'Clear' : 'Clear Selection'),
           ),
         ],
       ),

@@ -82,12 +82,12 @@ class _ImportCourseStudentsDialogState
     if (summary.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text(
             'Created ${summary.createdStudents} new students, '
             'linked ${summary.linkedExistingStudents} existing students, '
             '${summary.alreadyEnrolled} already enrolled.',
           ),
-          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -103,9 +103,14 @@ class _ImportCourseStudentsDialogState
     final provider = context.watch<CourseStudentImportProvider>();
 
     return AlertDialog(
-      title: const Text('Import Students'),
+      title: Text(
+        'Import Students',
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      ),
       content: SizedBox(
-        width: width > 600 ? 500 : double.maxFinite,
+        width: width > 600 ? 460 : double.maxFinite,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -113,10 +118,10 @@ class _ImportCourseStudentsDialogState
             children: [
               Text(
                 'Import students from an Excel (.xlsx) or CSV (.csv) file.',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               ImportFilePickerCard(
                 selectedFile: _selectedFile,
@@ -125,18 +130,17 @@ class _ImportCourseStudentsDialogState
               ),
 
               if (_generalError != null) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 ImportErrorBox(message: _generalError!),
               ],
 
               if (provider.generalError != null) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 ImportErrorBox(message: provider.generalError!),
               ],
 
               if (provider.preview != null) ...[
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 12),
                 ImportValidationSummary(
                   totalRows: provider.preview!.totalRows,
                   validRows: provider.preview!.validRows,
@@ -145,8 +149,7 @@ class _ImportCourseStudentsDialogState
               ],
 
               if (provider.preview?.errors.isNotEmpty ?? false) ...[
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 12),
                 ImportWarningBox(
                   title: 'Errors',
                   messages: provider.preview!.errors,
@@ -156,8 +159,7 @@ class _ImportCourseStudentsDialogState
               ],
 
               if (provider.preview?.warnings.isNotEmpty ?? false) ...[
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 12),
                 ImportWarningBox(
                   title: 'Warnings',
                   messages: provider.preview!.warnings,
@@ -165,13 +167,14 @@ class _ImportCourseStudentsDialogState
                 ),
               ],
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               const ImportTips(),
             ],
           ),
         ),
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [
         TextButton(
           onPressed: provider.isImporting
@@ -188,18 +191,20 @@ class _ImportCourseStudentsDialogState
                 },
           child: const Text('Cancel'),
         ),
-
         FilledButton.icon(
           onPressed: (_selectedFile == null || provider.isImporting)
               ? null
               : (provider.hasPreview ? _continueImport : _validateImport),
           icon: provider.isImporting
               ? const SizedBox(
-                  width: 18,
-                  height: 18,
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Icon(provider.hasPreview ? Icons.check : Icons.upload),
+              : Icon(
+                  provider.hasPreview ? Icons.check : Icons.upload,
+                  size: 18,
+                ),
           label: Text(provider.hasPreview ? 'Continue Import' : 'Import'),
         ),
       ],

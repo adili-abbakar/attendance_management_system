@@ -22,34 +22,60 @@ class StudentPagination extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 12,
-        runSpacing: 12,
+        spacing: 8,
+        runSpacing: 8,
         children: [
           OutlinedButton.icon(
             onPressed: currentPage == 1 ? null : onPrevious,
-            icon: const Icon(Icons.chevron_left),
-            label: const Text('Previous'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+            ),
+            icon: const Icon(
+              Icons.chevron_left,
+              size: 18,
+            ),
+            label: const Text("Previous"),
           ),
+
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 8,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               'Page $currentPage of $totalPages',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
 
           FilledButton.icon(
             onPressed: currentPage >= totalPages ? null : onNext,
-            icon: const Icon(Icons.chevron_right),
-            label: const Text('Next'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+            ),
+            icon: const Icon(
+              Icons.chevron_right,
+              size: 18,
+            ),
+            label: const Text("Next"),
           ),
         ],
       ),

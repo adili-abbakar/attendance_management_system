@@ -21,48 +21,54 @@ class AcademicSessionCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-
       child: InkWell(
         onTap: onTap,
-
         child: Padding(
-          padding: const EdgeInsets.all(16),
-
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
                   CircleAvatar(
-                    radius: 20,
+                    radius: 18,
                     backgroundColor: colors.primaryContainer,
-
-                    child: Icon(Icons.school_rounded, color: colors.primary),
+                    child: Icon(
+                      Icons.school_rounded,
+                      color: colors.primary,
+                      size: 20,
+                    ),
                   ),
 
                   const Spacer(),
 
                   PopupMenuButton(
+                    padding: EdgeInsets.zero,
+                    iconSize: 20,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         onTap: onEdit,
                         child: const Row(
                           children: [
-                            Icon(Icons.edit_outlined),
-                            SizedBox(width: 10),
+                            Icon(Icons.edit_outlined, size: 18),
+                            SizedBox(width: 8),
                             Text("Edit"),
                           ],
                         ),
                       ),
-
                       PopupMenuItem(
                         onTap: onDelete,
                         child: const Row(
                           children: [
-                            Icon(Icons.delete_outline),
-                            SizedBox(width: 10),
+                            Icon(Icons.delete_outline, size: 18),
+                            SizedBox(width: 8),
                             Text("Delete"),
                           ],
                         ),
@@ -72,11 +78,13 @@ class AcademicSessionCard extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               Text(
                 name,
-                style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
           ),

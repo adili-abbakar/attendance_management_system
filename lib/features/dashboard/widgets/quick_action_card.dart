@@ -15,24 +15,27 @@ class QuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
 
     return Card(
       elevation: 1,
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 30,
+                radius: 22,
                 backgroundColor: scheme.primaryContainer,
-                child: Icon(icon, color: scheme.primary, size: 28),
+                child: Icon(icon, color: scheme.primary, size: 22),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               Flexible(
                 child: Text(
@@ -40,6 +43,7 @@ class QuickActionCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ),
             ],

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 class AddStudentFilters extends StatelessWidget {
@@ -25,7 +23,6 @@ class AddStudentFilters extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        /// Active Filter
         FilterChip(
           showCheckmark: false,
           selected: showActiveOnly,
@@ -55,7 +52,6 @@ class AddStudentFilters extends StatelessWidget {
           onSelected: onShowActiveChanged,
         ),
 
-        /// Sorting
         FilterChip(
           showCheckmark: false,
           elevation: 0,
@@ -63,16 +59,10 @@ class AddStudentFilters extends StatelessWidget {
           side: BorderSide(color: colors.outlineVariant),
           backgroundColor: colors.surface,
           selectedColor: colors.surfaceContainerHighest,
-          avatar: TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: sortAscending ? 0 : math.pi,
-              end: sortAscending ? 0 : math.pi,
-            ),
+          avatar: AnimatedRotation(
+            turns: sortAscending ? 0.0 : 0.5,
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeInOutCubic,
-            builder: (context, angle, child) {
-              return Transform.rotate(angle: angle, child: child);
-            },
             child: Icon(Icons.arrow_downward, size: 18, color: colors.primary),
           ),
           label: AnimatedSwitcher(
