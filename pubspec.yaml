@@ -37,8 +37,16 @@ dependencies:
   # spread sheet file reading
   csv: ^6.0.0
   excel_plus: ^2.7.2
+
+  # qr code generation and scanning
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.4.0
+
+  # exportiation
+  file_selector: ^1.1.0
+  pdf: ^3.13.0
+  printing: ^5.15.0
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:

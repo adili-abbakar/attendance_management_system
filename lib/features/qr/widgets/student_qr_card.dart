@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/features/qr/constants/qr_card_layout.dart';
+import 'package:attendance_management_system/features/qr/constants/qr_card_style.dart';
 import 'package:attendance_management_system/features/qr/widgets/qr_code_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -6,7 +8,7 @@ class StudentQrCard extends StatelessWidget {
     super.key,
     required this.fullName,
     required this.admissionNumber,
-    this.width = 220,
+    this.width = QrCardLayout.previewWidth,
   });
 
   final String fullName;
@@ -17,16 +19,16 @@ class StudentQrCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Portrait ID card ratio
-    final height = width * 1.35;
+    final height =
+        width / QrCardLayout.previewWidth * QrCardLayout.previewHeight;
 
     return Container(
       width: width,
       height: height,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(QrCardStyle.padding),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(QrCardStyle.borderRadius),
         boxShadow: [
           BoxShadow(
             blurRadius: 12,
@@ -37,36 +39,52 @@ class StudentQrCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(
-            fullName,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          SizedBox(
+            height: height * QrCardStyle.nameSection,
+            child: Center(
+              child: Text(
+                fullName,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
             ),
           ),
 
-          const SizedBox(height: 6),
-
-          Text(
-            admissionNumber,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.black54,
-              letterSpacing: 1,
+          SizedBox(
+            height: height * QrCardStyle.admissionSection,
+            child: Center(
+              child: Text(
+                admissionNumber,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.black54,
+                  letterSpacing: 1,
+                ),
+              ),
             ),
           ),
 
-          const Spacer(),
+          Expanded(
+            child: Center(
+              child: QrCodeWidget(
+                data: admissionNumber,
+                size: width * QrCardStyle.qrScale,
+              ),
+            ),
+          ),
 
-          QrCodeWidget(data: admissionNumber, size: width * 0.72),
-
-          const Spacer(),
-
-          Text(
-            'Attendance QR Card',
-            style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey),
+          SizedBox(
+            height: height * QrCardStyle.footerSection,
+            child: Center(
+              child: Text(
+                'Attendance QR Card',
+                style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey),
+              ),
+            ),
           ),
         ],
       ),

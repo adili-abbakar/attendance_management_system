@@ -70,10 +70,7 @@ class _StudentPageState extends State<StudentPage> {
   void _showStudentQr(Student student) {
     showDialog(
       context: context,
-      builder: (_) => StudentQrDialog(
-        fullName: student.fullName,
-        admissionNumber: student.admissionNumber,
-      ),
+      builder: (_) => StudentQrDialog(student: student),
     );
   }
 
