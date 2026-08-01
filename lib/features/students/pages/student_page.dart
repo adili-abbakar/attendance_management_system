@@ -1,7 +1,10 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
+import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
 import 'package:attendance_management_system/features/qr/dialogs/student_qr_dialog.dart';
+import 'package:attendance_management_system/features/qr/enums/qr_export_option.dart';
+import 'package:attendance_management_system/features/qr/providers/qr_export_provider.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
@@ -71,6 +74,16 @@ class _StudentPageState extends State<StudentPage> {
     showDialog(
       context: context,
       builder: (_) => StudentQrDialog(student: student),
+    );
+  }
+
+  Future<void> _showBulkExportDialog() async {
+    await showDialog(
+      context: context,
+      builder: (_) => BulkQrExportDialog(
+        students:
+            _filteredStudents, // or students if that's what your page uses
+      ),
     );
   }
 
@@ -198,6 +211,7 @@ class _StudentPageState extends State<StudentPage> {
               onChanged: _applySearch,
               onAddStudent: _showAddStudentDialog,
               onImportStudents: _showImportDialog,
+              onExportBulkQr: _showBulkExportDialog,
             ),
 
             const SizedBox(height: 24),

@@ -7,12 +7,14 @@ class StudentSearchBar extends StatelessWidget {
     required this.onChanged,
     required this.onAddStudent,
     required this.onImportStudents,
+    required this.onExportBulkQr,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final VoidCallback onAddStudent;
   final VoidCallback onImportStudents;
+  final VoidCallback onExportBulkQr;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,12 @@ class StudentSearchBar extends StatelessWidget {
       onPressed: onAddStudent,
       icon: const Icon(Icons.person_add_alt_1),
       label: const Text('Add Student'),
+    );
+
+    final exportQrCardButton = FilledButton.icon(
+      onPressed: onExportBulkQr,
+      icon: const Icon(Icons.picture_as_pdf),
+      label: const Text('Bulk Export'),
     );
 
     // ==========================
@@ -102,6 +110,10 @@ class StudentSearchBar extends StatelessWidget {
         const SizedBox(width: 12),
 
         addButton,
+
+        const SizedBox(width: 10),
+
+        exportQrCardButton,
       ],
     );
   }
