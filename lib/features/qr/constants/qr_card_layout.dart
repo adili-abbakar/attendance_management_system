@@ -4,11 +4,10 @@ class QrCardLayout {
   // ===========================
   // CARD SIZE (ISO/IEC ID-1)
   // ===========================
+  static const double cardWidthMm = 53.98;
+  static const double cardHeightMm = 85.60;
 
-  static const double cardWidthMm = 85.60;
-  static const double cardHeightMm = 53.98;
-
-  static const double portraitHeightFactor = cardWidthMm / cardHeightMm;
+  static const double portraitHeightFactor = cardHeightMm / cardWidthMm;
 
   // ===========================
   // PDF GRID

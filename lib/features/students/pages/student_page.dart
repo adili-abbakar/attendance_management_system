@@ -1,20 +1,14 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
-import 'package:attendance_management_system/features/qr/dialogs/student_qr_dialog.dart';
-import 'package:attendance_management_system/features/qr/enums/qr_export_option.dart';
-import 'package:attendance_management_system/features/qr/providers/qr_export_provider.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
-import 'package:attendance_management_system/features/students/widgets/empty_students.dart';
 import 'package:attendance_management_system/features/students/dialogs/student_form_dialog.dart';
-import 'package:attendance_management_system/features/students/widgets/student_pagination.dart';
-import 'package:attendance_management_system/features/students/widgets/student_search_bar.dart';
-import 'package:attendance_management_system/features/students/widgets/student_table.dart';
+import 'package:attendance_management_system/features/students/widgets/widgets.dart';
 import 'package:attendance_management_system/features/students/import/dialogs/import_students_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:attendance_management_system/features/qr/qr.dart';
 
 class StudentPage extends StatefulWidget {
   const StudentPage({super.key});

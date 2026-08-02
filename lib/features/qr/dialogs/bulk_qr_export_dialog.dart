@@ -16,7 +16,7 @@ class BulkQrExportDialog extends StatefulWidget {
 
 class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
   final TextEditingController _searchController = TextEditingController();
-
+  QrExportOption _option = QrExportOption.pdf;
   String _search = '';
 
   List<Student> get _filteredStudents {
@@ -120,6 +120,39 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
 
                   const SizedBox(height: 16),
 
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<QrExportOption>(
+                    value: _option,
+                    decoration: const InputDecoration(
+                      labelText: 'Export Format',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: QrExportOption.pdf,
+                        child: Text('PDF Document'),
+                      ),
+                      DropdownMenuItem(
+                        value: QrExportOption.zipPdf,
+                        child: Text('ZIP (Individual PDFs)'),
+                      ),
+                      DropdownMenuItem(
+                        value: QrExportOption.zipPng,
+                        child: Text('ZIP (Individual PNGs)'),
+                      ),
+                    ],
+                    onChanged: provider.isLoading
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              setState(() => _option = value);
+                            }
+                          },
+                  ),
+
+                  const SizedBox(height: 16),
+
                   Row(
                     children: [
                       Expanded(
@@ -144,7 +177,7 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
 
                                   final result = await provider.export(
                                     students: students,
-                                    option: QrExportOption.pdf,
+                                    option: _option,
                                   );
 
                                   if (!context.mounted) return;
@@ -173,8 +206,18 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.picture_as_pdf),
-                          label: const Text('Export PDF'),
+                              : Icon(switch (_option) {
+                                  QrExportOption.pdf => Icons.picture_as_pdf,
+                                  QrExportOption.zipPdf => Icons.folder_zip,
+                                  QrExportOption.zipPng => Icons.folder_zip,
+                                  _ => Icons.save,
+                                }),
+                          label: Text(switch (_option) {
+                            QrExportOption.pdf => 'Export PDF',
+                            QrExportOption.zipPdf => 'Export ZIP',
+                            QrExportOption.zipPng => 'Export ZIP',
+                            _ => 'Export',
+                          }),
                         ),
                       ),
                     ],

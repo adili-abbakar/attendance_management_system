@@ -1,17 +1,25 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:attendance_management_system/features/qr/enums/qr_export_option.dart';
-import 'package:attendance_management_system/features/qr/pdf/services/qr_pdf_service.dart';
+import 'package:attendance_management_system/features/qr/pdf/pdf.dart';
+import 'package:attendance_management_system/features/qr/zip/zip.dart';
 import 'package:attendance_management_system/features/qr/results/qr_export_result.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:attendance_management_system/features/qr/png/png.dart';
 
 class QrExportProvider extends ChangeNotifier {
-  QrExportProvider({required this.pdfService});
+  QrExportProvider({
+    required this.pdfService,
+    required this.pngService,
+    required this.zipService,
+  });
 
   final QrPdfService pdfService;
-
+  final QrPngService pngService;
+  final QrZipService zipService;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -98,6 +106,7 @@ class QrExportProvider extends ChangeNotifier {
   Future<QrExportResult> export({
     required List<Student> students,
     required QrExportOption option,
+    GlobalKey? repaintKey,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -118,18 +127,63 @@ class QrExportProvider extends ChangeNotifier {
             return QrExportResult.failure(message: 'Export cancelled.');
           }
 
-          final file = File(location.path);
-
-          await file.writeAsBytes(bytes);
+          await File(location.path).writeAsBytes(bytes);
 
           return QrExportResult.success(exportedCount: students.length);
 
         case QrExportOption.png:
-        case QrExportOption.zipPng:
-        case QrExportOption.zipPdf:
-          return QrExportResult.failure(
-            message: 'This export option has not been implemented yet.',
+          if (students.length != 1) {
+            return QrExportResult.failure(
+              message: 'PNG export currently supports one student only.',
+            );
+          }
+
+          if (repaintKey == null) {
+            return QrExportResult.failure(
+              message: 'Unable to capture QR card.',
+            );
+          }
+
+          final bytes = await pngService.generate(repaintKey: repaintKey);
+
+          final location = await getSaveLocation(
+            suggestedName: '${students.first.admissionNumber}.png',
           );
+
+          if (location == null) {
+            return QrExportResult.failure(message: 'Export cancelled.');
+          }
+
+          await File(location.path).writeAsBytes(bytes);
+
+          return QrExportResult.success(exportedCount: 1);
+
+        case QrExportOption.zipPng:
+          return QrExportResult.failure(
+            message: 'ZIP PNG export is not implemented yet.',
+          );
+
+        case QrExportOption.zipPdf:
+          final files = <String, Uint8List>{};
+
+          for (final student in students) {
+            files['${student.admissionNumber}.pdf'] = await pdfService
+                .generateSingle(student: student);
+          }
+
+          final zipBytes = await zipService.generate(files: files);
+
+          final location = await getSaveLocation(
+            suggestedName: 'attendance_qr_cards.zip',
+          );
+
+          if (location == null) {
+            return QrExportResult.failure(message: 'Export cancelled.');
+          }
+
+          await File(location.path).writeAsBytes(zipBytes);
+
+          return QrExportResult.success(exportedCount: students.length);
       }
     } catch (e) {
       _errorMessage = e.toString();

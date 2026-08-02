@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/features/qr/constants/qr_card_layout.dart';
 import 'package:attendance_management_system/features/qr/enums/qr_export_option.dart';
 import 'package:attendance_management_system/features/qr/providers/qr_export_provider.dart';
 import 'package:attendance_management_system/features/qr/widgets/student_qr_card.dart';
@@ -5,19 +6,30 @@ import 'package:attendance_management_system/features/students/models/student.da
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class StudentQrDialog extends StatelessWidget {
+class StudentQrDialog extends StatefulWidget {
   const StudentQrDialog({super.key, required this.student});
-
   final Student student;
+
+  @override
+  State<StudentQrDialog> createState() => _StudentQrDialogState();
+}
+
+class _StudentQrDialogState extends State<StudentQrDialog> {
+  final _pngKey = GlobalKey();
 
   Future<void> _export(BuildContext context, QrExportOption option) async {
     final exportProvider = context.read<QrExportProvider>();
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
+    if (option == QrExportOption.png) {
+      await WidgetsBinding.instance.endOfFrame;
+    }
+
     final result = await exportProvider.export(
-      students: [student],
+      students: [widget.student],
       option: option,
+      repaintKey: option == QrExportOption.png ? _pngKey : null,
     );
 
     if (!context.mounted) return;
@@ -62,9 +74,15 @@ class StudentQrDialog extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              StudentQrCard(
-                fullName: student.fullName,
-                admissionNumber: student.admissionNumber,
+              RepaintBoundary(
+                key: _pngKey,
+                child: SizedBox(
+                  width: QrCardLayout.previewWidth,
+                  child: StudentQrCard(
+                    fullName: widget.student.fullName,
+                    admissionNumber: widget.student.admissionNumber,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 24),
