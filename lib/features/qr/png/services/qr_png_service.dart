@@ -31,11 +31,15 @@ class QrPngService {
 
   Future<Map<String, Uint8List>> generateMany({
     required Map<String, GlobalKey> repaintKeys,
+    double pixelRatio = 2,
   }) async {
     final files = <String, Uint8List>{};
 
     for (final entry in repaintKeys.entries) {
-      files[entry.key] = await generate(repaintKey: entry.value);
+      files[entry.key] = await generate(
+        repaintKey: entry.value,
+        pixelRatio: pixelRatio,
+      );
     }
 
     return files;

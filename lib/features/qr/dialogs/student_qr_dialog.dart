@@ -53,6 +53,33 @@ class _StudentQrDialogState extends State<StudentQrDialog> {
     }
   }
 
+  Future<void> _print(BuildContext context) async {
+    final exportProvider = context.read<QrExportProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    final result = await exportProvider.printStudent(student: widget.student);
+
+    if (!context.mounted) return;
+
+    if (result.success) {
+      navigator.pop();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Print dialog closed.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? 'Unable to open print dialog.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loading = context.watch<QrExportProvider>().isLoading;
@@ -116,9 +143,7 @@ class _StudentQrDialogState extends State<StudentQrDialog> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: loading
-                      ? null
-                      : () => _export(context, QrExportOption.pdf),
+                  onPressed: loading ? null : () => _print(context),
                   icon: const Icon(Icons.print),
                   label: const Text('Print'),
                 ),

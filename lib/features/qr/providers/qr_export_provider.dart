@@ -9,6 +9,7 @@ import 'package:attendance_management_system/features/students/models/student.da
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:attendance_management_system/features/qr/png/png.dart';
+import 'package:screenshot/screenshot.dart';
 
 class QrExportProvider extends ChangeNotifier {
   QrExportProvider({
@@ -38,6 +39,32 @@ class QrExportProvider extends ChangeNotifier {
 
   bool isSelected(Student student) {
     return student.id != null && _selectedStudentIds.contains(student.id);
+  }
+
+  int _progress = 0;
+  int _total = 0;
+  String _progressMessage = '';
+
+  int get progress => _progress;
+  int get total => _total;
+  String get progressMessage => _progressMessage;
+
+  double get progressValue => _total == 0 ? 0 : _progress / _total;
+
+  void _updateProgress({
+    required int current,
+    required int total,
+    required String message,
+  }) {
+    _progress = current;
+    _total = total;
+    _progressMessage = message;
+
+    if (_progress > _total) {
+      _progress = _total;
+    }
+
+    notifyListeners();
   }
 
   void toggleStudent(Student student) {
@@ -108,12 +135,22 @@ class QrExportProvider extends ChangeNotifier {
     required QrExportOption option,
     GlobalKey? repaintKey,
   }) async {
+    if (_isLoading) {
+      return QrExportResult.failure(
+        message: 'Another export is already in progress.',
+      );
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       switch (option) {
+        case QrExportOption.printPdf:
+          return QrExportResult.failure(
+            message: 'Use printStudents() for printing.',
+          );
         case QrExportOption.pdf:
           final bytes = await pdfService.generate(students: students);
 
@@ -159,17 +196,41 @@ class QrExportProvider extends ChangeNotifier {
           return QrExportResult.success(exportedCount: 1);
 
         case QrExportOption.zipPng:
-          return QrExportResult.failure(
-            message: 'ZIP PNG export is not implemented yet.',
-          );
+          final controller = ScreenshotController();
 
-        case QrExportOption.zipPdf:
           final files = <String, Uint8List>{};
 
-          for (final student in students) {
-            files['${student.admissionNumber}.pdf'] = await pdfService
-                .generateSingle(student: student);
+          _updateProgress(
+            current: 0,
+            total: students.length,
+            message: 'Preparing PNGs...',
+          );
+
+          for (int i = 0; i < students.length; i++) {
+            final student = students[i];
+
+            _updateProgress(
+              current: i + 1,
+              total: students.length,
+              message: 'Generating PNG ${i + 1} of ${students.length}',
+            );
+
+            final bytes = await controller.captureFromWidget(
+              PngStudentQrCard(
+                fullName: student.fullName,
+                admissionNumber: student.admissionNumber,
+              ),
+              pixelRatio: 2, // Faster for bulk export
+            );
+
+            files['${student.admissionNumber}.png'] = bytes;
           }
+
+          _updateProgress(
+            current: students.length,
+            total: students.length,
+            message: 'Creating ZIP archive...',
+          );
 
           final zipBytes = await zipService.generate(files: files);
 
@@ -181,6 +242,60 @@ class QrExportProvider extends ChangeNotifier {
             return QrExportResult.failure(message: 'Export cancelled.');
           }
 
+          _updateProgress(
+            current: students.length,
+            total: students.length,
+            message: 'Saving ZIP...',
+          );
+
+          await File(location.path).writeAsBytes(zipBytes);
+
+          return QrExportResult.success(exportedCount: students.length);
+
+        case QrExportOption.zipPdf:
+          final files = <String, Uint8List>{};
+
+          _updateProgress(
+            current: 0,
+            total: students.length,
+            message: 'Preparing PDFs...',
+          );
+
+          for (int i = 0; i < students.length; i++) {
+            final student = students[i];
+
+            _updateProgress(
+              current: i + 1,
+              total: students.length,
+              message: 'Generating PDF ${i + 1} of ${students.length}',
+            );
+
+            files['${student.admissionNumber}.pdf'] = await pdfService
+                .generateSingle(student: student);
+          }
+
+          _updateProgress(
+            current: students.length,
+            total: students.length,
+            message: 'Creating ZIP archive...',
+          );
+
+          final zipBytes = await zipService.generate(files: files);
+
+          final location = await getSaveLocation(
+            suggestedName: 'attendance_qr_cards.zip',
+          );
+
+          if (location == null) {
+            return QrExportResult.failure(message: 'Export cancelled.');
+          }
+
+          _updateProgress(
+            current: students.length,
+            total: students.length,
+            message: 'Saving ZIP...',
+          );
+
           await File(location.path).writeAsBytes(zipBytes);
 
           return QrExportResult.success(exportedCount: students.length);
@@ -189,6 +304,63 @@ class QrExportProvider extends ChangeNotifier {
       _errorMessage = e.toString();
 
       return QrExportResult.failure(message: _errorMessage);
+    } finally {
+      _isLoading = false;
+
+      _progress = 0;
+      _total = 0;
+      _progressMessage = '';
+
+      notifyListeners();
+    }
+  }
+
+  Future<QrExportResult> printStudent({required Student student}) async {
+    if (_isLoading) {
+      return QrExportResult.failure(
+        message: 'Another operation is already in progress.',
+      );
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await pdfService.printSingle(student: student);
+
+      return QrExportResult.success(
+        exportedCount: 1,
+        message: 'Print dialog opened.',
+      );
+    } catch (e) {
+      return QrExportResult.failure(message: e.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<QrExportResult> printStudents({
+    required List<Student> students,
+  }) async {
+    if (_isLoading) {
+      return QrExportResult.failure(
+        message: 'Another operation is already in progress.',
+      );
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await pdfService.print(students: students);
+
+      return QrExportResult.success(
+        exportedCount: students.length,
+        message: 'Print dialog opened.',
+      );
+    } catch (e) {
+      return QrExportResult.failure(message: e.toString());
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 class PngStudentQrCard extends StatelessWidget {
   const PngStudentQrCard({
-    super.key,
     required this.fullName,
     required this.admissionNumber,
     this.width = QrCardLayout.previewWidth,
@@ -22,66 +21,69 @@ class PngStudentQrCard extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      child: Container(
-        width: width,
-        height: height,
-        padding: const EdgeInsets.all(QrCardStyle.padding),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(QrCardStyle.borderRadius),
-          border: Border.all(
-            color: Colors.grey.shade400,
-            width: QrCardStyle.pdfBorderWidth,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(QrCardStyle.exportBorderRadius),
+        child: Container(
+          width: width,
+          height: height,
+          padding: const EdgeInsets.all(QrCardStyle.padding),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(QrCardStyle.exportBorderRadius),
+            border: Border.all(
+              color: Colors.grey.shade400,
+              width: QrCardStyle.exportBorderWidth,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              height: height * QrCardStyle.nameSection,
-              child: Center(
-                child: Text(
-                  fullName,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+          child: Column(
+            children: [
+              SizedBox(
+                height: height * QrCardStyle.nameSection,
+                child: Center(
+                  child: Text(
+                    fullName,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            SizedBox(
-              height: height * QrCardStyle.admissionSection,
-              child: Center(
-                child: Text(
-                  admissionNumber,
-                  style: const TextStyle(fontSize: 10, color: Colors.black54),
+              SizedBox(
+                height: height * QrCardStyle.admissionSection,
+                child: Center(
+                  child: Text(
+                    admissionNumber,
+                    style: const TextStyle(fontSize: 10, color: Colors.black54),
+                  ),
                 ),
               ),
-            ),
 
-            Expanded(
-              child: Center(
-                child: QrCodeWidget(
-                  data: admissionNumber,
-                  size: width * QrCardStyle.pdfQrScale,
+              Expanded(
+                child: Center(
+                  child: QrCodeWidget(
+                    data: admissionNumber,
+                    size: width * QrCardStyle.exportQrScale,
+                  ),
                 ),
               ),
-            ),
 
-            SizedBox(
-              height: height * QrCardStyle.footerSection,
-              child: const Center(
-                child: Text(
-                  'Attendance QR Card',
-                  style: TextStyle(fontSize: 8, color: Colors.grey),
+              SizedBox(
+                height: height * QrCardStyle.footerSection,
+                child: const Center(
+                  child: Text(
+                    'Attendance QR Card',
+                    style: TextStyle(fontSize: 8, color: Colors.grey),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

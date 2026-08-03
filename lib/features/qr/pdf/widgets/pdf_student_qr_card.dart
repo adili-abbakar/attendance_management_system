@@ -20,8 +20,13 @@ class PdfStudentQrCard extends pw.StatelessWidget {
 
           decoration: pw.BoxDecoration(
             color: PdfColors.white,
-            borderRadius: pw.BorderRadius.circular(QrCardStyle.borderRadius),
-            border: pw.Border.all(color: PdfColors.grey400, width: .5),
+            borderRadius: pw.BorderRadius.circular(
+              QrCardStyle.exportBorderRadius,
+            ),
+            border: pw.Border.all(
+              color: PdfColors.grey400,
+              width: QrCardStyle.exportBorderWidth,
+            ),
           ),
 
           child: pw.Column(
@@ -59,8 +64,8 @@ class PdfStudentQrCard extends pw.StatelessWidget {
                   child: pw.BarcodeWidget(
                     barcode: pw.Barcode.qrCode(),
                     data: admissionNumber,
-                    width: width * QrCardStyle.qrScale,
-                    height: width * QrCardStyle.qrScale,
+                    width: width * QrCardStyle.exportQrScale,
+                    height: width * QrCardStyle.exportQrScale,
                   ),
                 ),
               ),

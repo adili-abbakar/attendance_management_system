@@ -16,7 +16,7 @@ class BulkQrExportDialog extends StatefulWidget {
 
 class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
   final TextEditingController _searchController = TextEditingController();
-  QrExportOption _option = QrExportOption.pdf;
+  QrExportOption _option = QrExportOption.printPdf;
   String _search = '';
 
   List<Student> get _filteredStudents {
@@ -75,9 +75,11 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                   Row(
                     children: [
                       FilledButton.icon(
-                        onPressed: () {
-                          provider.selectAll(widget.students);
-                        },
+                        onPressed: provider.isLoading
+                            ? null
+                            : () {
+                                provider.selectAll(widget.students);
+                              },
                         icon: const Icon(Icons.select_all),
                         label: const Text('Select All'),
                       ),
@@ -85,7 +87,9 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                       const SizedBox(width: 12),
 
                       OutlinedButton.icon(
-                        onPressed: provider.clearSelection,
+                        onPressed: provider.isLoading
+                            ? null
+                            : provider.clearSelection,
                         icon: const Icon(Icons.clear_all),
                         label: const Text('Clear'),
                       ),
@@ -128,7 +132,12 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                       labelText: 'Export Format',
                       border: OutlineInputBorder(),
                     ),
+
                     items: const [
+                      DropdownMenuItem(
+                        value: QrExportOption.printPdf,
+                        child: Text('Print PDF'),
+                      ),
                       DropdownMenuItem(
                         value: QrExportOption.pdf,
                         child: Text('PDF Document'),
@@ -153,14 +162,45 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
 
                   const SizedBox(height: 16),
 
+                  if (provider.isLoading) ...[
+                    LinearProgressIndicator(
+                      value: provider.progressValue == 0
+                          ? null
+                          : provider.progressValue,
+                      minHeight: 10.0,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            provider.progressMessage,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                        Text(
+                          '${provider.progress}/${provider.total}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+                  ],
+
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            provider.clearSelection();
-                            Navigator.pop(context);
-                          },
+                          onPressed: provider.isLoading
+                              ? null
+                              : () {
+                                  provider.clearSelection();
+                                  Navigator.pop(context);
+                                },
                           child: const Text('Cancel'),
                         ),
                       ),
@@ -169,16 +209,23 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
 
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: provider.hasSelection
-                              ? () async {
+                          onPressed:
+                              provider.isLoading || !provider.hasSelection
+                              ? null
+                              : () async {
                                   final students = widget.students
                                       .where(provider.isSelected)
                                       .toList();
 
-                                  final result = await provider.export(
-                                    students: students,
-                                    option: _option,
-                                  );
+                                  final result =
+                                      _option == QrExportOption.printPdf
+                                      ? await provider.printStudents(
+                                          students: students,
+                                        )
+                                      : await provider.export(
+                                          students: students,
+                                          option: _option,
+                                        );
 
                                   if (!context.mounted) return;
 
@@ -188,16 +235,16 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                                     SnackBar(
                                       content: Text(
                                         result.success
-                                            ? 'Exported ${result.exportedCount} QR card(s).'
+                                            ? (result.message ??
+                                                  'Operation completed successfully.')
                                             : (result.message ??
-                                                  'Export failed.'),
+                                                  'Operation failed.'),
                                       ),
                                     ),
                                   );
 
                                   provider.clearSelection();
-                                }
-                              : null,
+                                },
                           icon: provider.isLoading
                               ? const SizedBox(
                                   width: 18,
@@ -207,12 +254,14 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                                   ),
                                 )
                               : Icon(switch (_option) {
+                                  QrExportOption.printPdf => Icons.print,
                                   QrExportOption.pdf => Icons.picture_as_pdf,
                                   QrExportOption.zipPdf => Icons.folder_zip,
                                   QrExportOption.zipPng => Icons.folder_zip,
                                   _ => Icons.save,
                                 }),
                           label: Text(switch (_option) {
+                            QrExportOption.printPdf => 'Print PDF',
                             QrExportOption.pdf => 'Export PDF',
                             QrExportOption.zipPdf => 'Export ZIP',
                             QrExportOption.zipPng => 'Export ZIP',
