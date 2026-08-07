@@ -76,7 +76,7 @@ class _StudentPageState extends State<StudentPage> {
       context: context,
       builder: (_) => BulkQrExportDialog(
         students:
-            _filteredStudents, // or students if that's what your page uses
+            _filteredStudents,
       ),
     );
   }

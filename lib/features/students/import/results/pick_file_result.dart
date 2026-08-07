@@ -5,6 +5,5 @@ class PickFileResult {
 
   final PlatformFile? file;
   final String? error;
-
   bool get success => file != null;
 }

@@ -47,7 +47,6 @@ class AuthTile extends StatelessWidget {
               return;
             }
 
-            // Show dialog BEFORE closing the drawer
             final shouldLogout = await showDialog<bool>(
               context: context,
               builder: (dialogContext) => AlertDialog(
@@ -73,7 +72,6 @@ class AuthTile extends StatelessWidget {
 
             if (!context.mounted) return;
 
-            // Close drawer AFTER logout
             Navigator.of(context).pop();
 
             Navigator.of(context).pushAndRemoveUntil(

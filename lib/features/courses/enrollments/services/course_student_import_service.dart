@@ -31,7 +31,6 @@ class CourseStudentImportService {
     List<Student> students,
     int courseId,
   ) async {
-    // Validate the spreadsheet itself
     final fileValidation = validateStudents(students);
 
     final existingStudents = await StudentService.instance
@@ -90,7 +89,6 @@ class CourseStudentImportService {
 
       final enrollments = <CourseStudent>[];
 
-      // Keep track of which enrollments came from existing students.
       final Map<int, bool> enrollmentIsExisting = {};
 
       for (final student in students) {

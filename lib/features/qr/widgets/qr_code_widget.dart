@@ -10,16 +10,9 @@ class QrCodeWidget extends StatelessWidget {
     this.backgroundColor = Colors.white,
   });
 
-  /// The text encoded into the QR code.
   final String data;
-
-  /// Width and height of the QR code.
   final double size;
-
-  /// Padding around the QR code.
   final EdgeInsetsGeometry padding;
-
-  /// Background color behind the QR code.
   final Color backgroundColor;
 
   @override

@@ -16,7 +16,6 @@ class SessionService {
   }
 
   Future<void> logout() async {
-    // print('Logged out session servies');
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.remove(_isLoggedInKey);

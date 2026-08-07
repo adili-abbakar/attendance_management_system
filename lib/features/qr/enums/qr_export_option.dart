@@ -1,20 +1,10 @@
 enum QrExportOption {
-  /// Print QR cards directly.
   printPdf,
-
-  /// Export QR card(s) as a PDF.
   pdf,
-
-  /// Export QR card(s) as PNG image(s).
   png,
-
-  /// Export a ZIP archive containing PNG images.
   zipPng,
-
-  /// Export a ZIP archive containing PDF files.
   zipPdf;
 
-  /// Returns true if the option produces PDF output.
   bool get isPdf {
     switch (this) {
       case QrExportOption.printPdf:
@@ -28,7 +18,6 @@ enum QrExportOption {
     }
   }
 
-  /// Returns true if the option produces PNG output.
   bool get isPng {
     switch (this) {
       case QrExportOption.png:
@@ -42,7 +31,6 @@ enum QrExportOption {
     }
   }
 
-  /// Returns true if the option is a ZIP archive.
   bool get isZip {
     switch (this) {
       case QrExportOption.zipPng:
@@ -56,12 +44,10 @@ enum QrExportOption {
     }
   }
 
-  /// Returns true if the option prints instead of saving.
   bool get isPrint {
     return this == QrExportOption.printPdf;
   }
 
-  /// User-friendly label.
   String get label {
     switch (this) {
       case QrExportOption.printPdf:

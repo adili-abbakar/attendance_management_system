@@ -5,7 +5,6 @@ import 'package:file_selector/file_selector.dart';
 class FileSaveService {
   const FileSaveService();
 
-  /// Opens a native Save As dialog and writes the bytes to the selected file.
   Future<String?> saveFile({
     required Uint8List bytes,
     required String suggestedName,

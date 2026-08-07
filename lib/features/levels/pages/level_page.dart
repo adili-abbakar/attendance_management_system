@@ -144,10 +144,7 @@ class _LevelPageState extends State<LevelPage> {
                                 (level) => LevelCard(
                                   name: level.name,
                                   onTap: () {},
-
-                                  // We'll implement these next.
                                   onEdit: () => _showEditLevelDialog(level),
-
                                   onDelete: () => _showDeleteLevelDialog(level),
                                 ),
                               )

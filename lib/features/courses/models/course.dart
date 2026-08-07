@@ -4,16 +4,10 @@ class Course {
   final String code;
   final String title;
 
-  // Foreign Keys
   final int levelId;
   final int academicSessionId;
-
-  // Joined values (nullable because they don't exist when inserting)
   final String? levelName;
   final String? academicSessionName;
-
-  /// Number of students enrolled in this course.
-  /// Populated when reading courses from the database.
   final int studentCount;
 
   final int semester;

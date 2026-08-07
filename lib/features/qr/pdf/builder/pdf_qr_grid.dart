@@ -29,12 +29,10 @@ class PdfQrGrid {
             QrCardLayout.pageMarginMm * PdfPageFormat.mm,
           ),
           build: (_) {
-            // Available printable width
             final availableWidth =
                 _pageFormat.availableWidth -
                 (QrCardLayout.pageMarginMm * 2 * PdfPageFormat.mm);
 
-            // Width of one card
             final cardWidth =
                 (availableWidth -
                     ((QrCardLayout.columns - 1) *
@@ -42,7 +40,6 @@ class PdfQrGrid {
                         PdfPageFormat.mm)) /
                 QrCardLayout.columns;
 
-            // Keep the same ratio as Flutter preview
             final cardHeight = cardWidth * QrCardLayout.portraitHeightFactor;
 
             int index = 0;

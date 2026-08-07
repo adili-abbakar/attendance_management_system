@@ -8,12 +8,7 @@ class StudentValidationResult {
   });
 
   final List<Student> validStudents;
-
-  /// Fatal validation problems
   final List<String> errors;
-
-  /// Non-fatal issues (duplicates already in database, etc.)
   final List<String> warnings;
-
   bool get isValid => validStudents.isNotEmpty;
 }

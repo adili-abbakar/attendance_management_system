@@ -1,9 +1,5 @@
-import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
-import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
-import 'package:attendance_management_system/features/auth/pages/login/login_page.dart';
+import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../dashboard/dashboard_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,28 +12,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLogin();
+    _openDashboard();
   }
 
-  Future<void> _checkLogin() async {
-    final auth = context.read<AuthProvider>();
+  Future<void> _openDashboard() async {
+    await Future.delayed(const Duration(seconds: 2));
 
-    if (await auth.isLoggedIn()) {
-      await auth.loadCurrentUser();
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardPage()),
-      );
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const DashboardPage(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    // final textTheme = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -46,11 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final shortestSide = size.shortestSide;
-
-            // Responsive sizing
             final iconSize = shortestSide * 0.22;
-            // final titleSize = shortestSide * 0.085;
-            // final subtitleSize = shortestSide * 0.045;
 
             return Center(
               child: Padding(
@@ -72,45 +61,9 @@ class _SplashScreenState extends State<SplashScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 24),
 
-                      // Text(
-                      //   'Attendance Management',
-                      //   textAlign: TextAlign.center,
-                      //   style: textTheme.headlineMedium?.copyWith(
-                      //     fontSize: titleSize.clamp(28.0, 42.0),
-                      //     fontWeight: FontWeight.bold,
-                      //     color: colors.onSurface,
-                      //   ),
-                      // ),
-
-                      // const SizedBox(height: 12),
-
-                      // Text(
-                      //   'Smart • Fast • Reliable',
-                      //   textAlign: TextAlign.center,
-                      //   style: textTheme.bodyLarge?.copyWith(
-                      //     fontSize: subtitleSize.clamp(16.0, 20.0),
-                      //     color: colors.onSurfaceVariant,
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 48),
-                      SizedBox(
-                        width: double.infinity,
-                        child: PrimaryButton(
-                          text: 'Continue',
-                          icon: Icons.arrow_forward,
-                          isIconLeading: false,
-                          onPressed: () async {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      const CircularProgressIndicator(),
                     ],
                   ),
                 ),

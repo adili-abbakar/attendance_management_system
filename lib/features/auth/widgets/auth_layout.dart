@@ -12,7 +12,6 @@ class AuthLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    // final text = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -21,10 +20,7 @@ class AuthLayout extends StatelessWidget {
             final width = constraints.maxWidth;
             final height = constraints.maxHeight;
 
-            // ==========================
             // Responsive Values
-            // ==========================
-
             final bool isPhone = width < _phoneBreakpoint;
             final bool isTablet =
                 width >= _phoneBreakpoint && width < _desktopBreakpoint;
@@ -47,16 +43,7 @@ class AuthLayout extends StatelessWidget {
                 ? 100
                 : 150;
 
-            // final double titleSize = isPhone
-            //     ? 32
-            //     : isTablet
-            //     ? 40
-            //     : 48;
-
-            // ==========================
             // Phone & Tablet
-            // ==========================
-
             if (width < _desktopBreakpoint) {
               return SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
@@ -67,7 +54,7 @@ class AuthLayout extends StatelessWidget {
                   constraints: BoxConstraints(
                     minHeight:
                         height -
-                        (verticalPadding * 2), // Enables vertical centering
+                        (verticalPadding * 2),
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -81,10 +68,7 @@ class AuthLayout extends StatelessWidget {
               );
             }
 
-            // ==========================
             // Desktop
-            // ==========================
-
             return Row(
               children: [
                 Expanded(
@@ -98,36 +82,7 @@ class AuthLayout extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Icon(
-                            //   Icons.fact_check_rounded,
-                            //   size: iconSize,
-                            //   color: colors.primary,
-                            // ),
-
-                            // const SizedBox(height: 32),
-
-                            // Text(
-                            //   'Attendance\nManagement System',
-                            //   textAlign: TextAlign.center,
-                            //   style: text.displaySmall?.copyWith(
-                            //     fontSize: titleSize,
-                            //     fontWeight: FontWeight.bold,
-                            //     color: colors.onPrimaryContainer,
-                            //   ),
-                            // ),
-
-                            // const SizedBox(height: 20),
-
-                            // Text(
-                            //   'Fast • Secure • Reliable',
-                            //   textAlign: TextAlign.center,
-                            //   style: text.titleMedium?.copyWith(
-                            //     color: colors.onPrimaryContainer.withValues(
-                            //       alpha: .85,
-                            //     ),
-                            //   ),
-                            // ),
-
+                          
                              SizedBox(
                               width: iconSize.clamp(300.0, 460.0),
                               height: iconSize.clamp(300.0, 460.0),

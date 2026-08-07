@@ -16,16 +16,18 @@ import 'package:attendance_management_system/features/splash/splash_screen.dart'
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:provider/provider.dart';
-
 import 'data/database/database_service.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
+
+if (!kIsWeb &&
+    (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+}
 
   await DatabaseService.instance.database;
 
@@ -67,7 +69,6 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

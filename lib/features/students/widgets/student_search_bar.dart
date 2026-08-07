@@ -57,9 +57,7 @@ class StudentSearchBar extends StatelessWidget {
       label: const Text('Bulk Export'),
     );
 
-    // ==========================
     // Phone
-    // ==========================
     if (width < 600) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -72,13 +70,14 @@ class StudentSearchBar extends StatelessWidget {
           const SizedBox(height: 12),
 
           SizedBox(width: double.infinity, child: addButton),
+          const SizedBox(height: 12),
+
+          SizedBox(width: double.infinity, child: exportQrCardButton),
         ],
       );
     }
 
-    // ==========================
     // Tablet
-    // ==========================
     if (width < 900) {
       return Column(
         children: [
@@ -90,15 +89,15 @@ class StudentSearchBar extends StatelessWidget {
               Expanded(child: importButton),
               const SizedBox(width: 12),
               Expanded(child: addButton),
+              const SizedBox(width: 12),
+              Expanded(child: exportQrCardButton),
             ],
           ),
         ],
       );
     }
 
-    // ==========================
     // Desktop
-    // ==========================
     return Row(
       children: [
         Expanded(child: searchField),

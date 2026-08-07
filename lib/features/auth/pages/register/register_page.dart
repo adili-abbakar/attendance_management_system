@@ -120,7 +120,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              // Email field
               CustomTextField(
                 controller: _emailController,
                 label: 'Email Address',
@@ -136,7 +135,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              // Staff Id field
               CustomTextField(
                 controller: _staffIdController,
                 label: 'Staff ID',
@@ -151,7 +149,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              // Password field
               PasswordField(
                 controller: _passwordController,
                 label: 'Password',
@@ -165,7 +162,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
               const SizedBox(height: 20),
 
-              // Confirm Password field
               PasswordField(
                 controller: _confirmPasswordController,
                 label: 'Confirm Password',

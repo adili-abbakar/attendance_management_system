@@ -119,7 +119,6 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextButton(
                   onPressed: () {
                     // TODO:
-                    // Forgot Password
                   },
                   child: const Text('Forgot Password?'),
                 ),

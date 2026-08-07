@@ -50,9 +50,7 @@ class StudentPagination extends StatelessWidget {
       label: const Text('Next'),
     );
 
-    // ===========================
     // Phone Layout
-    // ===========================
     if (width < 500) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -75,9 +73,7 @@ class StudentPagination extends StatelessWidget {
       );
     }
 
-    // ===========================
     // Tablet Layout
-    // ===========================
     if (width < 700) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,9 +94,7 @@ class StudentPagination extends StatelessWidget {
       );
     }
 
-    // ===========================
     // Desktop Layout
-    // ===========================
     return Row(
       children: [
         infoText,

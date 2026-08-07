@@ -24,7 +24,6 @@ class QrExportProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  /// Stores only student IDs.
   final Set<int> _selectedStudentIds = {};
 
   bool get isLoading => _isLoading;
@@ -220,7 +219,7 @@ class QrExportProvider extends ChangeNotifier {
                 fullName: student.fullName,
                 admissionNumber: student.admissionNumber,
               ),
-              pixelRatio: 2, // Faster for bulk export
+              pixelRatio: 2,
             );
 
             files['${student.admissionNumber}.png'] = bytes;
