@@ -1,47 +1,52 @@
 import 'package:flutter/material.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
-import 'package:attendance_management_system/features/attendance/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 
-class AttendanceSessionForm extends StatefulWidget {
-  const AttendanceSessionForm({
+class LectureSessionForm extends StatefulWidget {
+  const LectureSessionForm({
     super.key,
-    this.initialSession,
+    required this.courseId,
     required this.onSubmit,
+    this.initialSession,
     this.isLoading = false,
   });
 
-  final AttendanceSession? initialSession;
-
-  final Future<void> Function(AttendanceSession session) onSubmit;
-
+  final int courseId;
+  final LectureSession? initialSession;
   final bool isLoading;
+  final Future<void> Function(LectureSession lectureSession) onSubmit;
 
   bool get isEditing => initialSession != null;
 
   @override
-  State<AttendanceSessionForm> createState() => _AttendanceSessionFormState();
+  State<LectureSessionForm> createState() => _LectureSessionFormState();
 }
 
-class _AttendanceSessionFormState extends State<AttendanceSessionForm> {
+class _LectureSessionFormState extends State<LectureSessionForm> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController _sessionNameController;
-  late final TextEditingController _weekNumberController;
+  late final TextEditingController _weekController;
 
   late DateTime _lectureDate;
+  late String _fromTime;
+  late String _toTime;
 
-  String? _fromTime;
-  String? _toTime;
+  String? _generalError;
 
-  final List<String> _availableTimes = const [
-    '8:00 AM',
+  static const List<String> _timeOptions = [
+    '08:00 AM',
+    '09:00 AM',
     '10:00 AM',
+    '11:00 AM',
     '12:00 PM',
-    '1:30 PM',
-    '2:00 PM',
-    '4:00 PM',
-    '6:00 PM',
+    '01:00 PM',
+    '01:30 PM',
+    '02:00 PM',
+    '03:00 PM',
+    '04:00 PM',
+    '05:00 PM',
+    '06:00 PM',
   ];
 
   @override
@@ -50,62 +55,315 @@ class _AttendanceSessionFormState extends State<AttendanceSessionForm> {
 
     final session = widget.initialSession;
 
-    _sessionNameController = TextEditingController(text: session?.name ?? '');
-
-    _weekNumberController = TextEditingController(
-      text: session?.weekNumber.toString() ?? '',
+    _weekController = TextEditingController(
+      text: session?.weekNumber.toString() ?? '1',
     );
 
     _lectureDate = session?.lectureDate ?? DateTime.now();
 
-    _fromTime = session?.fromTime;
-    _toTime = session?.toTime;
+    _fromTime = session?.fromTime ?? '08:00 AM';
+
+    _toTime = session?.toTime ?? '10:00 AM';
   }
 
   @override
   void dispose() {
-    _sessionNameController.dispose();
-    _weekNumberController.dispose();
+    _weekController.dispose();
     super.dispose();
   }
 
-  String? get _durationText {
-    if (_fromTime == null || _toTime == null) {
-      return null;
+  @override
+  Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_generalError != null) ...[
+            _buildError(context, r),
+            SizedBox(height: r.spacingM),
+          ],
+
+          _buildDateField(context, r),
+
+          SizedBox(height: r.spacingM),
+
+          _buildWeekField(context, r),
+
+          SizedBox(height: r.spacingM),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildTimeDropdown(
+                  context,
+                  r,
+                  label: 'From',
+                  value: _fromTime,
+                  onChanged: (value) {
+                    if (value == null) return;
+
+                    setState(() {
+                      _fromTime = value;
+
+                      if (_timeToMinutes(_toTime) <=
+                          _timeToMinutes(_fromTime)) {
+                        final fromIndex = _timeOptions.indexOf(_fromTime);
+
+                        if (fromIndex >= 0 &&
+                            fromIndex + 1 < _timeOptions.length) {
+                          _toTime = _timeOptions[fromIndex + 1];
+                        }
+                      }
+                    });
+                  },
+                ),
+              ),
+              SizedBox(width: r.spacingM),
+              Expanded(
+                child: _buildTimeDropdown(
+                  context,
+                  r,
+                  label: 'To',
+                  value: _toTime,
+                  onChanged: (value) {
+                    if (value == null) return;
+
+                    setState(() {
+                      _toTime = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: r.spacingM),
+
+          _buildDuration(context, r),
+
+          SizedBox(height: r.spacingXL),
+
+          SizedBox(
+            width: double.infinity,
+            height: r.buttonHeight,
+            child: FilledButton(
+              onPressed: widget.isLoading ? null : _submit,
+              child: widget.isLoading
+                  ? SizedBox(
+                      width: r.buttonIcon,
+                      height: r.buttonIcon,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      widget.isEditing
+                          ? 'Update Lecture Session'
+                          : 'Create Lecture Session',
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, AppResponsive r) {
+    return TextFormField(
+      readOnly: true,
+      controller: TextEditingController(text: _formatDate(_lectureDate)),
+      decoration: InputDecoration(
+        labelText: 'Lecture Date',
+        prefixIcon: Icon(Icons.calendar_today_outlined, size: r.iconMedium),
+        suffixIcon: Icon(Icons.arrow_drop_down, size: r.iconMedium),
+      ),
+      onTap: widget.isLoading ? null : _selectDate,
+    );
+  }
+
+  Widget _buildWeekField(BuildContext context, AppResponsive r) {
+    return TextFormField(
+      controller: _weekController,
+      keyboardType: TextInputType.number,
+      enabled: !widget.isLoading,
+      decoration: InputDecoration(
+        labelText: 'Week Number',
+        hintText: 'Enter week number',
+        prefixIcon: Icon(Icons.calendar_view_week_outlined, size: r.iconMedium),
+      ),
+      validator: (value) {
+        final week = int.tryParse(value ?? '');
+
+        if (week == null || week < 1) {
+          return 'Enter a valid week number.';
+        }
+
+        return null;
+      },
+    );
+  }
+
+  Widget _buildTimeDropdown(
+    BuildContext context,
+    AppResponsive r, {
+    required String label,
+    required String value,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(Icons.access_time_outlined, size: r.iconMedium),
+      ),
+      items: _timeOptions.map((time) {
+        return DropdownMenuItem<String>(value: time, child: Text(time));
+      }).toList(),
+      onChanged: widget.isLoading ? null : onChanged,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Required';
+        }
+
+        return null;
+      },
+    );
+  }
+
+  Widget _buildDuration(BuildContext context, AppResponsive r) {
+    final duration = _calculateDuration();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(r.cardPadding),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(r.radius),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer_outlined, size: r.iconMedium),
+          SizedBox(width: r.spacingS),
+          Text(
+            'Duration',
+            style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w500),
+          ),
+          const Spacer(),
+          Text(
+            _formatDuration(duration),
+            style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context, AppResponsive r) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(r.cardPadding),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(r.radius),
+      ),
+      child: Text(
+        _generalError!,
+        style: TextStyle(
+          fontSize: r.body,
+          color: Theme.of(context).colorScheme.onErrorContainer,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _lectureDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (selected == null) return;
+
+    setState(() {
+      _lectureDate = selected;
+    });
+  }
+
+  Future<void> _submit() async {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _generalError = null;
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
 
-    final from = _timeToMinutes(_fromTime!);
-    final to = _timeToMinutes(_toTime!);
+    final fromMinutes = _timeToMinutes(_fromTime);
+    final toMinutes = _timeToMinutes(_toTime);
 
-    if (to <= from) {
-      return null;
+    if (toMinutes <= fromMinutes) {
+      setState(() {
+        _generalError = 'The "To" time must be later than the "From" time.';
+      });
+
+      return;
     }
 
-    final difference = to - from;
-    final hours = difference ~/ 60;
-    final minutes = difference % 60;
+    final now = DateTime.now();
 
-    if (hours == 0) {
-      return '$minutes minutes';
-    }
+    final existing = widget.initialSession;
 
-    if (minutes == 0) {
-      return hours == 1 ? '1 hour' : '$hours hours';
-    }
+    final lectureSession = LectureSession(
+      id: existing?.id,
+      courseId: widget.courseId,
+      sessionNumber: existing?.sessionNumber ?? 1,
+      weekNumber: int.parse(_weekController.text.trim()),
+      lectureDate: DateTime(
+        _lectureDate.year,
+        _lectureDate.month,
+        _lectureDate.day,
+      ),
+      fromTime: _fromTime,
+      toTime: _toTime,
+      durationMinutes: toMinutes - fromMinutes,
+      status: existing?.status ?? LectureSessionStatus.scheduled,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      startedAt: existing?.startedAt,
+    );
 
-    return '$hours hour${hours == 1 ? '' : 's'} '
-        '$minutes minutes';
+    await widget.onSubmit(lectureSession);
+  }
+
+  int _calculateDuration() {
+    final difference = _timeToMinutes(_toTime) - _timeToMinutes(_fromTime);
+
+    return difference > 0 ? difference : 0;
   }
 
   int _timeToMinutes(String time) {
     final parts = time.split(' ');
+
+    if (parts.length != 2) {
+      return 0;
+    }
+
     final timePart = parts[0];
     final period = parts[1];
 
     final hourMinute = timePart.split(':');
 
-    var hour = int.parse(hourMinute[0]);
-    final minute = int.parse(hourMinute[1]);
+    if (hourMinute.length != 2) {
+      return 0;
+    }
+
+    var hour = int.tryParse(hourMinute[0]) ?? 0;
+    final minute = int.tryParse(hourMinute[1]) ?? 0;
 
     if (period == 'AM') {
       if (hour == 12) {
@@ -120,278 +378,28 @@ class _AttendanceSessionFormState extends State<AttendanceSessionForm> {
     return hour * 60 + minute;
   }
 
-  Future<void> _pickLectureDate() async {
-    final r = AppResponsive.of(context);
-
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _lectureDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-
-    if (selectedDate == null) {
-      return;
+  String _formatDuration(int minutes) {
+    if (minutes <= 0) {
+      return '-';
     }
 
-    setState(() {
-      _lectureDate = selectedDate;
-    });
-  }
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+    if (hours == 0) {
+      return '$remainingMinutes min';
     }
 
-    if (_fromTime == null) {
-      _showValidationMessage('Please select the starting time.');
-      return;
+    if (remainingMinutes == 0) {
+      return '$hours hr';
     }
 
-    if (_toTime == null) {
-      _showValidationMessage('Please select the ending time.');
-      return;
-    }
-
-    final from = _timeToMinutes(_fromTime!);
-    final to = _timeToMinutes(_toTime!);
-
-    if (to <= from) {
-      _showValidationMessage(
-        'The ending time must be later than the starting time.',
-      );
-      return;
-    }
-
-    final weekNumber = int.tryParse(_weekNumberController.text.trim());
-
-    if (weekNumber == null || weekNumber <= 0) {
-      return;
-    }
-
-    final existing = widget.initialSession;
-
-    if (existing == null) {
-      // Creation is handled by the parent/provider.
-      // The parent supplies the complete AttendanceSession.
-      return;
-    }
-
-    final updatedSession = existing.copyWith(
-      name: _sessionNameController.text.trim(),
-      weekNumber: weekNumber,
-      lectureDate: _lectureDate,
-      fromTime: _fromTime,
-      toTime: _toTime,
-      updatedAt: DateTime.now(),
-    );
-
-    await widget.onSubmit(updatedSession);
-  }
-
-  void _showValidationMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    return '$hours hr $remainingMinutes min';
   }
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/'
         '${date.month.toString().padLeft(2, '0')}/'
         '${date.year}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = AppResponsive.of(context);
-
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Session Information',
-            style: TextStyle(
-              fontSize: r.titleLarge,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          SizedBox(height: r.spacingM),
-
-          TextFormField(
-            controller: _sessionNameController,
-            readOnly: true,
-            decoration: const InputDecoration(
-              labelText: 'Session Name',
-              hintText: 'Attendance Session',
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Session name is required.';
-              }
-
-              return null;
-            },
-          ),
-
-          SizedBox(height: r.spacingM),
-
-          TextFormField(
-            controller: _weekNumberController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Week Number',
-              hintText: 'Enter week number',
-            ),
-            validator: (value) {
-              final number = int.tryParse(value?.trim() ?? '');
-
-              if (number == null || number <= 0) {
-                return 'Enter a valid week number.';
-              }
-
-              return null;
-            },
-          ),
-
-          SizedBox(height: r.spacingM),
-
-          InkWell(
-            onTap: widget.isLoading ? null : _pickLectureDate,
-            borderRadius: BorderRadius.circular(r.radius),
-            child: InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Lecture Date',
-                suffixIcon: Icon(Icons.calendar_today_outlined),
-              ),
-              child: Text(
-                _formatDate(_lectureDate),
-                style: TextStyle(fontSize: r.body),
-              ),
-            ),
-          ),
-
-          SizedBox(height: r.spacingM),
-
-          if (r.isPhone)
-            Column(
-              children: [
-                _buildFromTimeField(r),
-                SizedBox(height: r.spacingM),
-                _buildToTimeField(r),
-              ],
-            )
-          else
-            Row(
-              children: [
-                Expanded(child: _buildFromTimeField(r)),
-                SizedBox(width: r.spacingM),
-                Expanded(child: _buildToTimeField(r)),
-              ],
-            ),
-
-          if (_durationText != null) ...[
-            SizedBox(height: r.spacingM),
-
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(r.cardPadding),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(r.radius),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.schedule_outlined, size: r.iconMedium),
-                  SizedBox(width: r.spacingS),
-                  Text(
-                    'Duration: ',
-                    style: TextStyle(
-                      fontSize: r.body,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(_durationText!, style: TextStyle(fontSize: r.body)),
-                ],
-              ),
-            ),
-          ],
-
-          SizedBox(height: r.spacingL),
-
-          SizedBox(
-            width: double.infinity,
-            height: r.buttonHeight,
-            child: FilledButton(
-              onPressed: widget.isLoading ? null : _submit,
-              child: widget.isLoading
-                  ? SizedBox(
-                      width: r.buttonIcon,
-                      height: r.buttonIcon,
-                      child: const CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(
-                      widget.isEditing ? 'Update Session' : 'Create Session',
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFromTimeField(AppResponsive r) {
-    return DropdownButtonFormField<String>(
-      initialValue: _fromTime,
-      decoration: const InputDecoration(labelText: 'From'),
-      items: _availableTimes
-          .map(
-            (time) => DropdownMenuItem<String>(value: time, child: Text(time)),
-          )
-          .toList(),
-      onChanged: widget.isLoading
-          ? null
-          : (value) {
-              setState(() {
-                _fromTime = value;
-              });
-            },
-      validator: (value) {
-        if (value == null) {
-          return 'Select starting time.';
-        }
-
-        return null;
-      },
-    );
-  }
-
-  Widget _buildToTimeField(AppResponsive r) {
-    return DropdownButtonFormField<String>(
-      initialValue: _toTime,
-      decoration: const InputDecoration(labelText: 'To'),
-      items: _availableTimes
-          .map(
-            (time) => DropdownMenuItem<String>(value: time, child: Text(time)),
-          )
-          .toList(),
-      onChanged: widget.isLoading
-          ? null
-          : (value) {
-              setState(() {
-                _toTime = value;
-              });
-            },
-      validator: (value) {
-        if (value == null) {
-          return 'Select ending time.';
-        }
-
-        return null;
-      },
-    );
   }
 }

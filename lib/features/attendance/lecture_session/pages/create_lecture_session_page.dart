@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
-import 'package:attendance_management_system/features/attendance/models/lecture_session.dart';
-import 'package:attendance_management_system/features/attendance/providers/attendance_provider.dart';
-import 'package:attendance_management_system/features/attendance/widgets/attendance_session_form.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_form.dart';
 
-class CreateAttendanceSessionPage extends StatelessWidget {
-  const CreateAttendanceSessionPage({
+class CreateLectureSessionPage extends StatelessWidget {
+  const CreateLectureSessionPage({
     super.key,
     required this.courseId,
     required this.courseName,
@@ -21,25 +20,31 @@ class CreateAttendanceSessionPage extends StatelessWidget {
     final r = AppResponsive.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Attendance Session')),
+      appBar: AppBar(
+        title: Text(
+          'Create Lecture Session',
+          style: TextStyle(fontSize: r.titleLarge),
+        ),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(r.pagePadding),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: r.dialogWidth),
-            child: Consumer<AttendanceProvider>(
+            child: Consumer<LectureSessionProvider>(
               builder: (context, provider, child) {
-                return AttendanceSessionForm(
+                return LectureSessionForm(
+                  courseId: courseId,
                   isLoading: provider.isLoading,
-                  onSubmit: (session) async {
-                    final success = await provider.createSession(session);
+                  onSubmit: (lectureSession) async {
+                    final success = await provider.createLectureSession(
+                      lectureSession,
+                    );
 
-                    if (!context.mounted) {
-                      return;
-                    }
+                    if (!context.mounted) return;
 
                     if (success) {
-                      Navigator.pop(context);
+                      Navigator.pop(context, true);
                     }
                   },
                 );
