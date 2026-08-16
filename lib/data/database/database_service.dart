@@ -1,4 +1,5 @@
 import 'package:attendance_management_system/features/academic_session/tables/academic_session_table.dart';
+import 'package:attendance_management_system/features/attendance/tables/tables.dart';
 import 'package:attendance_management_system/features/courses/enrollments/tables/course_student_table.dart';
 import 'package:attendance_management_system/features/courses/tables/course_table.dart';
 import 'package:attendance_management_system/features/levels/tables/level_table.dart';
@@ -47,6 +48,8 @@ class DatabaseService {
     await db.execute(CourseTable.createTable);
     await db.execute(StudentTable.createTable);
     await db.execute(CourseStudentTable.createTable);
+    await db.execute(AttendanceSessionTable.createTable);
+    await db.execute(AttendanceRecordTable.createTable);
   }
 
   Future<void> closeDatabase() async {
