@@ -1,7 +1,9 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
 import 'package:attendance_management_system/features/attendance/attendance/models/attendance_record.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
 import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
+import 'package:attendance_management_system/features/students/services/student_service.dart';
 
 class AttendanceService {
   AttendanceService._();
@@ -9,6 +11,9 @@ class AttendanceService {
   static final AttendanceService instance = AttendanceService._();
 
   final DatabaseService _databaseService = DatabaseService.instance;
+
+  final StudentService _studentService = StudentService.instance;
+
   final LectureSessionService _lectureSessionService =
       LectureSessionService.instance;
 
@@ -61,35 +66,67 @@ class AttendanceService {
     return record != null;
   }
 
-  Future<int> addAttendanceRecord(AttendanceRecord record) async {
+  Future<AttendanceResult> recordAttendance({
+    required int lectureSessionId,
+    required int studentId,
+  }) async {
     final lectureSession = await _lectureSessionService.getLectureSessionById(
-      record.lectureSessionId,
+      lectureSessionId,
     );
 
     if (lectureSession == null) {
-      throw StateError('Lecture session not found.');
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Lecture session not found.',
+      );
     }
 
     if (!lectureSession.isActive) {
-      throw StateError('Lecture session is not active.');
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.lectureSessionNotActive,
+        message: 'This lecture session is not active.',
+      );
+    }
+
+    final student = await _studentService.getStudent(studentId);
+
+    if (student == null) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.studentNotFound,
+        message: 'Student not found.',
+      );
     }
 
     final alreadyAttended = await hasStudentAttended(
-      lectureSessionId: record.lectureSessionId,
-      studentId: record.studentId,
+      lectureSessionId: lectureSessionId,
+      studentId: studentId,
     );
 
     if (alreadyAttended) {
-      throw StateError(
-        'Attendance has already been recorded for this student.',
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.alreadyAttended,
+        message: 'Attendance has already been recorded for this student.',
+        student: student,
       );
     }
+
+    final record = AttendanceRecord(
+      lectureSessionId: lectureSessionId,
+      studentId: studentId,
+      status: AttendanceRecordStatus.present,
+      scannedAt: DateTime.now(),
+    );
 
     final db = await _databaseService.database;
 
     final data = record.toMap()..remove(AttendanceRecordTable.id);
 
-    return db.insert(AttendanceRecordTable.tableName, data);
+    final id = await db.insert(AttendanceRecordTable.tableName, data);
+
+    return AttendanceResult.success(
+      record: record.copyWith(id: id),
+      student: student,
+    );
   }
 
   Future<int> getAttendanceCount(int lectureSessionId) async {
@@ -105,5 +142,15 @@ class AttendanceService {
     );
 
     return (result.first['count'] as int?) ?? 0;
+  }
+
+  Future<int> deleteAttendanceRecord(int recordId) async {
+    final db = await _databaseService.database;
+
+    return db.delete(
+      AttendanceRecordTable.tableName,
+      where: '${AttendanceRecordTable.id} = ?',
+      whereArgs: [recordId],
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:attendance_management_system/features/attendance/attendance/models/attendance_record.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
 import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
 
 class AttendanceProvider extends ChangeNotifier {
@@ -10,12 +11,17 @@ class AttendanceProvider extends ChangeNotifier {
     : _attendanceService = attendanceService ?? AttendanceService.instance;
 
   bool _isLoading = false;
+  bool _isScanning = false;
+
   String? _errorMessage;
 
   int? _lectureSessionId;
+
   List<AttendanceRecord> _records = [];
 
   bool get isLoading => _isLoading;
+
+  bool get isScanning => _isScanning;
 
   String? get errorMessage => _errorMessage;
 
@@ -27,6 +33,11 @@ class AttendanceProvider extends ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setScanning(bool value) {
+    _isScanning = value;
     notifyListeners();
   }
 
@@ -43,7 +54,6 @@ class AttendanceProvider extends ChangeNotifier {
     _lectureSessionId = lectureSessionId;
     _records = [];
     _clearError();
-
     notifyListeners();
   }
 
@@ -51,7 +61,6 @@ class AttendanceProvider extends ChangeNotifier {
     _lectureSessionId = null;
     _records = [];
     _clearError();
-
     notifyListeners();
   }
 
@@ -75,35 +84,36 @@ class AttendanceProvider extends ChangeNotifier {
     }
   }
 
-  Future<AttendanceRecord?> recordAttendance({
+  Future<AttendanceResult> recordAttendance({
     required int lectureSessionId,
     required int studentId,
   }) async {
     _clearError();
+    _setScanning(true);
 
     try {
-      final record = AttendanceRecord(
+      final result = await _attendanceService.recordAttendance(
         lectureSessionId: lectureSessionId,
         studentId: studentId,
-        status: AttendanceRecordStatus.present,
-        scannedAt: DateTime.now(),
       );
 
-      final recordId = await _attendanceService.addAttendanceRecord(record);
+      if (result.isSuccess && result.record != null) {
+        _records = [..._records, result.record!];
+        notifyListeners();
+      }
 
-      final savedRecord = record.copyWith(id: recordId);
-
-      _records = [..._records, savedRecord];
-
-      _lectureSessionId = lectureSessionId;
-
-      notifyListeners();
-
-      return savedRecord;
+      return result;
     } catch (e) {
-      _setError(e is StateError ? e.message : 'Failed to record attendance.');
+      final result = AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Failed to record attendance.',
+      );
 
-      return null;
+      _setError(result.message!);
+
+      return result;
+    } finally {
+      _setScanning(false);
     }
   }
 
