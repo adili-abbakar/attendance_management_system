@@ -1,10 +1,11 @@
+import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/core/widgets/tables/tables.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/pages/create_lecture_session_page.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/create_lecture_session_dialog.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 
@@ -13,10 +14,12 @@ class LectureSessionsPage extends StatefulWidget {
     super.key,
     required this.courseId,
     required this.courseName,
+    required this.courseCode,
   });
 
   final int courseId;
   final String courseName;
+  final String courseCode;
 
   @override
   State<LectureSessionsPage> createState() => _LectureSessionsPageState();
@@ -132,52 +135,76 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
   }
 
   Widget _buildHeader(BuildContext context, AppResponsive r) {
-    return Row(
+    final isPhone = r.isPhone;
+
+    final headerContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.courseName,
-                style: TextStyle(
-                  fontSize: r.headline,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: r.spacingXS),
-              Text(
-                'Manage lecture sessions',
-                style: TextStyle(
-                  fontSize: r.body,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+        Text(
+          '${widget.courseName} (${widget.courseCode})',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: isPhone ? r.titleLarge : r.headline,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(width: r.spacingM),
-        FilledButton.icon(
-          onPressed: () async {
-            final created = await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CreateLectureSessionPage(
-                  courseId: widget.courseId,
-                  courseName: widget.courseName,
-                ),
-              ),
-            );
 
-            if (created == true && mounted) {
-              context.read<LectureSessionProvider>().loadLectureSessions(
-                widget.courseId,
-              );
-            }
-          },
-          icon: Icon(Icons.add, size: r.buttonIcon),
-          label: const Text('Create Lecture Session'),
+        SizedBox(height: r.spacingXS),
+
+        Text(
+          'Manage lecture sessions',
+          style: TextStyle(
+            fontSize: r.body,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
+      ],
+    );
+
+    final createButton = FilledButton.icon(
+      onPressed: () async {
+        final created = await showDialog<bool>(
+          context: context,
+          builder: (_) => CreateLectureSessionDialog(
+            courseId: widget.courseId,
+            courseName: widget.courseName,
+          ),
+        );
+
+        if (!context.mounted) return;
+
+        if (created == true) {
+          await context.read<LectureSessionProvider>().loadLectureSessions(
+            widget.courseId,
+          );
+        }
+      },
+      icon: Icon(Icons.add, size: r.buttonIcon),
+      label: const Text('Create Lecture Session'),
+    );
+
+    if (isPhone) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          headerContent,
+
+          SizedBox(height: r.spacingM),
+
+          SizedBox(width: double.infinity, child: createButton),
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: headerContent),
+
+        SizedBox(width: r.spacingM),
+
+        createButton,
       ],
     );
   }
@@ -258,7 +285,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
             break;
 
           case 'delete':
-            await _deleteSession(context, lectureSession);
+            await _showDeleteSessionDialog(context, lectureSession);
             break;
         }
       },
@@ -296,6 +323,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
         builder: (_) => LectureSessionDetailsPage(
           lectureSessionId: lectureSession.id!,
           courseName: widget.courseName,
+          courseCode: widget.courseCode,
         ),
       ),
     );
@@ -337,17 +365,29 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
     );
   }
 
+  Future<void> _showDeleteSessionDialog(
+    BuildContext context,
+    LectureSession lectureSession,
+  ) async {
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return DeleteConfirmationDialog(
+          title: 'Delete Lecture Session',
+          itemName:
+              '${widget.courseCode} — ${lectureSession.lectureSessionName}',
+          onDelete: () async {
+            await _deleteSession(context, lectureSession);
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _deleteSession(
     BuildContext context,
     LectureSession lectureSession,
   ) async {
-    // Connect this to your existing
-    // DeleteConfirmationDialog.
-    //
-    // We intentionally leave the confirmation UI
-    // separate because your project already has
-    // a reusable delete dialog.
-
     final provider = context.read<LectureSessionProvider>();
 
     final success = await provider.deleteLectureSession(lectureSession);

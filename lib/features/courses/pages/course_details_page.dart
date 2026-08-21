@@ -1,21 +1,23 @@
-import 'package:attendance_management_system/features/courses/enrollments/dialogs/add_course_students_dialog.dart';
-import 'package:attendance_management_system/features/courses/enrollments/providers/add_course_students_provider.dart';
-import 'package:attendance_management_system/features/courses/models/course.dart';
-import 'package:attendance_management_system/features/courses/providers/course_details_provider.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/course_actions_bar.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/course_header.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/course_statistics.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/enrolled_students_table.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/student_filters.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/student_pagination.dart';
-import 'package:attendance_management_system/features/courses/widgets/course_details/student_search_bar.dart';
-import 'package:attendance_management_system/features/students/models/student.dart';
-import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+
+import 'package:attendance_management_system/features/courses/enrollments/dialogs/add_course_students_dialog.dart';
 import 'package:attendance_management_system/features/courses/enrollments/dialogs/import_course_students_dialog.dart';
+import 'package:attendance_management_system/features/courses/enrollments/providers/add_course_students_provider.dart';
 import 'package:attendance_management_system/features/courses/enrollments/providers/course_student_import_provider.dart';
+
+import 'package:attendance_management_system/features/courses/models/course.dart';
+import 'package:attendance_management_system/features/courses/providers/course_details_provider.dart';
+
+import 'package:attendance_management_system/features/courses/widgets/course_details/course_details.dart';
+
+import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
+import 'package:attendance_management_system/features/students/services/student_service.dart';
+
+import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_sessions_page.dart';
 
 class CourseDetailsPage extends StatefulWidget {
   const CourseDetailsPage({super.key, required this.course});
@@ -32,6 +34,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   @override
   void initState() {
     super.initState();
+
     _searchController = TextEditingController();
   }
 
@@ -71,6 +74,19 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     if (!mounted) return;
 
     await context.read<CourseDetailsProvider>().loadStudents();
+  }
+
+  Future<void> _openLectureSessions() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LectureSessionsPage(
+          courseId: widget.course.id!,
+          courseName: widget.course.title,
+          courseCode: widget.course.code,
+        ),
+      ),
+    );
   }
 
   Future<void> _removeStudent(Student student) async {
@@ -113,86 +129,86 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
     final provider = context.watch<CourseDetailsProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Course Details')),
+      appBar: AppBar(
+        title: Text('Course Details', style: TextStyle(fontSize: r.titleLarge)),
+      ),
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1300),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CourseHeader(course: widget.course),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(r.pagePadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CourseHeader(course: widget.course),
 
-                  const SizedBox(height: 16),
+                SizedBox(height: r.spacingM),
 
-                  CourseStatistics(
-                    totalStudents: provider.students.length,
-                    totalAttendanceSessions: 0,
-                    averageAttendance: 0,
-                  ),
+                CourseStatistics(
+                  totalStudents: provider.students.length,
+                  totalAttendanceSessions: 0,
+                  averageAttendance: 0,
+                ),
 
-                  const SizedBox(height: 16),
+                SizedBox(height: r.spacingM),
 
-                  CourseActionsBar(
-                    onImportStudents: () =>
-                        _showImportStudentsDialog(widget.course),
-                    onAddStudent: _showAddStudentsDialog,
-                    onRefresh: provider.loadStudents,
-                  ),
+                CourseActionsBar(
+                  onImportStudents: () =>
+                      _showImportStudentsDialog(widget.course),
+                  onAddStudent: _showAddStudentsDialog,
+                  onLectureSessions: _openLectureSessions,
+                  onRefresh: provider.loadStudents,
+                ),
 
-                  const SizedBox(height: 20),
+                SizedBox(height: r.spacingL),
 
-                  StudentSearchBar(
-                    controller: _searchController,
-                    onChanged: provider.search,
-                  ),
+                StudentSearchBar(
+                  controller: _searchController,
+                  onChanged: provider.search,
+                ),
 
-                  const SizedBox(height: 12),
+                SizedBox(height: r.spacingS),
 
-                  StudentFilters(
-                    showActiveOnly: provider.showActiveOnly,
-                    sortAscending: provider.sortAscending,
-                    onShowActiveChanged: provider.setShowActiveOnly,
-                    onSortChanged: provider.setSortAscending,
-                  ),
+                StudentFilters(
+                  showActiveOnly: provider.showActiveOnly,
+                  sortAscending: provider.sortAscending,
+                  onShowActiveChanged: provider.setShowActiveOnly,
+                  onSortChanged: provider.setSortAscending,
+                ),
 
-                  const SizedBox(height: 16),
+                SizedBox(height: r.spacingM),
 
-                  if (provider.isLoading)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else
-                    EnrolledStudentsTable(
-                      students: provider.paginatedStudents,
-                      onRemoveStudent: _removeStudent,
-                      startIndex:
-                          (provider.currentPage - 1) * provider.pageSize,
+                if (provider.isLoading)
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(r.spacingL),
+                      child: const CircularProgressIndicator(),
                     ),
-
-                  const SizedBox(height: 12),
-
-                  StudentPagination(
-                    currentPage: provider.currentPage,
-                    totalPages: provider.totalPages,
-                    onPrevious: provider.currentPage > 1
-                        ? provider.previousPage
-                        : null,
-                    onNext: provider.currentPage < provider.totalPages
-                        ? provider.nextPage
-                        : null,
+                  )
+                else
+                  EnrolledStudentsTable(
+                    students: provider.paginatedStudents,
+                    onRemoveStudent: _removeStudent,
+                    startIndex: (provider.currentPage - 1) * provider.pageSize,
                   ),
-                ],
-              ),
+
+                SizedBox(height: r.spacingS),
+
+                StudentPagination(
+                  currentPage: provider.currentPage,
+                  totalPages: provider.totalPages,
+                  onPrevious: provider.currentPage > 1
+                      ? provider.previousPage
+                      : null,
+                  onNext: provider.currentPage < provider.totalPages
+                      ? provider.nextPage
+                      : null,
+                ),
+              ],
             ),
           ),
         ),

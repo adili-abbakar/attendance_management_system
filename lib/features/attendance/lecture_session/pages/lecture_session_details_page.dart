@@ -10,10 +10,12 @@ class LectureSessionDetailsPage extends StatefulWidget {
     super.key,
     required this.lectureSessionId,
     required this.courseName,
+    required this.courseCode,
   });
 
   final int lectureSessionId;
   final String courseName;
+  final String courseCode;
 
   @override
   State<LectureSessionDetailsPage> createState() =>
@@ -94,7 +96,7 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
         SizedBox(height: r.spacingXS),
 
         Text(
-          widget.courseName,
+          '${widget.courseName} (${widget.courseCode})',
           style: TextStyle(
             fontSize: r.body,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:attendance_management_system/app/theme/app_theme.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
+import 'package:attendance_management_system/features/attendance/attendance/providers/attendance_provider.dart';
+import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
@@ -22,12 +26,10 @@ import 'package:flutter/foundation.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
-if (!kIsWeb &&
-    (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
-}
+  if (!kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   await DatabaseService.instance.database;
 
@@ -59,6 +61,12 @@ if (!kIsWeb &&
             pngService: const QrPngService(),
             zipService: const QrZipService(),
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LectureSessionProvider(LectureSessionService.instance),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AttendanceProvider(AttendanceService.instance),
         ),
       ],
       child: const MyApp(),

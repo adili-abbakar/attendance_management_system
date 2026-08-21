@@ -7,7 +7,7 @@ import 'package:attendance_management_system/features/attendance/attendance/serv
 class AttendanceProvider extends ChangeNotifier {
   final AttendanceService _attendanceService;
 
-  AttendanceProvider({AttendanceService? attendanceService})
+  AttendanceProvider(AttendanceService instance, {AttendanceService? attendanceService})
     : _attendanceService = attendanceService ?? AttendanceService.instance;
 
   bool _isLoading = false;

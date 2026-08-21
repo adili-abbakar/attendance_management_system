@@ -6,7 +6,7 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 class LectureSessionProvider extends ChangeNotifier {
   final LectureSessionService _lectureSessionService;
 
-  LectureSessionProvider({LectureSessionService? lectureSessionService})
+  LectureSessionProvider(LectureSessionService instance, {LectureSessionService? lectureSessionService})
     : _lectureSessionService =
           lectureSessionService ?? LectureSessionService.instance;
 

@@ -47,12 +47,16 @@ class AppDataTable extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildTable(context, r),
+          Expanded(child: _buildTable(context, r)),
           if (pagination != null) _buildPagination(context, r),
         ],
       ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // TABLE
+  // ---------------------------------------------------------------------------
 
   Widget _buildTable(BuildContext context, AppResponsive r) {
     if (isLoading) {
@@ -72,16 +76,51 @@ class AppDataTable extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeader(context, r),
-                ...rows.map((row) => _buildRow(context, r, row)),
-              ],
+        // Minimum width prevents columns from becoming too compressed
+        // on phones and smaller screens.
+        final minimumTableWidth = r.isPhone ? 900.0 : 1100.0;
+
+        final effectiveAvailableWidth = constraints.maxWidth < minimumTableWidth
+            ? minimumTableWidth
+            : constraints.maxWidth;
+
+        final columnWidths = _calculateColumnWidths(
+          maxWidth: effectiveAvailableWidth,
+          r: r,
+        );
+
+        final tableWidth = columnWidths.fold<double>(
+          0,
+          (sum, width) => sum + width,
+        );
+
+        return Scrollbar(
+          thumbVisibility: true,
+          notificationPredicate: (notification) {
+            return notification.metrics.axis == Axis.vertical;
+          },
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Scrollbar(
+              thumbVisibility: true,
+              notificationPredicate: (notification) {
+                return notification.metrics.axis == Axis.horizontal;
+              },
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: tableWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHeader(context, r, columnWidths),
+                      ...rows.map(
+                        (row) => _buildRow(context, r, row, columnWidths),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -89,7 +128,61 @@ class AppDataTable extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AppResponsive r) {
+  // ---------------------------------------------------------------------------
+  // COLUMN WIDTH CALCULATION
+  // ---------------------------------------------------------------------------
+
+  List<double> _calculateColumnWidths({
+    required double maxWidth,
+    required AppResponsive r,
+  }) {
+    if (columns.isEmpty) {
+      return const [];
+    }
+
+    final horizontalPadding = r.tableColumnSpacing;
+
+    double fixedWidth = 0;
+    int totalFlex = 0;
+
+    for (final column in columns) {
+      if (column.width != null) {
+        fixedWidth += column.width!;
+      } else {
+        totalFlex += column.flex;
+      }
+    }
+
+    final availableFlexWidth = (maxWidth - fixedWidth).clamp(
+      0.0,
+      double.infinity,
+    );
+
+    final flexUnit = totalFlex > 0 ? availableFlexWidth / totalFlex : 0.0;
+
+    return columns.map((column) {
+      if (column.width != null) {
+        return column.width!;
+      }
+
+      final calculatedWidth = flexUnit * column.flex;
+
+      // Prevent flex columns from becoming too narrow.
+      return calculatedWidth < horizontalPadding * 4
+          ? horizontalPadding * 4
+          : calculatedWidth;
+    }).toList();
+  }
+
+  // ---------------------------------------------------------------------------
+  // HEADER
+  // ---------------------------------------------------------------------------
+
+  Widget _buildHeader(
+    BuildContext context,
+    AppResponsive r,
+    List<double> columnWidths,
+  ) {
     return Container(
       height: r.tableHeadingHeight,
       decoration: BoxDecoration(
@@ -97,13 +190,14 @@ class AppDataTable extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (final column in columns)
+          for (int i = 0; i < columns.length; i++)
             _buildColumnContainer(
               r: r,
-              column: column,
+              width: columnWidths[i],
+              alignment: columns[i].alignment,
               child: Text(
-                column.label,
-                textAlign: _textAlign(column.alignment),
+                columns[i].label,
+                textAlign: _textAlign(columns[i].alignment),
                 style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w600),
               ),
             ),
@@ -112,7 +206,16 @@ class AppDataTable extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(BuildContext context, AppResponsive r, AppTableRow row) {
+  // ---------------------------------------------------------------------------
+  // ROW
+  // ---------------------------------------------------------------------------
+
+  Widget _buildRow(
+    BuildContext context,
+    AppResponsive r,
+    AppTableRow row,
+    List<double> columnWidths,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -129,7 +232,8 @@ class AppDataTable extends StatelessWidget {
               for (int i = 0; i < columns.length; i++)
                 _buildColumnContainer(
                   r: r,
-                  column: columns[i],
+                  width: columnWidths[i],
+                  alignment: columns[i].alignment,
                   child: _buildCell(row.cells, i),
                 ),
             ],
@@ -139,6 +243,10 @@ class AppDataTable extends StatelessWidget {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // CELL
+  // ---------------------------------------------------------------------------
+
   Widget _buildCell(List<AppTableCell> cells, int index) {
     if (index >= cells.length) {
       return const SizedBox.shrink();
@@ -147,24 +255,30 @@ class AppDataTable extends StatelessWidget {
     return Align(alignment: cells[index].alignment, child: cells[index].child);
   }
 
+  // ---------------------------------------------------------------------------
+  // COLUMN CONTAINER
+  // ---------------------------------------------------------------------------
+
   Widget _buildColumnContainer({
     required AppResponsive r,
-    required AppTableColumn column,
+    required double width,
+    required Alignment alignment,
     required Widget child,
   }) {
     final horizontalPadding = r.tableColumnSpacing / 2;
 
-    final content = Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Align(alignment: column.alignment, child: child),
+    return SizedBox(
+      width: width,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        child: Align(alignment: alignment, child: child),
+      ),
     );
-
-    if (column.width != null) {
-      return SizedBox(width: column.width, child: content);
-    }
-
-    return Expanded(flex: column.flex, child: content);
   }
+
+  // ---------------------------------------------------------------------------
+  // EMPTY STATE
+  // ---------------------------------------------------------------------------
 
   Widget _buildEmptyState(BuildContext context, AppResponsive r) {
     return SizedBox(
@@ -185,6 +299,10 @@ class AppDataTable extends StatelessWidget {
       ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // ERROR STATE
+  // ---------------------------------------------------------------------------
 
   Widget _buildErrorState(BuildContext context, AppResponsive r) {
     return SizedBox(
@@ -214,6 +332,10 @@ class AppDataTable extends StatelessWidget {
       ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // PAGINATION
+  // ---------------------------------------------------------------------------
 
   Widget _buildPagination(BuildContext context, AppResponsive r) {
     final p = pagination!;
@@ -419,6 +541,10 @@ class AppDataTable extends StatelessWidget {
       ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // TEXT ALIGNMENT
+  // ---------------------------------------------------------------------------
 
   TextAlign _textAlign(Alignment alignment) {
     if (alignment == Alignment.center) {
