@@ -1,4 +1,5 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
+import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -287,11 +288,19 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
           case 'delete':
             await _showDeleteSessionDialog(context, lectureSession);
             break;
+
+          case 'attendance':
+            _viewAttendance(context, lectureSession);
+            break;
         }
       },
       itemBuilder: (context) {
         final items = <PopupMenuEntry<String>>[
           const PopupMenuItem(value: 'details', child: Text('View Details')),
+          const PopupMenuItem(
+            value: 'attendance',
+            child: Text('View Attendance'),
+          ),
         ];
 
         if (lectureSession.isScheduled) {
@@ -324,6 +333,9 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
           lectureSessionId: lectureSession.id!,
           courseName: widget.courseName,
           courseCode: widget.courseCode,
+          startSession: (session) => _startSession(context, session),
+          completeSession: (session) => _completeSession(context, session),
+          viewAttendance: (session) => _viewAttendance(context, session),
         ),
       ),
     );
@@ -339,11 +351,23 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
 
     if (!context.mounted) return;
 
-    _showResult(
+    if (!success) {
+      _showResult(
+        context,
+        provider.errorMessage ?? 'Failed to start lecture session.',
+      );
+      return;
+    }
+
+    Navigator.push(
       context,
-      success
-          ? 'Lecture session started.'
-          : provider.errorMessage ?? 'Failed to start lecture session.',
+      MaterialPageRoute(
+        builder: (_) => ActiveAttendancePage(
+          lectureSession: lectureSession.copyWith(
+            status: LectureSessionStatus.active,
+          ),
+        ),
+      ),
     );
   }
 
@@ -399,6 +423,15 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       success
           ? 'Lecture session deleted.'
           : provider.errorMessage ?? 'Failed to delete lecture session.',
+    );
+  }
+
+  void _viewAttendance(BuildContext context, LectureSession lectureSession) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveAttendancePage(lectureSession: lectureSession),
+      ),
     );
   }
 

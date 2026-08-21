@@ -11,11 +11,17 @@ class LectureSessionDetailsPage extends StatefulWidget {
     required this.lectureSessionId,
     required this.courseName,
     required this.courseCode,
+    required this.startSession,
+    required this.completeSession,
+    required this.viewAttendance,
   });
 
   final int lectureSessionId;
   final String courseName;
   final String courseCode;
+  final Future<void> Function(LectureSession lectureSession) startSession;
+  final Future<void> Function(LectureSession lectureSession) completeSession;
+  final void Function(LectureSession lectureSession) viewAttendance;
 
   @override
   State<LectureSessionDetailsPage> createState() =>
@@ -227,57 +233,45 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     AppResponsive r,
     LectureSession lectureSession,
   ) {
-    if (lectureSession.isScheduled) {
-      return SizedBox(
-        width: double.infinity,
-        height: r.buttonHeight,
-        child: FilledButton.icon(
-          onPressed: () async {
-            final provider = context.read<LectureSessionProvider>();
+    return Column(
+      children: [
+        if (lectureSession.isScheduled)
+          SizedBox(
+            width: double.infinity,
+            height: r.buttonHeight,
+            child: FilledButton.icon(
+              onPressed: () => widget.startSession(lectureSession),
+              icon: Icon(Icons.play_arrow, size: r.buttonIcon),
+              label: const Text('Start Lecture'),
+            ),
+          ),
 
-            final success = await provider.startLectureSession(lectureSession);
+        if (lectureSession.isScheduled) SizedBox(height: r.spacingS),
 
-            if (!context.mounted) return;
+        if (lectureSession.isActive)
+          SizedBox(
+            width: double.infinity,
+            height: r.buttonHeight,
+            child: FilledButton.icon(
+              onPressed: () => widget.completeSession(lectureSession),
+              icon: Icon(Icons.check_circle_outline, size: r.buttonIcon),
+              label: const Text('Complete Lecture'),
+            ),
+          ),
 
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Lecture session started.')),
-              );
-            }
-          },
-          icon: Icon(Icons.play_arrow, size: r.buttonIcon),
-          label: const Text('Start Lecture'),
+        if (lectureSession.isActive) SizedBox(height: r.spacingS),
+
+        SizedBox(
+          width: double.infinity,
+          height: r.buttonHeight,
+          child: OutlinedButton.icon(
+            onPressed: () => widget.viewAttendance(lectureSession),
+            icon: Icon(Icons.remove_red_eye_outlined, size: r.buttonIcon),
+            label: const Text('View Attendance'),
+          ),
         ),
-      );
-    }
-
-    if (lectureSession.isActive) {
-      return SizedBox(
-        width: double.infinity,
-        height: r.buttonHeight,
-        child: FilledButton.icon(
-          onPressed: () async {
-            final provider = context.read<LectureSessionProvider>();
-
-            final success = await provider.completeLectureSession(
-              lectureSession,
-            );
-
-            if (!context.mounted) return;
-
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Lecture session completed.')),
-              );
-            }
-          },
-          icon: Icon(Icons.check_circle_outline, size: r.buttonIcon),
-          label: const Text('Complete Lecture'),
-        ),
-      );
-    }
-
-    return const SizedBox.shrink();
+      ],
+    );
   }
 
   Widget _buildDivider(AppResponsive r) {
