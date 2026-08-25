@@ -366,6 +366,8 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
           lectureSession: lectureSession.copyWith(
             status: LectureSessionStatus.active,
           ),
+          courseName: widget.courseName,
+          courseCode: widget.courseCode,
         ),
       ),
     );
@@ -430,7 +432,11 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(lectureSession: lectureSession),
+        builder: (_) => ActiveAttendancePage(
+          lectureSession: lectureSession,
+          courseCode: widget.courseCode,
+          courseName: widget.courseName,
+        ),
       ),
     );
   }

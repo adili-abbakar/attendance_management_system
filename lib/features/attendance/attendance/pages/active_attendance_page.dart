@@ -8,9 +8,16 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/students/services/student_service.dart';
 
 class ActiveAttendancePage extends StatefulWidget {
-  const ActiveAttendancePage({super.key, required this.lectureSession});
+  const ActiveAttendancePage({
+    super.key,
+    required this.lectureSession,
+    required this.courseName,
+    required this.courseCode,
+  });
 
   final LectureSession lectureSession;
+  final String courseName;
+  final String courseCode;
 
   @override
   State<ActiveAttendancePage> createState() => _ActiveAttendancePageState();
@@ -73,7 +80,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.lectureSession.lectureSessionName,
+              '${widget.courseName} (${widget.courseCode}) – ${widget.lectureSession.lectureSessionName}',
               style: TextStyle(
                 fontSize: r.titleLarge,
                 fontWeight: FontWeight.w600,
