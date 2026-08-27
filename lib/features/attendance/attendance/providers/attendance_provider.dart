@@ -7,8 +7,10 @@ import 'package:attendance_management_system/features/attendance/attendance/serv
 class AttendanceProvider extends ChangeNotifier {
   final AttendanceService _attendanceService;
 
-  AttendanceProvider(AttendanceService instance, {AttendanceService? attendanceService})
-    : _attendanceService = attendanceService ?? AttendanceService.instance;
+  AttendanceProvider(
+    AttendanceService instance, {
+    AttendanceService? attendanceService,
+  }) : _attendanceService = attendanceService ?? AttendanceService.instance;
 
   bool _isLoading = false;
   bool _isScanning = false;
@@ -86,7 +88,7 @@ class AttendanceProvider extends ChangeNotifier {
 
   Future<AttendanceResult> recordAttendance({
     required int lectureSessionId,
-    required int studentId,
+    required String admissionNumber,
   }) async {
     _clearError();
     _setScanning(true);
@@ -94,7 +96,7 @@ class AttendanceProvider extends ChangeNotifier {
     try {
       final result = await _attendanceService.recordAttendance(
         lectureSessionId: lectureSessionId,
-        studentId: studentId,
+        admissionNumber: admissionNumber,
       );
 
       if (result.isSuccess && result.record != null) {
