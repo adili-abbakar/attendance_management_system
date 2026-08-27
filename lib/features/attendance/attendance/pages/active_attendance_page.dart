@@ -214,11 +214,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
 
             return AttendanceRecordTile(
               record: record,
-
-              // Replace this with the actual name fields
-              // from your Student model.
-              studentName: student.admissionNumber,
-
+              studentName: student.,
               admissionNumber: student.admissionNumber,
             );
           },

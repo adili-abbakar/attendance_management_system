@@ -150,4 +150,20 @@ class StudentService {
         row[StudentTable.admissionNumber] as String: Student.fromMap(row),
     };
   }
+
+  Future<Student?> getStudentByAdmissionNumber(String admissionNumber, {DatabaseExecutor? executor}) async {
+    final db = executor ?? await _databaseService.database;
+    final result = await db.query(
+      StudentTable.tableName,
+      where: '${StudentTable.admissionNumber} = ?',
+      whereArgs: [admissionNumber],
+      limit: 1,
+    );
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return Student.fromMap(result.first);
+  }
 }

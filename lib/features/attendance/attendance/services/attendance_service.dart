@@ -4,6 +4,7 @@ import 'package:attendance_management_system/features/attendance/attendance/resu
 import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
+import 'package:attendance_management_system/features/courses/enrollments/services/course_enrollment_service.dart';
 
 class AttendanceService {
   AttendanceService._();
@@ -13,6 +14,7 @@ class AttendanceService {
   final DatabaseService _databaseService = DatabaseService.instance;
 
   final StudentService _studentService = StudentService.instance;
+  final CourseEnrollmentService _courseEnrollmentService = CourseEnrollmentService.instance;
 
   final LectureSessionService _lectureSessionService =
       LectureSessionService.instance;
@@ -68,8 +70,9 @@ class AttendanceService {
 
   Future<AttendanceResult> recordAttendance({
     required int lectureSessionId,
-    required int studentId,
+    required String admissionNumber,
   }) async {
+    // 1. Get the lecture session
     final lectureSession = await _lectureSessionService.getLectureSessionById(
       lectureSessionId,
     );
@@ -81,6 +84,7 @@ class AttendanceService {
       );
     }
 
+    // 2. Make sure the lecture is currently active
     if (!lectureSession.isActive) {
       return const AttendanceResult.failure(
         status: AttendanceResultStatus.lectureSessionNotActive,
@@ -88,18 +92,37 @@ class AttendanceService {
       );
     }
 
-    final student = await _studentService.getStudent(studentId);
+    // 3. Find the student using the admission number
+    final student = await _studentService.getStudentByAdmissionNumber(
+      admissionNumber,
+    );
 
     if (student == null) {
       return const AttendanceResult.failure(
         status: AttendanceResultStatus.studentNotFound,
-        message: 'Student not found.',
+        message: 'No student was found with this admission number.',
       );
     }
 
+    // 4. Make sure the student belongs to the course
+    final isEnrolled = await _courseEnrollmentService.isStudentEnrolled(
+      courseId: lectureSession.courseId,
+      studentId: student.id!,
+    );
+
+    if (!isEnrolled) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.studentNotEnrolled,
+        message: 'This student exists, but is not enrolled in this course.',
+        student: student,
+      );
+    }
+
+    // 5. Check whether attendance was already recorded
+
     final alreadyAttended = await hasStudentAttended(
       lectureSessionId: lectureSessionId,
-      studentId: studentId,
+      studentId: student.id!,
     );
 
     if (alreadyAttended) {
@@ -110,12 +133,16 @@ class AttendanceService {
       );
     }
 
+    // 6. Create attendance record
+
     final record = AttendanceRecord(
       lectureSessionId: lectureSessionId,
-      studentId: studentId,
+      studentId: student.id!,
       status: AttendanceRecordStatus.present,
       scannedAt: DateTime.now(),
     );
+
+    // 7. Save attendance
 
     final db = await _databaseService.database;
 
@@ -123,6 +150,7 @@ class AttendanceService {
 
     final id = await db.insert(AttendanceRecordTable.tableName, data);
 
+    // 8. Return successful result
     return AttendanceResult.success(
       record: record.copyWith(id: id),
       student: student,

@@ -3,17 +3,27 @@ import 'package:attendance_management_system/features/students/models/student.da
 
 enum AttendanceResultStatus {
   success,
+
   studentNotFound,
+
+  studentNotEnrolled,
+
   alreadyAttended,
+
   lectureSessionNotActive,
+
   invalidAdmissionNumber,
+
   error,
 }
 
 class AttendanceResult {
   final AttendanceResultStatus status;
+
   final AttendanceRecord? record;
+
   final Student? student;
+
   final String? message;
 
   const AttendanceResult({
@@ -23,18 +33,32 @@ class AttendanceResult {
     this.message,
   });
 
-  bool get isSuccess => status == AttendanceResultStatus.success;
+  // ------------------------------------------------------------
+  // Status getters
+  // ------------------------------------------------------------
 
-  bool get isAlreadyAttended =>
-      status == AttendanceResultStatus.alreadyAttended;
+  bool get isSuccess => status == AttendanceResultStatus.success;
 
   bool get isStudentNotFound =>
       status == AttendanceResultStatus.studentNotFound;
 
+  bool get isStudentNotEnrolled =>
+      status == AttendanceResultStatus.studentNotEnrolled;
+
+  bool get isAlreadyAttended =>
+      status == AttendanceResultStatus.alreadyAttended;
+
   bool get isLectureSessionNotActive =>
       status == AttendanceResultStatus.lectureSessionNotActive;
 
+  bool get isInvalidAdmissionNumber =>
+      status == AttendanceResultStatus.invalidAdmissionNumber;
+
   bool get isError => status == AttendanceResultStatus.error;
+
+  // ------------------------------------------------------------
+  // Success result
+  // ------------------------------------------------------------
 
   const AttendanceResult.success({
     required AttendanceRecord record,
@@ -44,6 +68,10 @@ class AttendanceResult {
          record: record,
          student: student,
        );
+
+  // ------------------------------------------------------------
+  // Failure result
+  // ------------------------------------------------------------
 
   const AttendanceResult.failure({
     required AttendanceResultStatus status,
