@@ -1,0 +1,407 @@
+Initialized native services in: /home/adili-abbakar/.gradle/native
+Initialized jansi services in: /home/adili-abbakar/.gradle/native
+Found daemon DaemonInfo{pid=10332, address=[14a19edb-1962-4f09-93a5-8078bdcd66eb port:37207, addresses:[/127.0.0.1]], state=Idle, lastBusy=1784545059052, context=DefaultDaemonContext[uid=dbe03ef5-97a9-4617-aab4-f2483acf013c,javaHome=/snap/android-studio/232/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=10332,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-21-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[-Xmx2048m, -Dfile.encoding=UTF-8, -Duser.country=NG, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=dbe03ef5-97a9-4617-aab4-f2483acf013c,javaHome=/snap/android-studio/232/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=10332,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=41256, address=[ac68b714-714b-443a-8c04-892cd9919f51 port:44031, addresses:[/127.0.0.1]], state=Idle, lastBusy=1785159106557, context=DefaultDaemonContext[uid=7105ee8b-d553-428e-b704-1bdc2ea888eb,javaHome=/snap/android-studio/235/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=41256,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-21-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[-Xmx2048m, -Dfile.encoding=UTF-8, -Duser.country=NG, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=7105ee8b-d553-428e-b704-1bdc2ea888eb,javaHome=/snap/android-studio/235/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=41256,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=17184, address=[f5632a76-80a8-441c-8fb1-61c99c035242 port:36733, addresses:[/127.0.0.1]], state=Idle, lastBusy=1785759432287, context=DefaultDaemonContext[uid=0cc651a8-e37d-4af4-9c62-a056dfade262,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=17184,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+At least one daemon option is different.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-21-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[-Xmx2048m, -Dfile.encoding=UTF-8, -Duser.country=NG, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=0cc651a8-e37d-4af4-9c62-a056dfade262,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=17184,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=23190, address=[9a60c2d1-06e6-4d36-9a41-10406155d55e port:43493, addresses:[/127.0.0.1]], state=Idle, lastBusy=1785760364913, context=DefaultDaemonContext[uid=9eeaa315-2838-4359-abdc-0b1e8efcd55f,javaHome=/snap/android-studio/236/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=23190,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-21-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[-Xmx2048m, -Dfile.encoding=UTF-8, -Duser.country=NG, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=9eeaa315-2838-4359-abdc-0b1e8efcd55f,javaHome=/snap/android-studio/236/jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=/home/adili-abbakar/.gradle/daemon,pid=23190,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=NG,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 6569). The daemon log file: /home/adili-abbakar/.gradle/daemon/8.12/daemon-6569.out.log
+Starting 3rd build in daemon [uptime: 15 mins 18.72 secs, performance: 99%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 4 worker leases.
+Now considering [/home/adili-abbakar/Projects/attendance_management_system/android, /home/adili-abbakar/Programs/flutter/packages/flutter_tools/gradle] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Now considering [/home/adili-abbakar/Programs/flutter/packages/flutter_tools/gradle, /home/adili-abbakar/Projects/attendance_management_system/android] as hierarchies to watch
+
+> Configure project :gradle
+Evaluating project ':gradle' using build file '/home/adili-abbakar/Programs/flutter/packages/flutter_tools/gradle/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java-gradle-plugin']
+Resolved plugin [id: 'org.gradle.groovy']
+Resolved plugin [id: 'org.gradle.kotlin.kotlin-dsl', version: '5.1.2']
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.2.20']
+Build 566eb01c-a7d7-47e6-b12e-43f860132991 is started
+Using Kotlin Gradle Plugin gradle811 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+WARNING: Unsupported Kotlin plugin version.
+The `embedded-kotlin` and `kotlin-dsl` plugins rely on features of Kotlin `2.0.21` that might work differently than in the requested version `2.2.20`.
+file or directory '/home/adili-abbakar/Programs/flutter/packages/flutter_tools/gradle/src/main/java', not found
+Resolved plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0']
+Resolved plugin [id: 'com.android.application', version: '8.9.1', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.1.0', apply: false]
+Resolve mutations for :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#186,Execution worker,5,main]) started.
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#186,Execution worker,5,main]) started.
+
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :gradle:compileKotlin (Thread[#186,Execution worker,5,main]) started.
+:gradle:compileKotlin (Thread[#186,Execution worker,5,main]) started.
+
+> Task :gradle:compileKotlin UP-TO-DATE
+Caching disabled for task ':gradle:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle:compileJava (Thread[#188,Execution worker Thread 3,5,main]) started.
+:gradle:compileJava (Thread[#188,Execution worker Thread 3,5,main]) started.
+
+> Task :gradle:compileJava NO-SOURCE
+Skipping task ':gradle:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle:compileGroovy (Thread[#188,Execution worker Thread 3,5,main]) started.
+:gradle:compileGroovy (Thread[#186,Execution worker,5,main]) started.
+
+> Task :gradle:compileGroovy NO-SOURCE
+Skipping task ':gradle:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :gradle:pluginDescriptors (Thread[#188,Execution worker Thread 3,5,main]) started.
+:gradle:pluginDescriptors (Thread[#188,Execution worker Thread 3,5,main]) started.
+
+> Task :gradle:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :gradle:processResources (Thread[#188,Execution worker Thread 3,5,main]) started.
+:gradle:processResources (Thread[#188,Execution worker Thread 3,5,main]) started.
+
+> Task :gradle:processResources UP-TO-DATE
+Caching disabled for task ':gradle:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:processResources' as it is up-to-date.
+Resolve mutations for :gradle:classes (Thread[#188,Execution worker Thread 3,5,main]) started.
+:gradle:classes (Thread[#186,Execution worker,5,main]) started.
+
+> Task :gradle:classes UP-TO-DATE
+Skipping task ':gradle:classes' as it has no actions.
+Resolve mutations for :gradle:jar (Thread[#186,Execution worker,5,main]) started.
+:gradle:jar (Thread[#186,Execution worker,5,main]) started.
+
+> Task :gradle:jar UP-TO-DATE
+Caching disabled for task ':gradle:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:jar' as it is up-to-date.
+Settings evaluated using settings file '/home/adili-abbakar/Projects/attendance_management_system/android/settings.gradle.kts'.
+Projects loaded. Root project using build file '/home/adili-abbakar/Projects/attendance_management_system/android/build.gradle.kts'.
+Included projects: [root project 'android', project ':app', project ':camera_android_camerax', project ':file_picker', project ':file_selector_android', project ':flutter_plugin_android_lifecycle', project ':jni', project ':jni_flutter', project ':mobile_scanner', project ':printing', project ':shared_preferences_android', project ':sqflite_android']
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/adili-abbakar/Projects/attendance_management_system/android/app/build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'kotlin-android']
+Resolved plugin [id: 'dev.flutter.flutter-gradle-plugin']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Using Kotlin Gradle Plugin gradle85 variant
+Warning: Flutter support for your project's Gradle version (8.12.0) will soon be dropped. Please upgrade your Gradle version to a version of at least 8.14.0 soon.
+Alternatively, use the flag "--android-skip-build-dependency-validation" to bypass this check.
+
+Potential fix: Your project's gradle version is typically defined in the gradle wrapper file. By default, this can be found at /home/adili-abbakar/Projects/attendance_management_system/android/gradle/wrapper/gradle-wrapper.properties. 
+For more information, see https://docs.gradle.org/current/userguide/gradle_wrapper.html.
+
+Warning: Flutter support for your project's Android Gradle Plugin version (Android Gradle Plugin version 8.9.1) will soon be dropped. Please upgrade your Android Gradle Plugin version to a version of at least Android Gradle Plugin version 8.11.1 soon.
+Alternatively, use the flag "--android-skip-build-dependency-validation" to bypass this check.
+
+Potential fix: Your project's AGP version is typically defined in the plugins block of the `settings.gradle` file (/home/adili-abbakar/Projects/attendance_management_system/android/settings.gradle), by a plugin with the id of com.android.application. 
+If you don't see a plugins block, your project was likely created with an older template version. In this case it is most likely defined in the top-level build.gradle file (/home/adili-abbakar/Projects/attendance_management_system/android/build.gradle) by the following line in the dependencies block of the buildscript: "classpath 'com.android.tools.build:gradle:<version>'".
+
+Warning: Flutter support for your project's Kotlin version (2.1.0) will soon be dropped. Please upgrade your Kotlin version to a version of at least 2.2.20 soon.
+Alternatively, use the flag "--android-skip-build-dependency-validation" to bypass this check.
+
+Potential fix: Your project's KGP version is typically defined in the plugins block of the `settings.gradle` file (/home/adili-abbakar/Projects/attendance_management_system/android/settings.gradle), by a plugin with the id of org.jetbrains.kotlin.android. 
+If you don't see a plugins block, your project was likely created with an older template version, in which case it is most likely defined in the top-level build.gradle file (/home/adili-abbakar/Projects/attendance_management_system/android/build.gradle) by the ext.kotlin_version property.
+
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+
+> Configure project :
+Evaluating root project 'android' using build file '/home/adili-abbakar/Projects/attendance_management_system/android/build.gradle.kts'.
+
+> Configure project :camera_android_camerax
+Evaluating project ':camera_android_camerax' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/camera_android_camerax-0.7.4+6/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Using default execution profile
+
+> Configure project :file_picker
+Evaluating project ':file_picker' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/file_picker-11.0.2/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+
+> Configure project :file_selector_android
+Evaluating project ':file_selector_android' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/file_selector_android-0.5.2+9/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Using default execution profile
+
+> Configure project :flutter_plugin_android_lifecycle
+Evaluating project ':flutter_plugin_android_lifecycle' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.34/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Using default execution profile
+
+> Configure project :jni
+Evaluating project ':jni' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/jni-1.0.3/android/build.gradle'.
+Using default execution profile
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+C/C++: android.ndkVersion from module build.gradle is [30.0.15729638]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /home/adili-abbakar/Android/Sdk
+
+> Configure project :jni_flutter
+Evaluating project ':jni_flutter' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/jni_flutter-1.0.2/android/build.gradle'.
+Using default execution profile
+
+> Configure project :mobile_scanner
+Evaluating project ':mobile_scanner' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/mobile_scanner-7.4.0/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+
+> Configure project :printing
+Evaluating project ':printing' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/printing-5.15.0/android/build.gradle'.
+Using default execution profile
+
+> Configure project :shared_preferences_android
+Evaluating project ':shared_preferences_android' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.23/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Resolved plugin [id: 'kotlin-android']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle85 variant
+
+> Configure project :sqflite_android
+Evaluating project ':sqflite_android' using build file '/home/adili-abbakar/.pub-cache/hosted/pub.dev/sqflite_android-2.4.2+2/android/build.gradle'.
+Using default execution profile
+All projects evaluated.
+Task path ':app:compileDebugJavaWithJavac' matched project ':app'
+Task name matched 'compileDebugJavaWithJavac'
+Selected primary task 'compileDebugJavaWithJavac' from project :app
+Build 566eb01c-a7d7-47e6-b12e-43f860132991 is closed
+
+[Incubating] Problems report is available at: file:///home/adili-abbakar/Projects/attendance_management_system/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:compileDebugJavaWithJavac'.
+> Cannot query the value of this provider because it has no value available.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.12/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 6s
+4 actionable tasks: 4 up-to-date

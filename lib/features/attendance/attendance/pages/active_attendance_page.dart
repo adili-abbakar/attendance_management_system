@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/features/attendance/attendance/pages/attendance_scanner_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -60,7 +61,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          _showScannerPlaceholder(context);
+          _openScanner(context);
         },
         icon: const Icon(Icons.qr_code_scanner),
         label: const Text('Scan QR'),
@@ -226,9 +227,19 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
     );
   }
 
-  void _showScannerPlaceholder(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('QR scanner will be connected here.')),
+ void _openScanner(BuildContext context) async {
+    final admissionNumber = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            AttendanceScannerPage(lectureSessionId: widget.lectureSession.id!),
+      ),
     );
+
+    if (!context.mounted || admissionNumber == null) {
+      return;
+    }
+
+    // The scanned admission number will be processed here.
   }
 }

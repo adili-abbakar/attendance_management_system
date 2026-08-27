@@ -173,7 +173,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                 const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
-                  value: levels.isEmpty ? null : levelId,
+                  initialValue: levels.isEmpty ? null : levelId,
                   decoration: const InputDecoration(
                     labelText: 'Level',
                     isDense: true,
@@ -221,7 +221,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                 const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
-                  value: semester,
+                  initialValue: semester,
                   decoration: const InputDecoration(
                     labelText: 'Semester',
                     isDense: true,
@@ -241,7 +241,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                 const SizedBox(height: 12),
 
                 DropdownButtonFormField<int>(
-                  value: sessions.isEmpty ? null : academicSessionId,
+                  initialValue: sessions.isEmpty ? null : academicSessionId,
                   decoration: const InputDecoration(
                     labelText: 'Academic Session',
                     isDense: true,

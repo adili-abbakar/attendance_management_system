@@ -4,7 +4,7 @@ import 'package:attendance_management_system/features/qr/widgets/qr_code_widget.
 import 'package:flutter/material.dart';
 
 class PngStudentQrCard extends StatelessWidget {
-  const PngStudentQrCard({
+  const PngStudentQrCard({super.key, 
     required this.fullName,
     required this.admissionNumber,
     this.width = QrCardLayout.previewWidth,

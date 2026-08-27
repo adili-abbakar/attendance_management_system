@@ -212,7 +212,7 @@ class _LectureSessionFormState extends State<LectureSessionForm> {
     required ValueChanged<String?> onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(Icons.access_time_outlined, size: r.iconMedium),

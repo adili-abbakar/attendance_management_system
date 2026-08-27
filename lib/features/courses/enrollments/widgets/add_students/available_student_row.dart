@@ -5,10 +5,9 @@ class AvailableStudentRow extends DataRow {
   AvailableStudentRow({
     required int index,
     required Student student,
-    required bool selected,
+    required super.selected,
     required ValueChanged<Student> onChanged,
   }) : super(
-         selected: selected,
          onSelectChanged: (_) => onChanged(student),
          cells: [
            DataCell(

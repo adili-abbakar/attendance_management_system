@@ -127,7 +127,7 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                   const SizedBox(height: 16),
 
                   DropdownButtonFormField<QrExportOption>(
-                    value: _option,
+                    initialValue: _option,
                     decoration: const InputDecoration(
                       labelText: 'Export Format',
                       border: OutlineInputBorder(),
