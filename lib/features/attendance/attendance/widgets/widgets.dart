@@ -1,3 +1,6 @@
 library;
 
-export 'package:attendance_management_system/features/attendance/attendance/widgets/attendance_record_tile.dart';
+export 'active_attendance_header.dart';
+export 'attendance_dialog_action.dart';
+export 'attendance_records_list.dart';
+export 'attendance_record_tile.dart';

@@ -1,69 +1,96 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+import 'package:attendance_management_system/features/scanner/widgets/widgets.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart' as mobile_scanner;
 import 'package:qr_code_dart_decoder/qr_code_dart_decoder.dart' as qr_decoder;
 
-import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+class ScannerPage extends StatefulWidget {
+  const ScannerPage({super.key, this.title = 'Scan Student QR'});
 
-import 'package:camera/camera.dart';
-import 'package:camera_desktop/camera_desktop.dart';
-
-class AttendanceScannerPage extends StatefulWidget {
-  const AttendanceScannerPage({super.key, required this.lectureSessionId});
-
-  final int lectureSessionId;
+  final String title;
 
   @override
-  State<AttendanceScannerPage> createState() => _AttendanceScannerPageState();
+  State<ScannerPage> createState() => _ScannerPageState();
 }
 
-class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
+class _ScannerPageState extends State<ScannerPage>
+    with SingleTickerProviderStateMixin {
   // ---------------------------------------------------------------------------
-  // MOBILE SCANNER
-  // Android / iOS
+  // MOBILE
   // ---------------------------------------------------------------------------
 
   final mobile_scanner.MobileScannerController _mobileScannerController =
       mobile_scanner.MobileScannerController();
 
   // ---------------------------------------------------------------------------
-  // DESKTOP CAMERA
-  // Windows / Linux
+  // DESKTOP
   // ---------------------------------------------------------------------------
 
   CameraController? _desktopCameraController;
 
+  Timer? _desktopScanTimer;
+
   bool _desktopCameraReady = false;
   bool _desktopProcessing = false;
+  bool _initializingDesktopCamera = false;
 
-  // Prevent multiple scans from being processed simultaneously.
+  // ---------------------------------------------------------------------------
+  // SCAN STATE
+  // ---------------------------------------------------------------------------
+
   bool _hasScanned = false;
 
-  // Prevent multiple camera initialization attempts.
-  bool _initializingDesktopCamera = false;
+  // ---------------------------------------------------------------------------
+  // ANIMATION
+  // ---------------------------------------------------------------------------
+
+  late final AnimationController _scanAnimationController;
+
+  // ---------------------------------------------------------------------------
+  // PLATFORM
+  // ---------------------------------------------------------------------------
+
+  bool get _isDesktopPlatform => Platform.isWindows || Platform.isLinux;
+
+  // ---------------------------------------------------------------------------
+  // INIT
+  // ---------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
+
+    _scanAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
 
     if (_isDesktopPlatform) {
       _initializeDesktopCamera();
     }
   }
 
-  bool get _isDesktopPlatform => Platform.isWindows || Platform.isLinux;
-
   // ---------------------------------------------------------------------------
   // DESKTOP CAMERA INITIALIZATION
   // ---------------------------------------------------------------------------
 
   Future<void> _initializeDesktopCamera() async {
-    if (_initializingDesktopCamera) {
+    if (_initializingDesktopCamera || _hasScanned) {
       return;
     }
 
     _initializingDesktopCamera = true;
+
+    _desktopScanTimer?.cancel();
+    _desktopScanTimer = null;
+
+    if (mounted) {
+      setState(() {});
+    }
 
     try {
       final cameras = await availableCameras();
@@ -93,11 +120,15 @@ class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
         return;
       }
 
+      await _desktopCameraController?.dispose();
+
       _desktopCameraController = controller;
 
       setState(() {
         _desktopCameraReady = true;
       });
+
+      _startDesktopScanning();
     } catch (e) {
       debugPrint('Desktop camera initialization failed: $e');
 
@@ -108,7 +139,23 @@ class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
       }
     } finally {
       _initializingDesktopCamera = false;
+
+      if (mounted) {
+        setState(() {});
+      }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // DESKTOP CONTINUOUS SCANNING
+  // ---------------------------------------------------------------------------
+
+  void _startDesktopScanning() {
+    _desktopScanTimer?.cancel();
+
+    _desktopScanTimer = Timer.periodic(const Duration(milliseconds: 700), (_) {
+      _scanDesktopFrame();
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -133,7 +180,7 @@ class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // DESKTOP QR DETECTION
+  // DESKTOP FRAME SCANNING
   // ---------------------------------------------------------------------------
 
   Future<void> _scanDesktopFrame() async {
@@ -157,8 +204,14 @@ class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
 
       final decoded = await _decodeDesktopImage(image);
 
-      if (decoded != null && decoded.trim().isNotEmpty) {
-        _returnScannedValue(decoded.trim());
+      if (!mounted || _hasScanned) {
+        return;
+      }
+
+      final value = decoded?.trim();
+
+      if (value != null && value.isNotEmpty) {
+        _returnScannedValue(value);
       }
     } catch (e) {
       debugPrint('Desktop QR scan failed: $e');
@@ -171,7 +224,7 @@ class _AttendanceScannerPageState extends State<AttendanceScannerPage> {
   // DESKTOP QR DECODER
   // ---------------------------------------------------------------------------
 
-Future<String?> _decodeDesktopImage(XFile image) async {
+  Future<String?> _decodeDesktopImage(XFile image) async {
     try {
       final decoder = qr_decoder.QrCodeDartDecoder();
 
@@ -182,24 +235,26 @@ Future<String?> _decodeDesktopImage(XFile image) async {
       return result?.text;
     } catch (e) {
       debugPrint('QR decoder error: $e');
+
       return null;
     }
   }
 
   // ---------------------------------------------------------------------------
-  // RETURN RESULT
+  // RETURN SCANNED VALUE
   // ---------------------------------------------------------------------------
 
   void _returnScannedValue(String value) {
-    if (_hasScanned) {
+    if (_hasScanned || !mounted) {
       return;
     }
 
     _hasScanned = true;
 
-    if (_isDesktopPlatform) {
-      _desktopCameraController?.stopImageStream();
-    } else {
+    _desktopScanTimer?.cancel();
+    _desktopScanTimer = null;
+
+    if (!_isDesktopPlatform) {
       _mobileScannerController.stop();
     }
 
@@ -211,7 +266,7 @@ Future<String?> _decodeDesktopImage(XFile image) async {
   // ---------------------------------------------------------------------------
 
   void _toggleTorch() {
-    if (_isDesktopPlatform) {
+    if (_isDesktopPlatform || _hasScanned) {
       return;
     }
 
@@ -223,7 +278,7 @@ Future<String?> _decodeDesktopImage(XFile image) async {
   // ---------------------------------------------------------------------------
 
   void _switchCamera() {
-    if (_isDesktopPlatform) {
+    if (_isDesktopPlatform || _hasScanned) {
       return;
     }
 
@@ -236,7 +291,13 @@ Future<String?> _decodeDesktopImage(XFile image) async {
 
   @override
   void dispose() {
+    _desktopScanTimer?.cancel();
+    _desktopScanTimer = null;
+
+    _scanAnimationController.dispose();
+
     _mobileScannerController.dispose();
+
     _desktopCameraController?.dispose();
 
     super.dispose();
@@ -252,10 +313,7 @@ Future<String?> _decodeDesktopImage(XFile image) async {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Scan Student QR',
-          style: TextStyle(fontSize: r.titleLarge),
-        ),
+        title: Text(widget.title, style: TextStyle(fontSize: r.titleLarge)),
         actions: [
           if (!_isDesktopPlatform)
             IconButton(
@@ -299,33 +357,34 @@ Future<String?> _decodeDesktopImage(XFile image) async {
   }
 
   // ---------------------------------------------------------------------------
-  // MOBILE SCANNER UI
+  // MOBILE UI
   // ---------------------------------------------------------------------------
 
   Widget _buildMobileScanner(BuildContext context, AppResponsive r) {
     return Stack(
-      alignment: Alignment.center,
+      fit: StackFit.expand,
       children: [
         mobile_scanner.MobileScanner(
           controller: _mobileScannerController,
           onDetect: _onMobileDetect,
-          scanWindow: const Rect.fromLTWH(0, 0, 300, 300),
         ),
 
-        _buildScannerFrame(context),
+        const ScannerOverlay(),
+
+        ScannerGuide(animation: _scanAnimationController),
 
         Positioned(
           bottom: r.spacingL,
           left: r.pagePadding,
           right: r.pagePadding,
-          child: _buildScannerInstruction(context, r),
+          child: ScannerInstruction(fontSize: r.body),
         ),
       ],
     );
   }
 
   // ---------------------------------------------------------------------------
-  // DESKTOP SCANNER UI
+  // DESKTOP UI
   // ---------------------------------------------------------------------------
 
   Widget _buildDesktopScanner(BuildContext context, AppResponsive r) {
@@ -360,9 +419,19 @@ Future<String?> _decodeDesktopImage(XFile image) async {
             SizedBox(height: r.spacingM),
 
             FilledButton.icon(
-              onPressed: _initializeDesktopCamera,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              onPressed: _initializingDesktopCamera
+                  ? null
+                  : _initializeDesktopCamera,
+              icon: _initializingDesktopCamera
+                  ? SizedBox(
+                      width: r.iconSmall,
+                      height: r.iconSmall,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              label: Text(
+                _initializingDesktopCamera ? 'Initializing...' : 'Retry',
+              ),
             ),
           ],
         ),
@@ -372,78 +441,21 @@ Future<String?> _decodeDesktopImage(XFile image) async {
     final controller = _desktopCameraController!;
 
     return Stack(
-      alignment: Alignment.center,
+      fit: StackFit.expand,
       children: [
-        Positioned.fill(child: CameraPreview(controller)),
+        CameraPreview(controller),
 
-        _buildScannerFrame(context),
+        const ScannerOverlay(),
+
+        ScannerGuide(animation: _scanAnimationController),
 
         Positioned(
           bottom: r.spacingL,
           left: r.pagePadding,
           right: r.pagePadding,
-          child: Column(
-            children: [
-              _buildScannerInstruction(context, r),
-
-              SizedBox(height: r.spacingM),
-
-              FilledButton.icon(
-                onPressed: _desktopProcessing ? null : _scanDesktopFrame,
-                icon: _desktopProcessing
-                    ? SizedBox(
-                        width: r.iconSmall,
-                        height: r.iconSmall,
-                        child: const CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.qr_code_scanner),
-                label: Text(
-                  _desktopProcessing ? 'Scanning...' : 'Scan QR Code',
-                ),
-              ),
-            ],
-          ),
+          child: ScannerInstruction(fontSize: r.body),
         ),
       ],
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // SCANNER FRAME
-  // ---------------------------------------------------------------------------
-
-  Widget _buildScannerFrame(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: 260,
-        height: 260,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.primary,
-            width: 3,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // INSTRUCTION
-  // ---------------------------------------------------------------------------
-
-  Widget _buildScannerInstruction(BuildContext context, AppResponsive r) {
-    return Container(
-      padding: EdgeInsets.all(r.cardPadding),
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'Position the student QR code inside the frame.',
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: r.body),
-      ),
     );
   }
 }

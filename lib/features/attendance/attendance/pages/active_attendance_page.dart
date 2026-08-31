@@ -1,12 +1,15 @@
-import 'package:attendance_management_system/features/attendance/attendance/pages/attendance_scanner_page.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/attendance/attendance/providers/attendance_provider.dart';
-import 'package:attendance_management_system/features/attendance/attendance/widgets/attendance_record_tile.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
+import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
+import 'package:attendance_management_system/features/attendance/attendance/widgets/widgets.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/scanner/pages/scanner_page.dart';
+import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ActiveAttendancePage extends StatefulWidget {
   const ActiveAttendancePage({
@@ -25,6 +28,9 @@ class ActiveAttendancePage extends StatefulWidget {
 }
 
 class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
+  final StudentService _studentService = StudentService.instance;
+  final AttendanceService _attendanceService = AttendanceService.instance;
+
   @override
   void initState() {
     super.initState();
@@ -51,191 +57,335 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
             padding: EdgeInsets.all(r.pagePadding),
             child: Column(
               children: [
-                _buildSessionHeader(context, r, provider),
+                ActiveAttendanceHeader(
+                  lectureSession: widget.lectureSession,
+                  courseName: widget.courseName,
+                  courseCode: widget.courseCode,
+                  attendanceCount: provider.attendanceCount,
+                ),
                 SizedBox(height: r.spacingL),
-                Expanded(child: _buildAttendanceList(context, r, provider)),
+                Expanded(
+                  child: AttendanceRecordsList(
+                    lectureSessionId: widget.lectureSession.id!,
+                    records: provider.records,
+                    isLoading: provider.isLoading,
+                    errorMessage: provider.errorMessage,
+                    onRetry: () {
+                      provider.loadRecords(widget.lectureSession.id!);
+                    },
+                    studentService: _studentService,
+                  ),
+                ),
               ],
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _openScanner(context);
+      floatingActionButton: Consumer<AttendanceProvider>(
+        builder: (context, provider, child) {
+          return FloatingActionButton.extended(
+            onPressed: provider.isScanning ? null : () => _openScanner(context),
+            icon: provider.isScanning
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.qr_code_scanner),
+            label: Text(provider.isScanning ? 'Processing...' : 'Scan QR'),
+          );
         },
-        icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('Scan QR'),
       ),
     );
   }
 
-  Widget _buildSessionHeader(
-    BuildContext context,
-    AppResponsive r,
-    AttendanceProvider provider,
-  ) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(r.cardPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${widget.courseName} (${widget.courseCode}) – ${widget.lectureSession.lectureSessionName}',
-              style: TextStyle(
-                fontSize: r.titleLarge,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            SizedBox(height: r.spacingS),
-
-            Text(
-              '${widget.lectureSession.fromTime} – '
-              '${widget.lectureSession.toTime}',
-              style: TextStyle(fontSize: r.body),
-            ),
-
-            SizedBox(height: r.spacingXS),
-
-            Text(
-              'Week ${widget.lectureSession.weekNumber}',
-              style: TextStyle(
-                fontSize: r.bodySmall,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-
-            SizedBox(height: r.spacingM),
-
-            Row(
-              children: [
-                Icon(Icons.people_outline, size: r.iconSmall),
-                SizedBox(width: r.spacingXS),
-                Text(
-                  '${provider.attendanceCount} students present',
-                  style: TextStyle(
-                    fontSize: r.body,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttendanceList(
-    BuildContext context,
-    AppResponsive r,
-    AttendanceProvider provider,
-  ) {
-    if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (provider.errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: r.iconLarge),
-            SizedBox(height: r.spacingM),
-            Text(
-              provider.errorMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: r.body),
-            ),
-            SizedBox(height: r.spacingM),
-            FilledButton(
-              onPressed: () {
-                provider.loadRecords(widget.lectureSession.id!);
-              },
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (provider.records.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.people_outline, size: r.iconLarge),
-            SizedBox(height: r.spacingM),
-            Text(
-              'No attendance recorded yet.',
-              style: TextStyle(fontSize: r.body),
-            ),
-            SizedBox(height: r.spacingXS),
-            Text(
-              'Scan a student QR code to record attendance.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: r.bodySmall,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: provider.records.length,
-      itemBuilder: (context, index) {
-        final record = provider.records[index];
-
-        return FutureBuilder(
-          future: StudentService.instance.getStudent(record.studentId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const ListTile(
-                leading: CircleAvatar(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                title: Text('Loading student...'),
-              );
-            }
-
-            final student = snapshot.data;
-
-            if (student == null) {
-              return const ListTile(
-                leading: Icon(Icons.person_off_outlined),
-                title: Text('Student not found'),
-                subtitle: Text('The student record could not be loaded.'),
-              );
-            }
-
-            return AttendanceRecordTile(
-              record: record,
-              studentName: student.,
-              admissionNumber: student.admissionNumber,
-            );
-          },
-        );
-      },
-    );
-  }
-
- void _openScanner(BuildContext context) async {
+  Future<void> _openScanner(BuildContext context) async {
     final admissionNumber = await Navigator.push<String>(
       context,
-      MaterialPageRoute(
-        builder: (_) =>
-            AttendanceScannerPage(lectureSessionId: widget.lectureSession.id!),
-      ),
+      MaterialPageRoute(builder: (_) => ScannerPage()),
     );
 
     if (!context.mounted || admissionNumber == null) {
       return;
     }
 
-    // The scanned admission number will be processed here.
+    await _processScannedStudent(context, admissionNumber);
+  }
+
+  Future<void> _processScannedStudent(
+    BuildContext context,
+    String admissionNumber,
+  ) async {
+    final provider = context.read<AttendanceProvider>();
+
+    final student = await _studentService.getStudentByAdmissionNumber(
+      admissionNumber,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (student == null) {
+      await _showInvalidStudentDialog(context);
+
+      return;
+    }
+
+    if (student.id == null) {
+      await _showErrorDialog(context, 'The student record is invalid.');
+
+      return;
+    }
+
+    final isEnrolled = await _attendanceService
+        .isStudentEnrolledForLectureSession(
+          lectureSessionId: widget.lectureSession.id!,
+          studentId: student.id!,
+        );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (!isEnrolled) {
+      await _showNotEnrolledDialog(context, student);
+
+      return;
+    }
+
+    final result = await provider.recordAttendance(
+      lectureSessionId: widget.lectureSession.id!,
+      admissionNumber: admissionNumber,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    await _handleAttendanceResult(context, result);
+  }
+
+  Future<void> _handleAttendanceResult(
+    BuildContext context,
+    AttendanceResult result,
+  ) async {
+    switch (result.status) {
+      case AttendanceResultStatus.success:
+        await _showSuccessDialog(context, result);
+        break;
+
+      case AttendanceResultStatus.studentNotFound:
+      case AttendanceResultStatus.invalidAdmissionNumber:
+        await _showInvalidStudentDialog(context);
+        break;
+
+      case AttendanceResultStatus.studentNotEnrolled:
+        if (result.student != null) {
+          await _showNotEnrolledDialog(context, result.student!);
+        } else {
+          await _showErrorDialog(
+            context,
+            result.message ?? 'The student is not enrolled in this course.',
+          );
+        }
+        break;
+
+      case AttendanceResultStatus.alreadyAttended:
+        await _showAlreadyAttendedDialog(context, result);
+        break;
+
+      case AttendanceResultStatus.lectureSessionNotActive:
+        await _showSessionInactiveDialog(context, result);
+        break;
+
+      case AttendanceResultStatus.error:
+        await _showErrorDialog(
+          context,
+          result.message ??
+              'An unexpected error occurred while recording attendance.',
+        );
+        break;
+    }
+  }
+
+  Future<void> _showSuccessDialog(
+    BuildContext context,
+    AttendanceResult result,
+  ) async {
+    if (result.student == null) {
+      return;
+    }
+
+    final action = await showDialog<AttendanceDialogAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AttendanceSuccessDialog(student: result.student!),
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (action == AttendanceDialogAction.scanNext) {
+      await _openScanner(context);
+    }
+  }
+
+  Future<void> _showInvalidStudentDialog(BuildContext context) async {
+    final action = await showDialog<AttendanceDialogAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const InvalidStudentDialog(),
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (action == AttendanceDialogAction.scanNext) {
+      await _openScanner(context);
+    }
+  }
+
+  Future<void> _showNotEnrolledDialog(
+    BuildContext context,
+    Student student,
+  ) async {
+    final action = await showDialog<AttendanceDialogAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StudentNotEnrolledDialog(student: student),
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    switch (action) {
+      case AttendanceDialogAction.scanNext:
+        await _openScanner(context);
+        break;
+
+      case AttendanceDialogAction.addToCourse:
+        await _enrollStudentOnly(context, student);
+        break;
+
+      case AttendanceDialogAction.recordAndScanNext:
+        await _enrollAndRecord(context, student);
+        break;
+
+      case AttendanceDialogAction.done:
+      case null:
+        break;
+    }
+  }
+
+  Future<void> _enrollStudentOnly(BuildContext context, Student student) async {
+    final result = await _attendanceService.enrollStudent(
+      lectureSessionId: widget.lectureSession.id!,
+      admissionNumber: student.admissionNumber,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (!result.isSuccess) {
+      await _showErrorDialog(
+        context,
+        result.message ?? 'Failed to add the student to this course.',
+      );
+      return;
+    }
+
+    await context.read<AttendanceProvider>().loadRecords(
+      widget.lectureSession.id!,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final action = await showDialog<AttendanceDialogAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StudentEnrolledDialog(student: student),
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (action == AttendanceDialogAction.scanNext) {
+      await _openScanner(context);
+    }
+  }
+
+  Future<void> _enrollAndRecord(BuildContext context, Student student) async {
+    final result = await _attendanceService.enrollAndRecordAttendance(
+      lectureSessionId: widget.lectureSession.id!,
+      admissionNumber: student.admissionNumber,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (!result.isSuccess) {
+      await _handleAttendanceResult(context, result);
+      return;
+    }
+
+    await context.read<AttendanceProvider>().loadRecords(
+      widget.lectureSession.id!,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    await _openScanner(context);
+  }
+
+  Future<void> _showAlreadyAttendedDialog(
+    BuildContext context,
+    AttendanceResult result,
+  ) async {
+    final action = await showDialog<AttendanceDialogAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlreadyAttendedDialog(
+        student: result.student,
+        message: result.message,
+      ),
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (action == AttendanceDialogAction.scanNext) {
+      await _openScanner(context);
+    }
+  }
+
+  Future<void> _showSessionInactiveDialog(
+    BuildContext context,
+    AttendanceResult result,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AttendanceSessionInactiveDialog(message: result.message),
+    );
+  }
+
+  Future<void> _showErrorDialog(BuildContext context, String message) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AttendanceErrorDialog(message: message),
+    );
   }
 }

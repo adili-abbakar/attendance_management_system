@@ -5,6 +5,7 @@ import 'package:attendance_management_system/features/attendance/attendance/tabl
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:attendance_management_system/features/courses/enrollments/services/course_enrollment_service.dart';
+import 'package:attendance_management_system/features/courses/enrollments/models/course_student.dart';
 
 class AttendanceService {
   AttendanceService._();
@@ -14,7 +15,9 @@ class AttendanceService {
   final DatabaseService _databaseService = DatabaseService.instance;
 
   final StudentService _studentService = StudentService.instance;
-  final CourseEnrollmentService _courseEnrollmentService = CourseEnrollmentService.instance;
+
+  final CourseEnrollmentService _courseEnrollmentService =
+      CourseEnrollmentService.instance;
 
   final LectureSessionService _lectureSessionService =
       LectureSessionService.instance;
@@ -68,11 +71,28 @@ class AttendanceService {
     return record != null;
   }
 
+  Future<bool> isStudentEnrolledForLectureSession({
+    required int lectureSessionId,
+    required int studentId,
+  }) async {
+    final lectureSession = await _lectureSessionService.getLectureSessionById(
+      lectureSessionId,
+    );
+
+    if (lectureSession == null) {
+      return false;
+    }
+
+    return _courseEnrollmentService.isStudentEnrolled(
+      courseId: lectureSession.courseId,
+      studentId: studentId,
+    );
+  }
+
   Future<AttendanceResult> recordAttendance({
     required int lectureSessionId,
     required String admissionNumber,
   }) async {
-    // 1. Get the lecture session
     final lectureSession = await _lectureSessionService.getLectureSessionById(
       lectureSessionId,
     );
@@ -84,7 +104,6 @@ class AttendanceService {
       );
     }
 
-    // 2. Make sure the lecture is currently active
     if (!lectureSession.isActive) {
       return const AttendanceResult.failure(
         status: AttendanceResultStatus.lectureSessionNotActive,
@@ -92,7 +111,6 @@ class AttendanceService {
       );
     }
 
-    // 3. Find the student using the admission number
     final student = await _studentService.getStudentByAdmissionNumber(
       admissionNumber,
     );
@@ -104,25 +122,19 @@ class AttendanceService {
       );
     }
 
-    // 4. Make sure the student belongs to the course
-    final isEnrolled = await _courseEnrollmentService.isStudentEnrolled(
-      courseId: lectureSession.courseId,
-      studentId: student.id!,
-    );
-
-    if (!isEnrolled) {
+    if (student.id == null) {
       return AttendanceResult.failure(
-        status: AttendanceResultStatus.studentNotEnrolled,
-        message: 'This student exists, but is not enrolled in this course.',
+        status: AttendanceResultStatus.error,
+        message: 'The student record is invalid.',
         student: student,
       );
     }
 
-    // 5. Check whether attendance was already recorded
+    final studentId = student.id!;
 
     final alreadyAttended = await hasStudentAttended(
       lectureSessionId: lectureSessionId,
-      studentId: student.id!,
+      studentId: studentId,
     );
 
     if (alreadyAttended) {
@@ -133,16 +145,26 @@ class AttendanceService {
       );
     }
 
-    // 6. Create attendance record
+    final isEnrolled = await isStudentEnrolledForLectureSession(
+      lectureSessionId: lectureSessionId,
+      studentId: studentId,
+    );
+
+    if (!isEnrolled) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.studentNotEnrolled,
+        message:
+            'This student exists in the system, but is not enrolled in this course.',
+        student: student,
+      );
+    }
 
     final record = AttendanceRecord(
       lectureSessionId: lectureSessionId,
-      studentId: student.id!,
+      studentId: studentId,
       status: AttendanceRecordStatus.present,
       scannedAt: DateTime.now(),
     );
-
-    // 7. Save attendance
 
     final db = await _databaseService.database;
 
@@ -150,11 +172,184 @@ class AttendanceService {
 
     final id = await db.insert(AttendanceRecordTable.tableName, data);
 
-    // 8. Return successful result
     return AttendanceResult.success(
       record: record.copyWith(id: id),
       student: student,
     );
+  }
+
+  Future<AttendanceResult> enrollAndRecordAttendance({
+    required int lectureSessionId,
+    required String admissionNumber,
+  }) async {
+    final lectureSession = await _lectureSessionService.getLectureSessionById(
+      lectureSessionId,
+    );
+
+    if (lectureSession == null) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Lecture session not found.',
+      );
+    }
+
+    if (!lectureSession.isActive) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.lectureSessionNotActive,
+        message: 'This lecture session is not active.',
+      );
+    }
+
+    final student = await _studentService.getStudentByAdmissionNumber(
+      admissionNumber,
+    );
+
+    if (student == null) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.studentNotFound,
+        message: 'No student was found with this admission number.',
+      );
+    }
+
+    if (student.id == null) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'The student record is invalid.',
+        student: student,
+      );
+    }
+
+    final studentId = student.id!;
+    final db = await _databaseService.database;
+
+    try {
+      late AttendanceRecord savedRecord;
+
+      await db.transaction((txn) async {
+        final attendanceMaps = await txn.query(
+          AttendanceRecordTable.tableName,
+          where:
+              '${AttendanceRecordTable.lectureSessionId} = ? AND '
+              '${AttendanceRecordTable.studentId} = ?',
+          whereArgs: [lectureSessionId, studentId],
+          limit: 1,
+        );
+
+        if (attendanceMaps.isNotEmpty) {
+          throw _AlreadyAttendedException();
+        }
+
+        final enrollmentIds = await _courseEnrollmentService
+            .alreadyEnrolledStudentIds(lectureSession.courseId, [
+              studentId,
+            ], executor: txn);
+
+        if (!enrollmentIds.contains(studentId)) {
+          final enrollment = CourseStudent(
+            courseId: lectureSession.courseId,
+            studentId: studentId,
+            createdAt: DateTime.now(),
+          );
+
+          await _courseEnrollmentService.enrollStudent(
+            enrollment,
+            executor: txn,
+          );
+        }
+
+        final record = AttendanceRecord(
+          lectureSessionId: lectureSessionId,
+          studentId: studentId,
+          status: AttendanceRecordStatus.present,
+          scannedAt: DateTime.now(),
+        );
+
+        final data = record.toMap()..remove(AttendanceRecordTable.id);
+
+        final id = await txn.insert(AttendanceRecordTable.tableName, data);
+
+        savedRecord = record.copyWith(id: id);
+      });
+
+      return AttendanceResult.success(record: savedRecord, student: student);
+    } on _AlreadyAttendedException {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.alreadyAttended,
+        message: 'Attendance has already been recorded for this student.',
+        student: student,
+      );
+    } catch (e) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Failed to enroll the student and record attendance.',
+        student: student,
+      );
+    }
+  }
+
+  Future<AttendanceResult> enrollStudent({
+    required int lectureSessionId,
+    required String admissionNumber,
+  }) async {
+    final lectureSession = await _lectureSessionService.getLectureSessionById(
+      lectureSessionId,
+    );
+
+    if (lectureSession == null) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Lecture session not found.',
+      );
+    }
+
+    final student = await _studentService.getStudentByAdmissionNumber(
+      admissionNumber,
+    );
+
+    if (student == null) {
+      return const AttendanceResult.failure(
+        status: AttendanceResultStatus.studentNotFound,
+        message: 'No student was found with this admission number.',
+      );
+    }
+
+    if (student.id == null) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'The student record is invalid.',
+        student: student,
+      );
+    }
+
+    final studentId = student.id!;
+
+    try {
+      final isEnrolled = await _courseEnrollmentService.isStudentEnrolled(
+        courseId: lectureSession.courseId,
+        studentId: studentId,
+      );
+
+      if (!isEnrolled) {
+        final enrollment = CourseStudent(
+          courseId: lectureSession.courseId,
+          studentId: studentId,
+          createdAt: DateTime.now(),
+        );
+
+        await _courseEnrollmentService.enrollStudent(enrollment);
+      }
+
+      return AttendanceResult(
+        status: AttendanceResultStatus.success,
+        student: student,
+      );
+    } catch (e) {
+      return AttendanceResult.failure(
+        status: AttendanceResultStatus.error,
+        message: 'Failed to add the student to this course.',
+        student: student,
+      );
+    }
   }
 
   Future<int> getAttendanceCount(int lectureSessionId) async {
@@ -182,3 +377,5 @@ class AttendanceService {
     );
   }
 }
+
+class _AlreadyAttendedException implements Exception {}
