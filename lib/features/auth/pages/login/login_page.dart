@@ -1,5 +1,5 @@
 import 'package:attendance_management_system/core/utils/validators.dart';
-import 'package:attendance_management_system/core/widgets/buttons/primary_button.dart';
+import 'package:attendance_management_system/core/buttons/primary_button.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/auth/pages/register/register_page.dart';
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';

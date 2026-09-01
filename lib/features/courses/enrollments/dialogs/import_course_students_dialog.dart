@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/core/dialogs/app_form_dialog.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/courses/enrollments/providers/course_student_import_provider.dart';
 import 'package:attendance_management_system/features/courses/enrollments/services/course_student_import_service.dart';
 import 'package:attendance_management_system/features/students/import/widgets/import_error_box.dart';
@@ -21,6 +23,8 @@ class ImportCourseStudentsDialog extends StatefulWidget {
 
 class _ImportCourseStudentsDialogState
     extends State<ImportCourseStudentsDialog> {
+  final _formKey = GlobalKey<FormState>();
+
   PlatformFile? _selectedFile;
   String? _generalError;
 
@@ -30,6 +34,7 @@ class _ImportCourseStudentsDialogState
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
       context.read<CourseStudentImportProvider>().clear();
     });
   }
@@ -97,116 +102,110 @@ class _ImportCourseStudentsDialogState
     }
   }
 
+  Future<void> _handleImport() async {
+    final provider = context.read<CourseStudentImportProvider>();
+
+    if (_selectedFile == null || provider.isImporting) {
+      return;
+    }
+
+    if (provider.hasPreview) {
+      await _continueImport();
+    } else {
+      await _validateImport();
+    }
+  }
+
+  void _cancel() {
+    final provider = context.read<CourseStudentImportProvider>();
+
+    if (provider.isImporting) return;
+
+    provider.clear();
+
+    setState(() {
+      _selectedFile = null;
+      _generalError = null;
+    });
+
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
+    final r = AppResponsive.of(context);
     final provider = context.watch<CourseStudentImportProvider>();
 
-    return AlertDialog(
-      title: Text(
-        'Import Students',
-        style: Theme.of(
-          context,
-        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      content: SizedBox(
-        width: width > 600 ? 460 : double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Import students from an Excel (.xlsx) or CSV (.csv) file.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+    return AppFormDialog(
+      title: 'Import Students',
+      formKey: _formKey,
+      isSaving: provider.isImporting,
+      errorMessage: null,
+      saveButtonText: provider.hasPreview ? 'Continue Import' : 'Import',
+      savingButtonText: provider.hasPreview ? 'Importing...' : 'Validating...',
+      saveIcon: provider.hasPreview
+          ? Icons.check_rounded
+          : Icons.upload_rounded,
+      onSave: _handleImport,
+      saveButtonEnabled: _selectedFile != null,
+      onCancel: _cancel,
+      children: [
+        Text(
+          'Import students from an Excel (.xlsx) or CSV (.csv) file.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontSize: r.body),
+        ),
 
-              const SizedBox(height: 16),
+        SizedBox(height: r.spacingM),
 
-              ImportFilePickerCard(
-                selectedFile: _selectedFile,
-                onPickFile: _pickFile,
-                isLoading: provider.isImporting,
-              ),
+        ImportFilePickerCard(
+          selectedFile: _selectedFile,
+          onPickFile: _pickFile,
+          isLoading: provider.isImporting,
+        ),
 
-              if (_generalError != null) ...[
-                const SizedBox(height: 12),
-                ImportErrorBox(message: _generalError!),
-              ],
+        if (_generalError != null) ...[
+          SizedBox(height: r.spacingS),
+          ImportErrorBox(message: _generalError!),
+        ],
 
-              if (provider.generalError != null) ...[
-                const SizedBox(height: 12),
-                ImportErrorBox(message: provider.generalError!),
-              ],
+        if (provider.generalError != null) ...[
+          SizedBox(height: r.spacingS),
+          ImportErrorBox(message: provider.generalError!),
+        ],
 
-              if (provider.preview != null) ...[
-                const SizedBox(height: 12),
-                ImportValidationSummary(
-                  totalRows: provider.preview!.totalRows,
-                  validRows: provider.preview!.validRows,
-                  skippedRows: provider.preview!.skippedRows,
-                ),
-              ],
-
-              if (provider.preview?.errors.isNotEmpty ?? false) ...[
-                const SizedBox(height: 12),
-                ImportWarningBox(
-                  title: 'Errors',
-                  messages: provider.preview!.errors,
-                  color: Colors.orange,
-                  showDescription: true,
-                ),
-              ],
-
-              if (provider.preview?.warnings.isNotEmpty ?? false) ...[
-                const SizedBox(height: 12),
-                ImportWarningBox(
-                  title: 'Warnings',
-                  messages: provider.preview!.warnings,
-                  color: Colors.amber,
-                ),
-              ],
-
-              const SizedBox(height: 16),
-
-              const ImportTips(),
-            ],
+        if (provider.preview != null) ...[
+          SizedBox(height: r.spacingS),
+          ImportValidationSummary(
+            totalRows: provider.preview!.totalRows,
+            validRows: provider.preview!.validRows,
+            skippedRows: provider.preview!.skippedRows,
           ),
-        ),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      actions: [
-        TextButton(
-          onPressed: provider.isImporting
-              ? null
-              : () {
-                  provider.clear();
+        ],
 
-                  setState(() {
-                    _selectedFile = null;
-                    _generalError = null;
-                  });
+        if (provider.preview?.errors.isNotEmpty ?? false) ...[
+          SizedBox(height: r.spacingS),
+          ImportWarningBox(
+            title: 'Errors',
+            messages: provider.preview!.errors,
+            color: Colors.orange,
+            showDescription: true,
+          ),
+        ],
 
-                  Navigator.pop(context);
-                },
-          child: const Text('Cancel'),
-        ),
-        FilledButton.icon(
-          onPressed: (_selectedFile == null || provider.isImporting)
-              ? null
-              : (provider.hasPreview ? _continueImport : _validateImport),
-          icon: provider.isImporting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Icon(
-                  provider.hasPreview ? Icons.check : Icons.upload,
-                  size: 18,
-                ),
-          label: Text(provider.hasPreview ? 'Continue Import' : 'Import'),
-        ),
+        if (provider.preview?.warnings.isNotEmpty ?? false) ...[
+          SizedBox(height: r.spacingS),
+          ImportWarningBox(
+            title: 'Warnings',
+            messages: provider.preview!.warnings,
+            color: Colors.amber,
+          ),
+        ],
+
+        SizedBox(height: r.spacingM),
+
+        const ImportTips(),
       ],
     );
   }

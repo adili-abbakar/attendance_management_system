@@ -7,12 +7,9 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.teal,
       brightness: Brightness.light,
-    ),
+    ).copyWith(error: Colors.red, onError: Colors.white),
 
-    appBarTheme: const AppBarTheme(
-      centerTitle: true,
-      elevation: 0,
-    ),
+    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
   );
 
   static final ThemeData darkTheme = ThemeData(
@@ -21,11 +18,8 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.teal,
       brightness: Brightness.dark,
-    ),
+    ).copyWith(error: Colors.red, onError: Colors.white),
 
-    appBarTheme: const AppBarTheme(
-      centerTitle: true,
-      elevation: 0,
-    ),
+    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
   );
 }

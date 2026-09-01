@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/core/buttons/buttons.dart';
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -27,16 +28,17 @@ class DeleteConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
-    final colors = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return AlertDialog(
-      insetPadding: EdgeInsets.all(r.dialogInset),
-
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: r.dialogInset,
+        vertical: r.dialogInset,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(r.radius),
       ),
-
       contentPadding: EdgeInsets.all(r.dialogPadding),
 
       icon: Icon(icon, color: colors.error, size: r.iconLarge),
@@ -44,55 +46,55 @@ class DeleteConfirmationDialog extends StatelessWidget {
       title: Text(
         title,
         textAlign: TextAlign.center,
-        style: text.titleLarge?.copyWith(
+        style: theme.textTheme.titleLarge?.copyWith(
           fontSize: r.titleLarge,
           fontWeight: FontWeight.bold,
         ),
       ),
 
-      content: Text.rich(
-        TextSpan(
-          style: text.bodyMedium?.copyWith(
-            fontSize: r.body,
-            color: colors.onSurface,
-          ),
-          children: [
-            const TextSpan(text: 'Are you sure you want to delete\n\n'),
-
-            TextSpan(
-              text: '"$itemName"',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+      content: SizedBox(
+        width: r.isPhone ? null : r.dialogWidth,
+        child: Text.rich(
+          TextSpan(
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: r.body,
+              color: colors.onSurface,
             ),
+            children: [
+              const TextSpan(text: 'Are you sure you want to delete\n\n'),
 
-            const TextSpan(text: '?\n\nThis action cannot be undone.'),
-          ],
+              TextSpan(
+                text: '"$itemName"',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+
+              if (description != null) ...[
+                TextSpan(text: '\n\n$description'),
+              ] else ...[
+                const TextSpan(text: '?\n\nThis action cannot be undone.'),
+              ],
+            ],
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
 
       actionsAlignment: MainAxisAlignment.end,
 
       actions: [
-        TextButton(
+        AppTextButton(
+          text: cancelButtonText,
           onPressed: () => Navigator.pop(context),
-          child: Text(cancelButtonText, style: TextStyle(fontSize: r.body)),
         ),
 
-        FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: colors.error,
-            foregroundColor: colors.onError,
-            minimumSize: Size(0, r.buttonHeight),
-            padding: EdgeInsets.symmetric(horizontal: r.spacingL),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(r.radius),
-            ),
-          ),
+        DangerButton(
+          width: 120,
+          text: deleteButtonText,
+          icon: Icons.delete_outline_rounded,
           onPressed: () {
             Navigator.pop(context);
             onDelete();
           },
-          child: Text(deleteButtonText, style: TextStyle(fontSize: r.body)),
         ),
       ],
     );

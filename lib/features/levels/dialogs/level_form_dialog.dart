@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/core/dialogs/app_form_dialog.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,13 +61,6 @@ class _LevelFormDialogState extends State<LevelFormDialog> {
 
     final provider = context.read<LevelProvider>();
 
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.pop(context);
-      return;
-    }
-
     setState(() {
       _generalError =
           provider.levelNameError ?? provider.error ?? 'Unable to save level.';
@@ -75,86 +70,37 @@ class _LevelFormDialogState extends State<LevelFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
+    final r = AppResponsive.of(context);
 
-    return AlertDialog(
-      title: Text(widget.initialName == null ? "Add Level" : "Edit Level"),
-
-      content: SizedBox(
-        width: width > 600 ? 450 : double.maxFinite,
-
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  enabled: !_isSaving,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: "Level Name"),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return "Level name is required";
-                    }
-
-                    return null;
-                  },
-                ),
-
-                if (_generalError != null) ...[
-                  const SizedBox(height: 20),
-
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: .08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-
-                        const SizedBox(width: 12),
-
-                        Expanded(
-                          child: Text(
-                            _generalError!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
+    return AppFormDialog(
+      title: widget.initialName == null ? 'Add Level' : 'Edit Level',
+      formKey: _formKey,
+      isSaving: _isSaving,
+      errorMessage: _generalError,
+      saveButtonText: widget.initialName == null ? 'Save' : 'Update',
+      savingButtonText: widget.initialName == null
+          ? 'Saving...'
+          : 'Updating...',
+      saveIcon: widget.initialName == null
+          ? Icons.save_rounded
+          : Icons.edit_rounded,
+      onSave: _save,
+      children: [
+        TextFormField(
+          controller: nameController,
+          enabled: !_isSaving,
+          textCapitalization: TextCapitalization.characters,
+          decoration: InputDecoration(
+            labelText: 'Level Name',
+            prefixIcon: Icon(Icons.school_outlined, size: r.iconMedium),
           ),
-        ),
-      ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Level name is required';
+            }
 
-      actions: [
-        TextButton(
-          onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-
-        FilledButton.icon(
-          onPressed: _isSaving ? null : _save,
-          icon: _isSaving
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save),
-
-          label: Text(_isSaving ? "Saving..." : "Save"),
+            return null;
+          },
         ),
       ],
     );

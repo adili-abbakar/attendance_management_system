@@ -5,13 +5,7 @@ import 'package:attendance_management_system/features/auth/providers/auth_provid
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'widgets/attendance_session_card.dart';
-import 'widgets/dashboard_header.dart';
-import 'widgets/dashboard_section.dart';
-import 'widgets/quick_action_card.dart';
-import 'widgets/quick_actions_grid.dart';
-import 'widgets/stat_card.dart';
-import 'widgets/statistics_grid.dart';
+import 'widgets/widgets.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});

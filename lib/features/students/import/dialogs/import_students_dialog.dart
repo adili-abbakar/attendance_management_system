@@ -1,5 +1,8 @@
+import 'package:attendance_management_system/core/dialogs/app_form_dialog.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/students/import/providers/student_import_provider.dart';
 import 'package:attendance_management_system/features/students/import/services/student_import_service.dart';
+import 'package:attendance_management_system/features/students/import/widgets/widgets.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +15,8 @@ class ImportStudentsDialog extends StatefulWidget {
 }
 
 class _ImportStudentsDialogState extends State<ImportStudentsDialog> {
+  final _formKey = GlobalKey<FormState>();
+
   PlatformFile? _selectedFile;
   String? _generalError;
 
@@ -21,6 +26,7 @@ class _ImportStudentsDialogState extends State<ImportStudentsDialog> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
       context.read<StudentImportProvider>().clear();
     });
   }
@@ -54,10 +60,6 @@ class _ImportStudentsDialogState extends State<ImportStudentsDialog> {
     if (_selectedFile == null) return;
 
     await context.read<StudentImportProvider>().validateImport(_selectedFile!);
-
-    if (!mounted) return;
-
-    setState(() {});
   }
 
   Future<void> _continueImport() async {
@@ -85,279 +87,145 @@ class _ImportStudentsDialogState extends State<ImportStudentsDialog> {
     }
   }
 
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) {
-      return '$bytes B';
+  Future<void> _handleAction() async {
+    final provider = context.read<StudentImportProvider>();
+
+    if (_selectedFile == null || provider.isImporting) {
+      return;
     }
 
-    if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (provider.hasPreview) {
+      await _continueImport();
+    } else {
+      await _validateImport();
     }
+  }
 
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  void _cancel() {
+    final provider = context.read<StudentImportProvider>();
+
+    if (provider.isImporting) return;
+
+    provider.clear();
+
+    setState(() {
+      _selectedFile = null;
+      _generalError = null;
+    });
+
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
+    final r = AppResponsive.of(context);
     final provider = context.watch<StudentImportProvider>();
 
-    return AlertDialog(
-      title: const Text('Import Students'),
-      content: SizedBox(
-        width: width > 600 ? 500 : double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Import students from an Excel (.xlsx) or CSV (.csv) file.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+    return AppFormDialog(
+      title: 'Import Students',
+      formKey: _formKey,
+      isSaving: provider.isImporting,
+      errorMessage: _generalError ?? provider.generalError,
 
-              const SizedBox(height: 24),
+      // Import is disabled until a file has been selected.
+      saveButtonEnabled: _selectedFile != null,
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.upload_file,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+      saveButtonText: provider.hasPreview ? 'Continue Import' : 'Import',
+      savingButtonText: provider.hasPreview ? 'Importing...' : 'Validating...',
+      saveIcon: provider.hasPreview
+          ? Icons.check_rounded
+          : Icons.upload_rounded,
+      onSave: _handleAction,
+      onCancel: _cancel,
 
-                    const SizedBox(height: 16),
+      children: [
+        Text(
+          'Import students from an Excel (.xlsx) or CSV (.csv) file.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontSize: r.body),
+        ),
 
-                    Text(
-                      _selectedFile?.name ?? 'No file selected',
-                      style: Theme.of(context).textTheme.titleMedium,
-                      textAlign: TextAlign.center,
-                    ),
+        SizedBox(height: r.spacingL),
 
-                    const SizedBox(height: 8),
+        _buildFilePicker(r),
 
-                    Text(
-                      _selectedFile == null
-                          ? 'Choose a spreadsheet to begin importing students.'
-                          : _formatBytes(_selectedFile!.size),
-                      style: Theme.of(context).textTheme.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
+        if (provider.preview != null) ...[
+          SizedBox(height: r.spacingM),
 
-                    const SizedBox(height: 20),
+          _buildValidationSummary(r, provider),
+        ],
 
-                    OutlinedButton.icon(
-                      onPressed: provider.isImporting ? null : _pickFile,
-                      icon: const Icon(Icons.folder_open),
-                      label: Text(
-                        _selectedFile == null ? 'Choose File' : 'Change File',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        if (provider.preview?.errors.isNotEmpty ?? false) ...[
+          SizedBox(height: r.spacingM),
 
-              if (_generalError != null) ...[
-                const SizedBox(height: 20),
+          ImportWarningBox(
+            title: 'Warnings',
+            messages: provider.preview!.errors,
+            color: Colors.orange,
+            showDescription: true,
+          ),
+        ],
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _generalError!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
+        if (provider.preview?.warnings.isNotEmpty ?? false) ...[
+          SizedBox(height: r.spacingM),
 
-              if (provider.generalError != null) ...[
-                const SizedBox(height: 20),
+          ImportWarningBox(
+            title: 'Warnings',
+            messages: provider.preview!.warnings,
+            color: Colors.amber,
+          ),
+        ],
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    provider.generalError!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
+        SizedBox(height: r.spacingL),
 
-              if (provider.preview != null) ...[
-                const SizedBox(height: 20),
+        _buildTips(r),
+      ],
+    );
+  }
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Validation Summary',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+  Widget _buildFilePicker(AppResponsive r) {
+    final provider = context.watch<StudentImportProvider>();
 
-                      const SizedBox(height: 10),
+    return ImportFilePickerCard(
+      selectedFile: _selectedFile,
+      onPickFile: _pickFile,
+      isLoading: provider.isImporting,
+    );
+  }
 
-                      Text('Rows found: ${provider.preview!.totalRows}'),
+  Widget _buildValidationSummary(
+    AppResponsive r,
+    StudentImportProvider provider,
+  ) {
+    return ImportValidationSummary(
+      totalRows: provider.preview!.totalRows,
+      validRows: provider.preview!.validRows,
+      skippedRows: provider.preview!.skippedRows,
+    );
+  }
 
-                      Text('Ready to import: ${provider.preview!.validRows}'),
-
-                      Text('Will be skipped: ${provider.preview!.skippedRows}'),
-                    ],
-                  ),
-                ),
-              ],
-
-              if (provider.preview?.errors.isNotEmpty ?? false) ...[
-                const SizedBox(height: 20),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Warnings',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      const Text(
-                        'The following rows will be skipped if you continue:',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      ...provider.preview!.errors.map(
-                        (e) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            '⚠ $e',
-                            style: const TextStyle(color: Colors.orange),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              if (provider.preview?.warnings.isNotEmpty ?? false) ...[
-                const SizedBox(height: 20),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Warnings',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      ...provider.preview!.warnings.map(
-                        (warning) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            '⚠ $warning',
-                            style: const TextStyle(color: Colors.amber),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 24),
-
-              Text('Tips', style: Theme.of(context).textTheme.titleMedium),
-
-              const SizedBox(height: 12),
-
-              const _TipItem(text: 'Download the template before editing.'),
-
-              const _TipItem(text: 'Do not modify the column names.'),
-
-              const _TipItem(
-                text: 'Duplicate admission numbers will be skipped.',
-              ),
-
-              const _TipItem(text: 'Only .xlsx and .csv files are supported.'),
-            ],
+  Widget _buildTips(AppResponsive r) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tips',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontSize: r.titleMedium,
+            fontWeight: FontWeight.w600,
           ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: provider.isImporting
-              ? null
-              : () {
-                  provider.clear();
 
-                  setState(() {
-                    _selectedFile = null;
-                    _generalError = null;
-                  });
+        SizedBox(height: r.spacingS),
 
-                  Navigator.pop(context);
-                },
-          child: const Text('Cancel'),
-        ),
+        const _TipItem(text: 'Download the template before editing.'),
 
-        FilledButton.icon(
-          onPressed: (_selectedFile == null || provider.isImporting)
-              ? null
-              : (provider.hasPreview ? _continueImport : _validateImport),
-          icon: provider.isImporting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Icon(provider.hasPreview ? Icons.check : Icons.upload),
-          label: Text(provider.hasPreview ? 'Continue Import' : 'Import'),
-        ),
+        const _TipItem(text: 'Do not modify the column names.'),
+
+        const _TipItem(text: 'Duplicate admission numbers will be skipped.'),
+
+        const _TipItem(text: 'Only .xlsx and .csv files are supported.'),
       ],
     );
   }
@@ -370,18 +238,24 @@ class _TipItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: r.spacingS),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.check_circle_outline,
-            size: 18,
+            size: r.iconSmall,
             color: Theme.of(context).colorScheme.primary,
           ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text)),
+
+          SizedBox(width: r.spacingS),
+
+          Expanded(
+            child: Text(text, style: TextStyle(fontSize: r.body)),
+          ),
         ],
       ),
     );

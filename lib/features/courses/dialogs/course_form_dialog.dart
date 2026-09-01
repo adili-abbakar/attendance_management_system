@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/core/dialogs/app_form_dialog.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,8 @@ class CourseFormDialog extends StatefulWidget {
   )
   onSave;
 
+  bool get isEditing => initialCode != null;
+
   @override
   State<CourseFormDialog> createState() => _CourseFormDialogState();
 }
@@ -41,12 +45,12 @@ class CourseFormDialog extends StatefulWidget {
 class _CourseFormDialogState extends State<CourseFormDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController codeController;
-  late final TextEditingController titleController;
+  late final TextEditingController _codeController;
+  late final TextEditingController _titleController;
 
-  late int levelId;
-  late int semester;
-  late int academicSessionId;
+  late int _levelId;
+  late int _semester;
+  late int _academicSessionId;
 
   bool _isSaving = false;
   String? _generalError;
@@ -55,14 +59,17 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   void initState() {
     super.initState();
 
-    codeController = TextEditingController(text: widget.initialCode ?? '');
-    titleController = TextEditingController(text: widget.initialTitle ?? '');
+    _codeController = TextEditingController(text: widget.initialCode ?? '');
 
-    levelId = widget.initialLevelId ?? 0;
-    academicSessionId = widget.initialAcademicSessionId ?? 0;
-    semester = widget.initialSemester ?? 1;
+    _titleController = TextEditingController(text: widget.initialTitle ?? '');
+
+    _levelId = widget.initialLevelId ?? 0;
+    _semester = widget.initialSemester ?? 1;
+    _academicSessionId = widget.initialAcademicSessionId ?? 0;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
       await context.read<LevelProvider>().loadLevels();
       await context.read<AcademicSessionProvider>().loadAcademicSessions();
     });
@@ -70,15 +77,33 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
 
   @override
   void dispose() {
-    codeController.dispose();
-    titleController.dispose();
+    _codeController.dispose();
+    _titleController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     if (_isSaving) return;
 
-    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_levelId == 0) {
+      setState(() {
+        _generalError = 'Please select a level.';
+      });
+      return;
+    }
+
+    if (_academicSessionId == 0) {
+      setState(() {
+        _generalError = 'Please select an academic session.';
+      });
+      return;
+    }
 
     setState(() {
       _isSaving = true;
@@ -86,30 +111,51 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     });
 
     final success = await widget.onSave(
-      codeController.text.trim(),
-      titleController.text.trim(),
-      levelId,
-      semester,
-      academicSessionId,
+      _codeController.text.trim(),
+      _titleController.text.trim(),
+      _levelId,
+      _semester,
+      _academicSessionId,
     );
 
     if (!mounted) return;
 
     if (success) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       return;
     }
 
     setState(() {
       _generalError =
-          'This course already exists for the selected level, semester and academic session.';
+          'This course already exists for the selected level, '
+          'semester and academic session.';
       _isSaving = false;
     });
   }
 
+  Future<void> _addLevel() async {
+    if (_isSaving) return;
+
+    await widget.onAddLevel();
+
+    if (!mounted) return;
+
+    await context.read<LevelProvider>().loadLevels();
+  }
+
+  Future<void> _addAcademicSession() async {
+    if (_isSaving) return;
+
+    await widget.onAddAcademicSession();
+
+    if (!mounted) return;
+
+    await context.read<AcademicSessionProvider>().loadAcademicSessions();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
+    final r = AppResponsive.of(context);
 
     final levelProvider = context.watch<LevelProvider>();
     final sessionProvider = context.watch<AcademicSessionProvider>();
@@ -117,234 +163,247 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     final levels = levelProvider.levels;
     final sessions = sessionProvider.academicSessions;
 
-    if (levels.isNotEmpty && !levels.any((level) => level.id == levelId)) {
-      levelId = levels.first.id!;
+    if (levels.isNotEmpty && !levels.any((level) => level.id == _levelId)) {
+      _levelId = levels.first.id!;
     }
 
     if (sessions.isNotEmpty &&
-        !sessions.any((session) => session.id == academicSessionId)) {
-      academicSessionId = sessions.first.id!;
+        !sessions.any((session) => session.id == _academicSessionId)) {
+      _academicSessionId = sessions.first.id!;
     }
 
-    return AlertDialog(
-      title: Text(widget.initialCode == null ? 'Add Course' : 'Edit Course'),
-      content: SizedBox(
-        width: width >= 600 ? 400 : double.maxFinite,
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: codeController,
-                  enabled: !_isSaving,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Course Code',
-                    isDense: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Course code is required';
-                    }
-                    return null;
-                  },
-                ),
+    return AppFormDialog(
+      title: widget.isEditing ? 'Edit Course' : 'Add Course',
+      formKey: _formKey,
+      isSaving: _isSaving,
+      errorMessage: _generalError,
+      saveButtonText: widget.isEditing ? 'Update' : 'Save',
+      savingButtonText: widget.isEditing ? 'Updating...' : 'Saving...',
+      saveIcon: widget.isEditing ? Icons.edit_rounded : Icons.save_rounded,
+      onSave: _save,
+      children: [
+        _buildCourseCodeField(r),
 
-                const SizedBox(height: 12),
+        SizedBox(height: r.spacingM),
 
-                TextFormField(
-                  controller: titleController,
-                  enabled: !_isSaving,
-                  decoration: const InputDecoration(
-                    labelText: 'Course Title',
-                    isDense: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Course title is required';
-                    }
-                    return null;
-                  },
-                ),
+        _buildCourseTitleField(r),
 
-                const SizedBox(height: 12),
+        SizedBox(height: r.spacingM),
 
-                DropdownButtonFormField<int>(
-                  initialValue: levels.isEmpty ? null : levelId,
-                  decoration: const InputDecoration(
-                    labelText: 'Level',
-                    isDense: true,
-                  ),
-                  items: levels
-                      .map(
-                        (level) => DropdownMenuItem(
-                          value: level.id,
-                          child: Text(level.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _isSaving
-                      ? null
-                      : (value) {
-                          if (value == null) return;
-                          setState(() => levelId = value);
-                        },
-                ),
+        _buildLevelField(r, levels),
 
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                    ),
-                    onPressed: _isSaving
-                        ? null
-                        : () async {
-                            await widget.onAddLevel();
+        _buildAddLevelButton(r),
 
-                            if (!mounted) return;
+        SizedBox(height: r.spacingM),
 
-                            await context.read<LevelProvider>().loadLevels();
-                          },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add New Level'),
-                  ),
-                ),
+        _buildSemesterField(r),
 
-                const SizedBox(height: 12),
+        SizedBox(height: r.spacingM),
 
-                DropdownButtonFormField<int>(
-                  initialValue: semester,
-                  decoration: const InputDecoration(
-                    labelText: 'Semester',
-                    isDense: true,
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('1st Semester')),
-                    DropdownMenuItem(value: 2, child: Text('2nd Semester')),
-                  ],
-                  onChanged: _isSaving
-                      ? null
-                      : (value) {
-                          if (value == null) return;
-                          setState(() => semester = value);
-                        },
-                ),
+        _buildAcademicSessionField(r, sessions),
 
-                const SizedBox(height: 12),
+        _buildAddAcademicSessionButton(r),
+      ],
+    );
+  }
 
-                DropdownButtonFormField<int>(
-                  initialValue: sessions.isEmpty ? null : academicSessionId,
-                  decoration: const InputDecoration(
-                    labelText: 'Academic Session',
-                    isDense: true,
-                  ),
-                  items: sessions
-                      .map(
-                        (session) => DropdownMenuItem(
-                          value: session.id,
-                          child: Text(session.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _isSaving
-                      ? null
-                      : (value) {
-                          if (value == null) return;
-                          setState(() => academicSessionId = value);
-                        },
-                ),
+  Widget _buildCourseCodeField(AppResponsive r) {
+    return TextFormField(
+      controller: _codeController,
+      enabled: !_isSaving,
+      textCapitalization: TextCapitalization.characters,
+      decoration: InputDecoration(
+        labelText: 'Course Code',
+        prefixIcon: Icon(Icons.code_rounded, size: r.iconMedium),
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Course code is required';
+        }
 
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                    ),
-                    onPressed: _isSaving
-                        ? null
-                        : () async {
-                            await widget.onAddAcademicSession();
+        return null;
+      },
+    );
+  }
 
-                            if (!mounted) return;
+  Widget _buildCourseTitleField(AppResponsive r) {
+    return TextFormField(
+      controller: _titleController,
+      enabled: !_isSaving,
+      decoration: InputDecoration(
+        labelText: 'Course Title',
+        prefixIcon: Icon(Icons.menu_book_outlined, size: r.iconMedium),
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Course title is required';
+        }
 
-                            await context
-                                .read<AcademicSessionProvider>()
-                                .loadAcademicSessions();
-                          },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add New Academic Session'),
-                  ),
-                ),
+        return null;
+      },
+    );
+  }
 
-                if (_generalError != null) ...[
-                  const SizedBox(height: 12),
+  Widget _buildLevelField(AppResponsive r, List levels) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return DropdownMenu<int>(
+          width: constraints.maxWidth,
+          expandedInsets: EdgeInsets.zero,
+          initialSelection: levels.isEmpty ? null : _levelId,
+          enabled: !_isSaving,
 
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: .08),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.red,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _generalError!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
+          label: const Text('Level'),
+
+          leadingIcon: Icon(Icons.school_outlined, size: r.iconMedium),
+
+          textStyle: TextStyle(fontSize: r.body),
+
+          menuHeight: 300,
+
+          dropdownMenuEntries: levels
+              .map(
+                (level) => DropdownMenuEntry<int>(
+                  value: level.id,
+                  label: level.name,
+                  style: ButtonStyle(
+                    textStyle: WidgetStatePropertyAll(
+                      TextStyle(fontSize: r.body),
                     ),
                   ),
-                ],
-              ],
-            ),
+                ),
+              )
+              .toList(),
+
+          onSelected: _isSaving
+              ? null
+              : (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    _levelId = value;
+                  });
+                },
+        );
+      },
+    );
+  }
+
+  Widget _buildAddLevelButton(AppResponsive r) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.symmetric(
+            horizontal: r.spacingXS,
+            vertical: r.spacingXS,
           ),
         ),
+        onPressed: _isSaving ? null : _addLevel,
+        icon: Icon(Icons.add_rounded, size: r.buttonIcon),
+        label: Text('Add New Level', style: TextStyle(fontSize: r.body)),
       ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      actions: [
-        TextButton(
-          onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+    );
+  }
+
+  Widget _buildSemesterField(AppResponsive r) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return DropdownMenu<int>(
+          width: constraints.maxWidth,
+          expandedInsets: EdgeInsets.zero,
+          initialSelection: _semester,
+          enabled: !_isSaving,
+
+          label: const Text('Semester'),
+
+          leadingIcon: Icon(Icons.calendar_month_outlined, size: r.iconMedium),
+
+          textStyle: TextStyle(fontSize: r.body),
+
+          dropdownMenuEntries: const [
+            DropdownMenuEntry<int>(value: 1, label: '1st Semester'),
+            DropdownMenuEntry<int>(value: 2, label: '2nd Semester'),
+          ],
+
+          onSelected: _isSaving
+              ? null
+              : (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    _semester = value;
+                  });
+                },
+        );
+      },
+    );
+  }
+
+  Widget _buildAcademicSessionField(AppResponsive r, List sessions) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return DropdownMenu<int>(
+          width: constraints.maxWidth,
+          expandedInsets: EdgeInsets.zero,
+          initialSelection: sessions.isEmpty ? null : _academicSessionId,
+          enabled: !_isSaving,
+
+          label: const Text('Academic Session'),
+
+          leadingIcon: Icon(Icons.school_rounded, size: r.iconMedium),
+
+          textStyle: TextStyle(fontSize: r.body),
+
+          menuHeight: 300,
+
+          dropdownMenuEntries: sessions
+              .map(
+                (session) => DropdownMenuEntry<int>(
+                  value: session.id,
+                  label: session.name,
+                  style: ButtonStyle(
+                    textStyle: WidgetStatePropertyAll(
+                      TextStyle(fontSize: r.body),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+
+          onSelected: _isSaving
+              ? null
+              : (value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    _academicSessionId = value;
+                  });
+                },
+        );
+      },
+    );
+  }
+
+  Widget _buildAddAcademicSessionButton(AppResponsive r) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.symmetric(
+            horizontal: r.spacingXS,
+            vertical: r.spacingXS,
+          ),
         ),
-        FilledButton.icon(
-          onPressed: _isSaving ? null : _save,
-          icon: _isSaving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save, size: 18),
-          label: Text(_isSaving ? 'Saving...' : 'Save'),
+        onPressed: _isSaving ? null : _addAcademicSession,
+        icon: Icon(Icons.add_rounded, size: r.buttonIcon),
+        label: Text(
+          'Add New Academic Session',
+          style: TextStyle(fontSize: r.body),
         ),
-      ],
+      ),
     );
   }
 }

@@ -1,12 +1,12 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/lecture_session_form_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/core/widgets/tables/tables.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/create_lecture_session_dialog.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 
@@ -167,10 +167,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       onPressed: () async {
         final created = await showDialog<bool>(
           context: context,
-          builder: (_) => CreateLectureSessionDialog(
-            courseId: widget.courseId,
-            courseName: widget.courseName,
-          ),
+          builder: (_) => LectureSessionFormDialog(courseId: widget.courseId),
         );
 
         if (!context.mounted) return;
@@ -292,10 +289,21 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
           case 'attendance':
             _viewAttendance(context, lectureSession);
             break;
+
+          case 'update':
+            showDialog(
+              context: context,
+              builder: (_) => LectureSessionFormDialog(
+                courseId: widget.courseId,
+                initialSession: lectureSession,
+              ),
+            );
+            break;
         }
       },
       itemBuilder: (context) {
         final items = <PopupMenuEntry<String>>[
+          const PopupMenuItem(value: 'update', child: Text('Update Session')),
           const PopupMenuItem(value: 'details', child: Text('View Details')),
           const PopupMenuItem(
             value: 'attendance',

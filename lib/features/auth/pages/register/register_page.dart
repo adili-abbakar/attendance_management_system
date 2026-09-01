@@ -3,7 +3,7 @@ import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/widgets/buttons/primary_button.dart';
+import '../../../../core/buttons/primary_button.dart';
 import '../../widgets/auth_card.dart';
 import '../../widgets/auth_footer.dart';
 import '../../widgets/auth_header.dart';
