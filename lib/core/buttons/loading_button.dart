@@ -20,6 +20,7 @@ class LoadingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     Widget buttonContent;
 
@@ -27,38 +28,27 @@ class LoadingButton extends StatelessWidget {
       buttonContent = SizedBox(
         width: r.buttonIcon,
         height: r.buttonIcon,
-        child: const CircularProgressIndicator(
+        child: CircularProgressIndicator(
           strokeWidth: 2,
+          color: colorScheme.onPrimary,
         ),
       );
     } else if (icon == null) {
-      buttonContent = Text(
-        text,
-        style: TextStyle(fontSize: r.body),
-      );
+      buttonContent = Text(text, style: TextStyle(fontSize: r.body));
     } else {
       buttonContent = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isIconLeading) ...[
-            Icon(
-              icon,
-              size: r.buttonIcon,
-            ),
+            Icon(icon, size: r.buttonIcon),
             SizedBox(width: r.spacingS),
           ],
 
-          Text(
-            text,
-            style: TextStyle(fontSize: r.body),
-          ),
+          Text(text, style: TextStyle(fontSize: r.body)),
 
           if (!isIconLeading) ...[
             SizedBox(width: r.spacingS),
-            Icon(
-              icon,
-              size: r.buttonIcon,
-            ),
+            Icon(icon, size: r.buttonIcon),
           ],
         ],
       );
@@ -67,7 +57,7 @@ class LoadingButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: r.buttonHeight,
-      child: FilledButton(  
+      child: FilledButton(
         onPressed: isLoading ? null : onPressed,
         child: buttonContent,
       ),

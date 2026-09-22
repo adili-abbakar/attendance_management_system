@@ -20,7 +20,14 @@ class PrimaryButton extends StatelessWidget {
   final bool isLoading;
   final bool isIconLeading;
 
+  /// Optional override for special cases.
+  ///
+  /// When null, the application theme is used.
   final Color? backgroundColor;
+
+  /// Optional override for special cases.
+  ///
+  /// When null, the application theme is used.
   final Color? foregroundColor;
 
   /// Defaults to full width for normal page/form usage.
@@ -29,6 +36,7 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     Widget buttonContent;
 
@@ -36,7 +44,10 @@ class PrimaryButton extends StatelessWidget {
       buttonContent = SizedBox(
         width: r.buttonIcon,
         height: r.buttonIcon,
-        child: const CircularProgressIndicator(strokeWidth: 2),
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: foregroundColor ?? colorScheme.onPrimary,
+        ),
       );
     } else if (icon == null) {
       buttonContent = Text(text, style: TextStyle(fontSize: r.body));
@@ -64,10 +75,6 @@ class PrimaryButton extends StatelessWidget {
       height: r.buttonHeight,
       child: FilledButton(
         onPressed: isLoading ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-        ),
         child: buttonContent,
       ),
     );

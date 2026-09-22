@@ -22,33 +22,21 @@ class SecondaryButton extends StatelessWidget {
     Widget buttonContent;
 
     if (icon == null) {
-      buttonContent = Text(
-        text,
-        style: TextStyle(fontSize: r.body),
-      );
+      buttonContent = Text(text, style: TextStyle(fontSize: r.body));
     } else {
       buttonContent = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isIconLeading) ...[
-            Icon(
-              icon,
-              size: r.buttonIcon,
-            ),
+            Icon(icon, size: r.buttonIcon),
             SizedBox(width: r.spacingS),
           ],
 
-          Text(
-            text,
-            style: TextStyle(fontSize: r.body),
-          ),
+          Text(text, style: TextStyle(fontSize: r.body)),
 
           if (!isIconLeading) ...[
             SizedBox(width: r.spacingS),
-            Icon(
-              icon,
-              size: r.buttonIcon,
-            ),
+            Icon(icon, size: r.buttonIcon),
           ],
         ],
       );
@@ -57,10 +45,7 @@ class SecondaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: r.buttonHeight,
-      child: FilledButton.tonal(
-        onPressed: onPressed,
-        child: buttonContent,
-      ),
+      child: FilledButton.tonal(onPressed: onPressed, child: buttonContent),
     );
   }
 }
