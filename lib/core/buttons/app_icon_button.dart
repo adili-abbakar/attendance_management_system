@@ -13,6 +13,10 @@ class AppIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final String? tooltip;
+
+  /// Optional color override for special actions.
+  ///
+  /// When null, the application theme is used.
   final Color? color;
 
   @override
@@ -22,8 +26,8 @@ class AppIconButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon, size: r.iconMedium),
       color: color,
+      icon: Icon(icon, size: r.iconMedium),
     );
   }
 }
