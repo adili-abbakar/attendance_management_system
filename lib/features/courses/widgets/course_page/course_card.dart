@@ -33,6 +33,9 @@ class CourseCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
+      color: colors.surfaceBright,
+      elevation: 1,
+
       child: InkWell(
         onTap: onTap,
         child: Padding(

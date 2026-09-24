@@ -20,6 +20,7 @@ class QuickActionCard extends StatelessWidget {
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
+      color: scheme.surfaceBright,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,

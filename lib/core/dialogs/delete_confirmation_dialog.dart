@@ -17,12 +17,9 @@ class DeleteConfirmationDialog extends StatelessWidget {
   final String title;
   final String itemName;
   final String? description;
-
   final VoidCallback onDelete;
-
   final String deleteButtonText;
   final String cancelButtonText;
-
   final IconData icon;
 
   @override
@@ -36,13 +33,8 @@ class DeleteConfirmationDialog extends StatelessWidget {
         horizontal: r.dialogInset,
         vertical: r.dialogInset,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(r.radius),
-      ),
       contentPadding: EdgeInsets.all(r.dialogPadding),
-
       icon: Icon(icon, color: colors.error, size: r.iconLarge),
-
       title: Text(
         title,
         textAlign: TextAlign.center,
@@ -51,7 +43,6 @@ class DeleteConfirmationDialog extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-
       content: SizedBox(
         width: r.isPhone ? null : r.dialogWidth,
         child: Text.rich(
@@ -62,12 +53,10 @@ class DeleteConfirmationDialog extends StatelessWidget {
             ),
             children: [
               const TextSpan(text: 'Are you sure you want to delete\n\n'),
-
               TextSpan(
                 text: '"$itemName"',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-
               if (description != null) ...[
                 TextSpan(text: '\n\n$description'),
               ] else ...[
@@ -78,15 +67,12 @@ class DeleteConfirmationDialog extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ),
-
       actionsAlignment: MainAxisAlignment.end,
-
       actions: [
         AppTextButton(
           text: cancelButtonText,
           onPressed: () => Navigator.pop(context),
         ),
-
         DangerButton(
           width: 120,
           text: deleteButtonText,

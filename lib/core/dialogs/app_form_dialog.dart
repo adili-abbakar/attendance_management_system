@@ -21,22 +21,15 @@ class AppFormDialog extends StatelessWidget {
 
   final String title;
   final GlobalKey<FormState> formKey;
-
   final List<Widget> children;
-
   final Future<void> Function() onSave;
-
   final bool isSaving;
   final String? errorMessage;
-
   final String saveButtonText;
   final String savingButtonText;
   final String cancelButtonText;
-
   final IconData saveIcon;
-
   final VoidCallback? onCancel;
-
   final bool saveButtonEnabled;
 
   Future<void> _handleSave(BuildContext context) async {
@@ -80,10 +73,6 @@ class AppFormDialog extends StatelessWidget {
         horizontal: r.dialogInset,
         vertical: r.dialogInset,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(r.radius),
-      ),
-      contentPadding: EdgeInsets.all(r.dialogPadding),
 
       title: Text(
         title,
@@ -126,7 +115,9 @@ class AppFormDialog extends StatelessWidget {
                           color: colors.onErrorContainer,
                           size: r.iconSmall,
                         ),
+
                         SizedBox(width: r.spacingS),
+
                         Expanded(
                           child: Text(
                             errorMessage!,

@@ -74,6 +74,7 @@ class _StatisticCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
+      color: colors.surfaceBright,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(

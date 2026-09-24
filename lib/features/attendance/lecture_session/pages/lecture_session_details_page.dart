@@ -91,6 +91,8 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     AppResponsive r,
     LectureSession lectureSession,
   ) {
+    final colors = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -103,15 +105,13 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
 
         Text(
           '${widget.courseName} (${widget.courseCode})',
-          style: TextStyle(
-            fontSize: r.body,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: r.body, color: colors.onSurfaceVariant),
         ),
 
         SizedBox(height: r.spacingL),
 
         Card(
+          color: colors.surfaceBright,
           child: Padding(
             padding: EdgeInsets.all(r.cardPadding),
             child: Column(
