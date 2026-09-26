@@ -9,7 +9,7 @@ class StatCard extends StatelessWidget {
   });
 
   final String title;
-  final String value;
+  final Object? value;
   final IconData icon;
 
   @override
@@ -35,7 +35,7 @@ class StatCard extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                value,
+                value.toString(),
                 style: text.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),

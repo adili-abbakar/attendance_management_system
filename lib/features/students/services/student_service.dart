@@ -22,6 +22,17 @@ class StudentService {
     return result.map((e) => Student.fromMap(e)).toList();
   }
 
+  Future<int> getStudentsCount() async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery('''
+    SELECT COUNT(*) AS count
+    FROM ${StudentTable.tableName}
+  ''');
+
+    return result.first['count'] as int;
+  }
+
   Future<Student?> getStudent(int id, {DatabaseExecutor? executor}) async {
     final db = executor ?? await _databaseService.database;
     final result = await db.query(
@@ -151,7 +162,10 @@ class StudentService {
     };
   }
 
-  Future<Student?> getStudentByAdmissionNumber(String admissionNumber, {DatabaseExecutor? executor}) async {
+  Future<Student?> getStudentByAdmissionNumber(
+    String admissionNumber, {
+    DatabaseExecutor? executor,
+  }) async {
     final db = executor ?? await _databaseService.database;
     final result = await db.query(
       StudentTable.tableName,

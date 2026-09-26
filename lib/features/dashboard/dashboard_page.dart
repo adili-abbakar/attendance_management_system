@@ -1,7 +1,12 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_sessions_page.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
+import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,7 +23,22 @@ class _DashboardPageState extends State<DashboardPage> {
   User? get user => context.read<AuthProvider>().currentUser;
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StudentProvider>().getStudentsCount();
+      context.read<CourseProvider>().getCoursesCount();
+      context.read<LectureSessionProvider>().getAverageAttendance();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final studentProvider = context.watch<StudentProvider>();
+    final courseProvider = context.watch<CourseProvider>();
+    final lectureSessionProvider = context.watch<LectureSessionProvider>();
+
     return Scaffold(
       appBar: AppBarWidget(title: 'Dashboard'),
       endDrawer: const AppDrawer(),
@@ -30,12 +50,20 @@ class _DashboardPageState extends State<DashboardPage> {
           DashboardSection(
             title: "Statistics",
             child: StatisticsGrid(
-              children: const [
-                StatCard(title: "Students", value: "520", icon: Icons.people),
-                StatCard(title: "Courses", value: "8", icon: Icons.menu_book),
+              children: [
+                StatCard(
+                  title: "Students",
+                  value: studentProvider.studentCount ?? '-',
+                  icon: Icons.people,
+                ),
+                StatCard(
+                  title: "Courses",
+                  value: courseProvider.coursesCount ?? '-',
+                  icon: Icons.menu_book,
+                ),
                 StatCard(
                   title: "Attendance",
-                  value: "94%",
+                  value: "${lectureSessionProvider.averageAttendance ?? '-'} %",
                   icon: Icons.fact_check,
                 ),
                 StatCard(title: "Reports", value: "12", icon: Icons.bar_chart),

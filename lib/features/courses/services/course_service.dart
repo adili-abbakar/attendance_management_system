@@ -172,4 +172,15 @@ class CourseService {
 
     return rows > 0;
   }
+
+  Future<int> getCoursesCount() async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery('''
+    SELECT COUNT(*) AS count
+    FROM ${CourseTable.tableName}
+  ''');
+
+    return result.first['count'] as int;
+  }
 }

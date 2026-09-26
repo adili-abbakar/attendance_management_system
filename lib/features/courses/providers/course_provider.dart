@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:flutter/material.dart';
 
 import '../models/course.dart';
@@ -5,7 +6,7 @@ import '../services/course_service.dart';
 
 class CourseProvider extends ChangeNotifier {
   final CourseService _service;
-  
+
   CourseProvider(this._service);
   List<Course> _courses = [];
   bool _isLoading = false;
@@ -16,6 +17,16 @@ class CourseProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get courseCodeError => _courseCodeError;
+
+  int? _coursesCount;
+
+  int? get coursesCount => _coursesCount;
+
+  Future<void> getCoursesCount() async {
+    _coursesCount = await _service.getCoursesCount();
+
+    notifyListeners();
+  }
 
   Future<void> loadCourses() async {
     _setLoading(true);

@@ -24,6 +24,16 @@ class StudentProvider extends ChangeNotifier {
 
   String? get admissionNumberError => _admissionNumberError;
 
+  int? _studentCount;
+
+  int? get studentCount => _studentCount;
+
+  Future<void> getStudentsCount() async {
+    _studentCount = await _service.getStudentsCount();
+
+    notifyListeners();
+  }
+
   Future<void> loadStudents() async {
     _setLoading(true);
 

@@ -6,9 +6,11 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 class LectureSessionProvider extends ChangeNotifier {
   final LectureSessionService _lectureSessionService;
 
-  LectureSessionProvider(LectureSessionService instance, {LectureSessionService? lectureSessionService})
-    : _lectureSessionService =
-          lectureSessionService ?? LectureSessionService.instance;
+  LectureSessionProvider(
+    LectureSessionService instance, {
+    LectureSessionService? lectureSessionService,
+  }) : _lectureSessionService =
+           lectureSessionService ?? LectureSessionService.instance;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -25,6 +27,17 @@ class LectureSessionProvider extends ChangeNotifier {
   int? get selectedCourseId => _selectedCourseId;
 
   LectureSession? get selectedLectureSession => _selectedLectureSession;
+
+  double? _averageAttendance;
+
+  double? get averageAttendance => _averageAttendance;
+
+  Future<void> getAverageAttendance() async {
+    _averageAttendance = await LectureSessionService.instance
+        .calculateAverageAttendance();
+
+    notifyListeners();
+  }
 
   List<LectureSession> get lectureSessions =>
       List.unmodifiable(_lectureSessions);

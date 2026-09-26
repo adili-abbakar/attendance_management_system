@@ -2,6 +2,7 @@ import 'package:attendance_management_system/core/dialogs/delete_confirmation_di
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/core/widgets/empty_state.dart';
+import 'package:attendance_management_system/core/widgets/tables/tables.dart';
 import 'package:attendance_management_system/features/academic_session/dialogs/academic_session_form_dialog.dart';
 import 'package:attendance_management_system/features/academic_session/models/academic_session.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
@@ -158,6 +159,22 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
                               )
                               .toList(),
                         ),
+
+                         Expanded(
+                        child: AppDataTable(
+                          columns: [
+                            AppTableColumn(label: 'Session Name', flex: 2),
+                            AppTableColumn(
+                              label: 'Actions',
+                              width: 100,
+                              alignment: Alignment.center,
+                            ),
+                          ],
+                          rows: academicSessions.map(academicSession) {
+                            return AppTableRow(cells: AppTableCell(Text(academicSession.name)));
+                          } 
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -1,6 +1,10 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
+import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/tables/lecture_session_table.dart';
+import 'package:attendance_management_system/features/courses/enrollments/tables/course_student_table.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
+import 'package:attendance_management_system/features/courses/tables/course_table.dart';
 
 class LectureSessionService {
   LectureSessionService._();
@@ -166,5 +170,113 @@ class LectureSessionService {
       where: '${LectureSessionTable.id} = ?',
       whereArgs: [lectureSessionId],
     );
+  }
+
+Future<double> calculateAverageAttendance() async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery('''
+    SELECT
+      COALESCE(SUM(course_stats.attendance_count), 0)
+        AS total_attendance,
+
+      COALESCE(SUM(
+        course_stats.student_count * course_stats.lecture_session_count
+      ), 0) AS total_possible_attendance
+
+    FROM (
+      SELECT
+        c.id,
+
+        COUNT(DISTINCT cs.student_id) AS student_count,
+
+        COUNT(DISTINCT ls.${LectureSessionTable.id})
+          AS lecture_session_count,
+
+        COUNT(ar.${AttendanceRecordTable.id})
+          AS attendance_count
+
+      FROM ${CourseTable.tableName} c
+
+      LEFT JOIN ${CourseStudentTable.tableName} cs
+        ON cs.course_id = c.id
+
+      LEFT JOIN ${LectureSessionTable.tableName} ls
+        ON ls.${LectureSessionTable.courseId} = c.id
+
+      LEFT JOIN ${AttendanceRecordTable.tableName} ar
+        ON ar.${AttendanceRecordTable.lectureSessionId} =
+           ls.${LectureSessionTable.id}
+
+      GROUP BY c.id
+    ) AS course_stats
+    ''');
+
+    if (result.isEmpty) {
+      return 0.0;
+    }
+
+    final row = result.first;
+
+    final totalAttendance = row['total_attendance'] as int? ?? 0;
+
+    final totalPossibleAttendance =
+        row['total_possible_attendance'] as int? ?? 0;
+
+    if (totalPossibleAttendance == 0) {
+      return 0.0;
+    }
+
+    return (totalAttendance / totalPossibleAttendance) * 100;
+  }
+  
+  Future<double> calculateCourseAverageAttendance(Course course) async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT
+      COUNT(ar.${AttendanceRecordTable.id}) AS attendance_record_count,
+      COUNT(DISTINCT ls.${LectureSessionTable.id}) AS lecture_session_count
+    FROM ${LectureSessionTable.tableName} ls
+    LEFT JOIN ${AttendanceRecordTable.tableName} ar
+      ON ar.${AttendanceRecordTable.lectureSessionId} =
+         ls.${LectureSessionTable.id}
+    WHERE ls.${LectureSessionTable.courseId} = ?
+    ''',
+      [course.id],
+    );
+
+    if (result.isNotEmpty) {
+      final row = result.first;
+
+      final attendanceRecordCount = row['attendance_record_count'] as int;
+
+      final lectureSessionsCount = row['lecture_session_count'] as int;
+
+      if (course.studentCount == 0 || lectureSessionsCount == 0) {
+        return 0.0;
+      }
+
+      return (attendanceRecordCount /
+              (course.studentCount * lectureSessionsCount)) *
+          100;
+    }
+
+    return 0.0;
+  }
+
+  Future<int> getLectureSessionCount(int courseId) async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+  select count(*) as lecture_session_count 
+  from ${LectureSessionTable.tableName} where ${LectureSessionTable.courseId} = ?
+''',
+      [courseId],
+    );
+
+    return result.first['lecture_session_count'] as int;
   }
 }

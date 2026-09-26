@@ -150,8 +150,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
 
                 CourseStatistics(
                   totalStudents: provider.students.length,
-                  totalAttendanceSessions: 0,
-                  averageAttendance: 0,
+                  totalLectureSessions: provider.lectureSessionsCount ?? 0,
+                  averageAttendance: provider.averageCourseAttendance ?? 0,
                 ),
 
                 SizedBox(height: r.spacingM),

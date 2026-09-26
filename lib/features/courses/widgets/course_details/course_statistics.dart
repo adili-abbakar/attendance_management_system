@@ -4,12 +4,12 @@ class CourseStatistics extends StatelessWidget {
   const CourseStatistics({
     super.key,
     required this.totalStudents,
-    this.totalAttendanceSessions = 0,
+    this.totalLectureSessions = 0,
     this.averageAttendance = 0,
   });
 
   final int totalStudents;
-  final int totalAttendanceSessions;
+  final int totalLectureSessions;
   final double averageAttendance;
 
   @override
@@ -41,8 +41,8 @@ class CourseStatistics extends StatelessWidget {
             ),
             _StatisticCard(
               icon: Icons.event_available_outlined,
-              title: 'Attendance Sessions',
-              value: totalAttendanceSessions.toString(),
+              title: 'Lecture Sessions',
+              value: totalLectureSessions.toString(),
             ),
             _StatisticCard(
               icon: Icons.analytics_outlined,

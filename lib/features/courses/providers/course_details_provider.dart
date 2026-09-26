@@ -1,3 +1,6 @@
+import 'dart:ffi';
+
+import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:attendance_management_system/features/courses/enrollments/services/course_enrollment_service.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
@@ -37,6 +40,24 @@ class CourseDetailsProvider extends ChangeNotifier {
   int get currentPage => _currentPage;
 
   int get pageSize => _pageSize;
+
+  double? _averageCourseAttendance;
+
+  double? get averageCourseAttendance => _averageCourseAttendance;
+
+  int? _lectureSessionsCount;
+
+  int? get lectureSessionsCount => _lectureSessionsCount;
+
+  Future<void> loadStatistics(Course course) async {
+    _averageCourseAttendance = await LectureSessionService.instance
+        .calculateCourseAverageAttendance(course);
+
+    _lectureSessionsCount = await LectureSessionService.instance
+        .getLectureSessionCount(course.id ?? 0);
+
+    notifyListeners();
+  }
 
   Future<void> loadStudents() async {
     _isLoading = true;
