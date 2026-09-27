@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+import 'package:attendance_management_system/core/table/table.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:flutter/material.dart';
 
@@ -11,101 +13,168 @@ class StudentTable extends StatelessWidget {
   });
 
   final List<Student> students;
-  final ValueChanged<Student> onViewQr;
   final ValueChanged<Student> onEdit;
   final ValueChanged<Student> onDelete;
+  final ValueChanged<Student> onViewQr;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final r = AppResponsive.of(context);
+    final colors = Theme.of(context).colorScheme;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowHeight: 56,
-          dataRowMinHeight: 56,
-          dataRowMaxHeight: 60,
-          columns: const [
-            DataColumn(
-              label: Text(
-                'Admission No.',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                'Student Name',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                'Status',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            DataColumn(
-              label: Text(
-                'Actions',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-          rows: students.map((student) {
-            return DataRow(
-              cells: [
-                DataCell(Text(student.admissionNumber)),
+    return AppDataTable(
+      columns: const [
+        AppTableColumn(
+          label: '#',
+          flex: 1,
+          minWidth: 55,
+          alignment: Alignment.center,
+        ),
+        AppTableColumn(label: 'Admission No.', flex: 2, minWidth: 150),
+        AppTableColumn(label: 'Student Name', flex: 3, minWidth: 180),
+        AppTableColumn(
+          label: 'Status',
+          flex: 2,
+          minWidth: 110,
+          alignment: Alignment.center,
+        ),
+        AppTableColumn(
+          label: 'Actions',
+          flex: 2,
+          minWidth: 150,
+          alignment: Alignment.center,
+        ),
+      ],
+      rows: List.generate(students.length, (index) {
+        final student = students[index];
 
-                DataCell(Text(student.fullName)),
+        return AppTableRow(
+          cells: [
+            Text(
+              '${index + 1}',
+              style: TextStyle(
+                fontSize: r.bodySmall,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
 
-                DataCell(
-                  Chip(
-                    label: Text(student.isActive ? 'Active' : 'Inactive'),
-                    backgroundColor: student.isActive
-                        ? Colors.green.withValues(alpha: .15)
-                        : Colors.red.withValues(alpha: .15),
-                    side: BorderSide.none,
-                  ),
+            Text(
+              student.admissionNumber,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            Text(
+              student.fullName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w500),
+            ),
+
+            _StatusBadge(
+              label: student.isActive ? 'Active' : 'Inactive',
+              active: student.isActive,
+            ),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _TableActionButton(
+                  icon: Icons.edit_outlined,
+                  tooltip: 'Edit',
+                  onPressed: () => onEdit(student),
                 ),
 
-                DataCell(
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        tooltip: 'Edit',
-                        icon: Icon(
-                          Icons.edit_outlined,
-                          color: theme.colorScheme.primary,
-                        ),
-                        onPressed: () => onEdit(student),
-                      ),
+                SizedBox(width: r.spacingXS),
 
-                      IconButton(
-                        tooltip: 'Delete',
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                        ),
-                        onPressed: () => onDelete(student),
-                      ),
+                _TableActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  tooltip: 'Delete',
+                  color: colors.error,
+                  onPressed: () => onDelete(student),
+                ),
 
-                      IconButton(
-                        tooltip: 'QR Code',
-                        icon: Icon(
-                          Icons.qr_code,
-                          color: theme.colorScheme.primary,
-                        ),
-                        onPressed: () => onViewQr(student),
-                      ),
-                    ],
-                  ),
+                SizedBox(width: r.spacingXS),
+
+                _TableActionButton(
+                  icon: Icons.qr_code_rounded,
+                  tooltip: 'QR Code',
+                  onPressed: () => onViewQr(student),
                 ),
               ],
-            );
-          }).toList(),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.label, required this.active});
+
+  final String label;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+    final colors = Theme.of(context).colorScheme;
+
+    final backgroundColor = active
+        ? colors.primary.withValues(alpha: 0.10)
+        : colors.error.withValues(alpha: 0.10);
+
+    final foregroundColor = active ? colors.primary : colors.error;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.spacingS,
+        vertical: r.spacingXS,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: r.caption,
+          fontWeight: FontWeight.w700,
+          color: foregroundColor,
+        ),
+      ),
+    );
+  }
+}
+
+class _TableActionButton extends StatelessWidget {
+  const _TableActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+    final colors = Theme.of(context).colorScheme;
+
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(r.radius),
+        child: Padding(
+          padding: EdgeInsets.all(r.spacingXS),
+          child: Icon(icon, size: r.iconSmall, color: color ?? colors.primary),
         ),
       ),
     );

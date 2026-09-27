@@ -1,8 +1,6 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/core/widgets/empty_state.dart';
-import 'package:attendance_management_system/core/widgets/tables/tables.dart';
 import 'package:attendance_management_system/features/academic_session/dialogs/academic_session_form_dialog.dart';
 import 'package:attendance_management_system/features/academic_session/models/academic_session.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
@@ -12,9 +10,7 @@ import 'package:provider/provider.dart';
 import '../../dashboard/widgets/dashboard_section.dart';
 import '../../dashboard/widgets/stat_card.dart';
 import '../../dashboard/widgets/statistics_grid.dart';
-import '../widgets/academic_session_card.dart';
-import '../widgets/academic_session_grid.dart';
-import '../widgets/academic_session_search_bar.dart';
+import '../widgets/widgets.dart';
 
 class AcademicSessionPage extends StatefulWidget {
   const AcademicSessionPage({super.key});
@@ -24,6 +20,8 @@ class AcademicSessionPage extends StatefulWidget {
 }
 
 class _AcademicSessionPageState extends State<AcademicSessionPage> {
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +29,16 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AcademicSessionProvider>().loadAcademicSessions();
     });
+  }
+
+  List<AcademicSession> _filterSessions(List<AcademicSession> sessions) {
+    if (_searchQuery.isEmpty) {
+      return sessions;
+    }
+
+    return sessions.where((session) {
+      return session.name.toLowerCase().contains(_searchQuery);
+    }).toList();
   }
 
   Future<void> _showCreateAcademicSessionDialog() async {
@@ -94,17 +102,12 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AcademicSessionProvider>();
-    final academicSessions = provider.academicSessions;
+
+    final academicSessions = _filterSessions(provider.academicSessions);
 
     return Scaffold(
       appBar: const AppBarWidget(title: "Academic Sessions"),
       endDrawer: const AppDrawer(),
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateAcademicSessionDialog,
-        icon: const Icon(Icons.add, size: 20),
-        label: const Text("Add Session"),
-      ),
 
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -117,68 +120,18 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
                     children: [
                       StatCard(
                         title: "Total Sessions",
-                        value: academicSessions.length.toString(),
+                        value: provider.academicSessions.length,
                         icon: Icons.calendar_month_outlined,
                       ),
                     ],
                   ),
                 ),
 
-                DashboardSection(
-                  title: "Manage Academic Sessions",
-                  child: Column(
-                    children: [
-                      AcademicSessionSearchBar(
-                        onChanged: (_) {},
-                        onAddPressed: _showCreateAcademicSessionDialog,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      if (academicSessions.isEmpty)
-                        const EmptyState(
-                          title: "No Sessions",
-                          message: "Create your first academic session.",
-                          icon: Icons.calendar_month_rounded,
-                        )
-                      else
-                        AcademicSessionGrid(
-                          children: academicSessions
-                              .map(
-                                (academicSession) => AcademicSessionCard(
-                                  name: academicSession.name,
-                                  onTap: () {},
-                                  onEdit: () => _showEditAcademicSessionDialog(
-                                    academicSession,
-                                  ),
-                                  onDelete: () =>
-                                      _showDeleteAcademicSessionDialog(
-                                        academicSession,
-                                      ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-
-                         Expanded(
-                        child: AppDataTable(
-                          columns: [
-                            AppTableColumn(label: 'Session Name', flex: 2),
-                            AppTableColumn(
-                              label: 'Actions',
-                              width: 100,
-                              alignment: Alignment.center,
-                            ),
-                          ],
-                          rows: academicSessions.map(academicSession) {
-                            return AppTableRow(cells: AppTableCell(Text(academicSession.name)));
-                          } 
-                        ),
-                      ),
-                    ],
-                  ),
+                AcademicSessionTable(
+                  sessions: academicSessions,
+                  onEdit: _showEditAcademicSessionDialog,
+                  onDelete: _showDeleteAcademicSessionDialog,
                 ),
-
                 const SizedBox(height: 12),
               ],
             ),
