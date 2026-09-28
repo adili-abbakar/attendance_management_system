@@ -167,19 +167,21 @@ class _LoginPageState extends State<LoginPage> {
                 text: "Don't have an account?",
                 actionText: "Register",
                 onPressed: () async {
-                  context.read<AuthProvider>().resetLoginState();
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return RegisterPage();
-                      },
-                    ),
+                  final auth = context.read<AuthProvider>();
+                  final navigator = Navigator.of(context);
+
+                  auth.resetLoginState();
+
+                  await navigator.push(
+                    MaterialPageRoute(builder: (_) => RegisterPage()),
                   );
+
+                  if (!mounted) return;
+
                   _identifierController.clear();
                   _passwordController.clear();
 
-                  context.read<AuthProvider>().resetLoginState();
+                  auth.resetLoginState();
                 },
               ),
             ],

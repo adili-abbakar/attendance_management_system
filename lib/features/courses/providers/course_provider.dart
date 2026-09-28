@@ -1,4 +1,3 @@
-import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:flutter/material.dart';
 
 import '../models/course.dart';

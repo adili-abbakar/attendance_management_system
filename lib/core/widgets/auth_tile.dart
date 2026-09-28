@@ -47,6 +47,11 @@ class AuthTile extends StatelessWidget {
               return;
             }
 
+            // Capture navigator and auth provider before any `await` to avoid
+            // using `BuildContext` across async gaps.
+            final navigator = Navigator.of(context);
+            final auth = context.read<AuthProvider>();
+
             final shouldLogout = await showDialog<bool>(
               context: context,
               builder: (dialogContext) => AlertDialog(
@@ -68,13 +73,13 @@ class AuthTile extends StatelessWidget {
 
             if (shouldLogout != true) return;
 
-            await context.read<AuthProvider>().logout();
+            await auth.logout();
 
             if (!context.mounted) return;
 
-            Navigator.of(context).pop();
+            navigator.pop();
 
-            Navigator.of(context).pushAndRemoveUntil(
+            navigator.pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const SplashScreen()),
               (_) => false,
             );

@@ -1,11 +1,11 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/lecture_session_form_dialog.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
-import 'package:attendance_management_system/core/widgets/tables/tables.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
@@ -69,61 +69,34 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
                 SizedBox(height: r.spacingL),
 
                 Expanded(
-                  child: AppDataTable(
-                    columns: const [
-                      AppTableColumn(label: 'Lecture Session', flex: 2),
-                      AppTableColumn(label: 'Week'),
-                      AppTableColumn(label: 'Date'),
-                      AppTableColumn(label: 'Time', flex: 2),
-                      AppTableColumn(label: 'Duration'),
-                      AppTableColumn(label: 'Status'),
-                      AppTableColumn(
-                        label: 'Actions',
-                        width: 100,
-                        alignment: Alignment.center,
-                      ),
-                    ],
-                    rows: sessions.map((lectureSession) {
-                      return AppTableRow(
-                        onTap: () {
-                          _openDetails(context, lectureSession);
-                        },
-                        cells: [
-                          AppTableCell(Text(lectureSession.lectureSessionName)),
-                          AppTableCell(
-                            Text(lectureSession.weekNumber.toString()),
-                          ),
-                          AppTableCell(
-                            Text(_formatDate(lectureSession.lectureDate)),
-                          ),
-                          AppTableCell(
-                            Text(
-                              '${lectureSession.fromTime} – '
-                              '${lectureSession.toTime}',
-                            ),
-                          ),
-                          AppTableCell(
-                            Text(
-                              _formatDuration(lectureSession.durationMinutes),
-                            ),
-                          ),
-                          AppTableCell(
-                            _buildStatus(context, r, lectureSession.status),
-                          ),
-                          AppTableCell(
-                            _buildActions(context, r, lectureSession),
-                            alignment: Alignment.center,
-                          ),
-                        ],
+                  child: LectureSessionTable(
+                    sessions: sessions,
+                    onTap: (session) {
+                      _openDetails(context, session);
+                    },
+                    onUpdate: (session) {
+                      showDialog(
+                        context: context,
+                        builder: (_) => LectureSessionFormDialog(
+                          courseId: widget.courseId,
+                          initialSession: session,
+                        ),
                       );
-                    }).toList(),
-                    isLoading: provider.isLoading,
-                    errorMessage: provider.errorMessage,
-                    emptyMessage: _searchQuery.isEmpty
-                        ? 'No lecture sessions have been created for ${widget.courseName}.'
-                        : 'No lecture sessions match your search.',
-                    onRetry: () {
-                      provider.loadLectureSessions(widget.courseId);
+                    },
+                    onDetails: (session) {
+                      _openDetails(context, session);
+                    },
+                    onAttendance: (session) {
+                      _viewAttendance(context, session);
+                    },
+                    onStart: (session) async {
+                      await _startSession(context, session);
+                    },
+                    onComplete: (session) async {
+                      await _completeSession(context, session);
+                    },
+                    onDelete: (session) async {
+                      await _showDeleteSessionDialog(context, session);
                     },
                   ),
                 ),
@@ -250,89 +223,6 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
     }).toList();
   }
 
-  Widget _buildStatus(
-    BuildContext context,
-    AppResponsive r,
-    LectureSessionStatus status,
-  ) {
-    return Text(
-      _statusLabel(status),
-      style: TextStyle(fontSize: r.bodySmall, fontWeight: FontWeight.w500),
-    );
-  }
-
-  Widget _buildActions(
-    BuildContext context,
-    AppResponsive r,
-    LectureSession lectureSession,
-  ) {
-    return PopupMenuButton<String>(
-      iconSize: r.iconMedium,
-      onSelected: (value) async {
-        switch (value) {
-          case 'details':
-            _openDetails(context, lectureSession);
-            break;
-
-          case 'start':
-            await _startSession(context, lectureSession);
-            break;
-
-          case 'complete':
-            await _completeSession(context, lectureSession);
-            break;
-
-          case 'delete':
-            await _showDeleteSessionDialog(context, lectureSession);
-            break;
-
-          case 'attendance':
-            _viewAttendance(context, lectureSession);
-            break;
-
-          case 'update':
-            showDialog(
-              context: context,
-              builder: (_) => LectureSessionFormDialog(
-                courseId: widget.courseId,
-                initialSession: lectureSession,
-              ),
-            );
-            break;
-        }
-      },
-      itemBuilder: (context) {
-        final items = <PopupMenuEntry<String>>[
-          const PopupMenuItem(value: 'update', child: Text('Update Session')),
-          const PopupMenuItem(value: 'details', child: Text('View Details')),
-          const PopupMenuItem(
-            value: 'attendance',
-            child: Text('View Attendance'),
-          ),
-        ];
-
-        if (lectureSession.isScheduled) {
-          items.add(
-            const PopupMenuItem(value: 'start', child: Text('Start Lecture')),
-          );
-        }
-
-        if (lectureSession.isActive) {
-          items.add(
-            const PopupMenuItem(
-              value: 'complete',
-              child: Text('Complete Lecture'),
-            ),
-          );
-        }
-
-        items.add(const PopupMenuItem(value: 'delete', child: Text('Delete')));
-
-        return items;
-      },
-    );
-  }
-
   void _openDetails(BuildContext context, LectureSession lectureSession) {
     Navigator.push(
       context,
@@ -455,39 +345,9 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String _statusLabel(LectureSessionStatus status) {
-    switch (status) {
-      case LectureSessionStatus.scheduled:
-        return 'Scheduled';
-      case LectureSessionStatus.active:
-        return 'Active';
-      case LectureSessionStatus.completed:
-        return 'Completed';
-    }
-  }
-
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/'
         '${date.month.toString().padLeft(2, '0')}/'
         '${date.year}';
-  }
-
-  String _formatDuration(int minutes) {
-    if (minutes <= 0) {
-      return '-';
-    }
-
-    final hours = minutes ~/ 60;
-    final remainingMinutes = minutes % 60;
-
-    if (hours == 0) {
-      return '$remainingMinutes min';
-    }
-
-    if (remainingMinutes == 0) {
-      return '$hours hr';
-    }
-
-    return '$hours hr $remainingMinutes min';
   }
 }

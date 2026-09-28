@@ -82,7 +82,6 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    print('Logged out auth servies');
     await SessionService.instance.logout();
   }
 

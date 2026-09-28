@@ -1,7 +1,5 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_sessions_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';

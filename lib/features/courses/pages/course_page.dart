@@ -18,9 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../dashboard/widgets/dashboard_section.dart';
-import '../../dashboard/widgets/stat_card.dart';
-import '../../dashboard/widgets/statistics_grid.dart';
-
 import '../widgets/course_page/course_card.dart';
 import '../widgets/course_page/course_grid.dart';
 import '../widgets/course_page/course_search_bar.dart';
@@ -45,6 +42,10 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Future<void> _showCreateCourseDialog() async {
+    final levelProvider = context.read<LevelProvider>();
+    final academicProvider = context.read<AcademicSessionProvider>();
+    final courseProvider = context.read<CourseProvider>();
+
     await showDialog(
       context: context,
       builder: (_) => CourseFormDialog(
@@ -53,7 +54,7 @@ class _CoursePageState extends State<CoursePage> {
             context: context,
             builder: (_) => LevelFormDialog(
               onSave: (name) async {
-                return context.read<LevelProvider>().createLevel(
+                return levelProvider.createLevel(
                   Level(
                     name: name,
                     createdAt: DateTime.now(),
@@ -64,27 +65,25 @@ class _CoursePageState extends State<CoursePage> {
             ),
           );
 
-          await context.read<LevelProvider>().loadLevels();
+          await levelProvider.loadLevels();
         },
         onAddAcademicSession: () async {
           await showDialog(
             context: context,
             builder: (_) => AcademicSessionFormDialog(
               onSave: (name) async {
-                return context
-                    .read<AcademicSessionProvider>()
-                    .createAcademicSession(
-                      AcademicSession(
-                        name: name,
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
-                      ),
-                    );
+                return academicProvider.createAcademicSession(
+                  AcademicSession(
+                    name: name,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
               },
             ),
           );
 
-          await context.read<AcademicSessionProvider>().loadAcademicSessions();
+          await academicProvider.loadAcademicSessions();
         },
         onSave:
             (
@@ -94,7 +93,7 @@ class _CoursePageState extends State<CoursePage> {
               int semester,
               int academicSessionId,
             ) async {
-              return context.read<CourseProvider>().createCourse(
+              return courseProvider.createCourse(
                 Course(
                   code: code,
                   title: title,
@@ -113,6 +112,10 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Future<void> _showEditCourseDialog(Course course) async {
+    final levelProvider = context.read<LevelProvider>();
+    final academicProvider = context.read<AcademicSessionProvider>();
+    final courseProvider = context.read<CourseProvider>();
+
     await showDialog(
       context: context,
       builder: (_) => CourseFormDialog(
@@ -126,7 +129,7 @@ class _CoursePageState extends State<CoursePage> {
             context: context,
             builder: (_) => LevelFormDialog(
               onSave: (name) async {
-                return context.read<LevelProvider>().createLevel(
+                return levelProvider.createLevel(
                   Level(
                     name: name,
                     createdAt: DateTime.now(),
@@ -137,27 +140,25 @@ class _CoursePageState extends State<CoursePage> {
             ),
           );
 
-          await context.read<LevelProvider>().loadLevels();
+          await levelProvider.loadLevels();
         },
         onAddAcademicSession: () async {
           await showDialog(
             context: context,
             builder: (_) => AcademicSessionFormDialog(
               onSave: (name) async {
-                return context
-                    .read<AcademicSessionProvider>()
-                    .createAcademicSession(
-                      AcademicSession(
-                        name: name,
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
-                      ),
-                    );
+                return academicProvider.createAcademicSession(
+                  AcademicSession(
+                    name: name,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
               },
             ),
           );
 
-          await context.read<AcademicSessionProvider>().loadAcademicSessions();
+          await academicProvider.loadAcademicSessions();
         },
 
         onSave:
@@ -168,7 +169,7 @@ class _CoursePageState extends State<CoursePage> {
               int semester,
               int academicSessionId,
             ) async {
-              return context.read<CourseProvider>().updateCourse(
+              return courseProvider.updateCourse(
                 course.copyWith(
                   code: code,
                   title: title,
@@ -183,20 +184,21 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Future<void> _showDeleteCourseDialog(Course course) async {
+    final courseProvider = context.read<CourseProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
     await showDialog(
       context: context,
       builder: (_) => DeleteConfirmationDialog(
         title: 'Delete Course',
         itemName: '${course.code} - ${course.title}',
         onDelete: () async {
-          final success = await context.read<CourseProvider>().deleteCourse(
-            course.id!,
-          );
+          final success = await courseProvider.deleteCourse(course.id!);
 
           if (!mounted) return;
 
           if (!success) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            messenger.showSnackBar(
               const SnackBar(content: Text('Failed to delete course.')),
             );
           }
@@ -210,16 +212,6 @@ class _CoursePageState extends State<CoursePage> {
     final courseProvider = context.watch<CourseProvider>();
     final courses = courseProvider.courses;
 
-    final semesterOneCount = courses
-        .where((course) => course.semester == 1)
-        .length;
-
-    final semesterTwoCount = courses
-        .where((course) => course.semester == 2)
-        .length;
-
-    final activeCount = courses.where((course) => course.isActive).length;
-
     return Scaffold(
       appBar: const AppBarWidget(title: 'Courses'),
       endDrawer: const AppDrawer(),
@@ -228,33 +220,6 @@ class _CoursePageState extends State<CoursePage> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
-                DashboardSection(
-                  title: 'Statistics',
-                  child: StatisticsGrid(
-                    children: [
-                      StatCard(
-                        title: 'Total Courses',
-                        value: courses.length.toString(),
-                        icon: Icons.menu_book,
-                      ),
-                      StatCard(
-                        title: 'Semester 1',
-                        value: semesterOneCount.toString(),
-                        icon: Icons.looks_one,
-                      ),
-                      StatCard(
-                        title: 'Semester 2',
-                        value: semesterTwoCount.toString(),
-                        icon: Icons.looks_two,
-                      ),
-                      StatCard(
-                        title: 'Active',
-                        value: activeCount.toString(),
-                        icon: Icons.check_circle_outline,
-                      ),
-                    ],
-                  ),
-                ),
                 DashboardSection(
                   title: 'Manage Courses',
                   child: Column(

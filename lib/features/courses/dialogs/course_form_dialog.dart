@@ -70,8 +70,11 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      await context.read<LevelProvider>().loadLevels();
-      await context.read<AcademicSessionProvider>().loadAcademicSessions();
+      final levelProvider = context.read<LevelProvider>();
+      final academicProvider = context.read<AcademicSessionProvider>();
+
+      await levelProvider.loadLevels();
+      await academicProvider.loadAcademicSessions();
     });
   }
 
@@ -136,21 +139,25 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   Future<void> _addLevel() async {
     if (_isSaving) return;
 
+    final levelProvider = context.read<LevelProvider>();
+
     await widget.onAddLevel();
 
     if (!mounted) return;
 
-    await context.read<LevelProvider>().loadLevels();
+    await levelProvider.loadLevels();
   }
 
   Future<void> _addAcademicSession() async {
     if (_isSaving) return;
 
+    final academicProvider = context.read<AcademicSessionProvider>();
+
     await widget.onAddAcademicSession();
 
     if (!mounted) return;
 
-    await context.read<AcademicSessionProvider>().loadAcademicSessions();
+    await academicProvider.loadAcademicSessions();
   }
 
   @override
