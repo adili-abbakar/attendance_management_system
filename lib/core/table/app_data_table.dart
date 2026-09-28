@@ -34,66 +34,60 @@ class AppDataTable extends StatelessWidget {
     }
 
     if (errorMessage != null) {
-      return _ErrorView(
-        message: errorMessage!,
-        onRetry: onRetry,
-      );
+      return _ErrorView(message: errorMessage!, onRetry: onRetry);
     }
 
     if (rows.isEmpty) {
-      return _StateView(
-        icon: Icons.inbox_outlined,
-        message: emptyMessage,
-      );
+      return _StateView(icon: Icons.inbox_outlined, message: emptyMessage);
     }
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(r.radius),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withValues(
-              alpha: 0.06,
-            ),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: _calculateTableWidth(context),
-          child: Column(
-            children: [
-              _TableHeader(
-                columns: columns,
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tableWidth = _calculateTableWidth(context, constraints.maxWidth);
 
-              ...List.generate(
-                rows.length,
-                (index) {
-                  return _TableDataRow(
-                    index: index,
-                    columns: columns,
-                    row: rows[index],
-                  );
-                },
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(r.radius),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(
+                  context,
+                ).colorScheme.shadow.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-        ),
-      ),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: tableWidth,
+              child: Column(
+                children: [
+                  _TableHeader(columns: columns),
+                  ...List.generate(rows.length, (index) {
+                    return _TableDataRow(
+                      index: index,
+                      columns: columns,
+                      row: rows[index],
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  double _calculateTableWidth(BuildContext context) {
+  double _calculateTableWidth(BuildContext context, double availableWidth) {
     final r = AppResponsive.of(context);
 
     final minimumWidth = columns.fold<double>(
@@ -103,7 +97,9 @@ class AppDataTable extends StatelessWidget {
 
     final horizontalPadding = r.tableHorizontalMargin * 2;
 
-    return minimumWidth + horizontalPadding;
+    final requiredWidth = minimumWidth + horizontalPadding;
+
+    return availableWidth > requiredWidth ? availableWidth : requiredWidth;
   }
 }
 
@@ -122,9 +118,7 @@ class AppTableColumn {
 }
 
 class _TableHeader extends StatelessWidget {
-  const _TableHeader({
-    required this.columns,
-  });
+  const _TableHeader({required this.columns});
 
   final List<AppTableColumn> columns;
 
@@ -138,14 +132,10 @@ class _TableHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.primary,
         border: Border(
-          bottom: BorderSide(
-            color: colors.primary.withValues(alpha: 0.7),
-          ),
+          bottom: BorderSide(color: colors.primary.withValues(alpha: 0.7)),
         ),
       ),
-      padding: EdgeInsets.symmetric(
-        horizontal: r.tableHorizontalMargin,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: r.tableHorizontalMargin),
       child: Row(
         children: columns.map((column) {
           return Expanded(
@@ -202,9 +192,7 @@ class _TableDataRow extends StatelessWidget {
         onTap: row.onTap,
         child: Container(
           height: r.tableRowHeight,
-          padding: EdgeInsets.symmetric(
-            horizontal: r.tableHorizontalMargin,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: r.tableHorizontalMargin),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -213,31 +201,28 @@ class _TableDataRow extends StatelessWidget {
             ),
           ),
           child: Row(
-            children: List.generate(
-              columns.length,
-              (index) {
-                final column = columns[index];
+            children: List.generate(columns.length, (index) {
+              final column = columns[index];
 
-                return Expanded(
-                  flex: column.flex,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: r.tableColumnSpacing / 2,
-                    ),
-                    child: Align(
-                      alignment: column.alignment,
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          fontSize: r.body,
-                          color: colors.onSurface,
-                        ),
-                        child: row.cells[index],
+              return Expanded(
+                flex: column.flex,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: r.tableColumnSpacing / 2,
+                  ),
+                  child: Align(
+                    alignment: column.alignment,
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                        fontSize: r.body,
+                        color: colors.onSurface,
                       ),
+                      child: row.cells[index],
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ),
         ),
       ),
@@ -246,10 +231,7 @@ class _TableDataRow extends StatelessWidget {
 }
 
 class _StateView extends StatelessWidget {
-  const _StateView({
-    required this.icon,
-    required this.message,
-  });
+  const _StateView({required this.icon, required this.message});
 
   final IconData icon;
   final String message;
@@ -268,26 +250,17 @@ class _StateView extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(r.radius),
-        border: Border.all(
-          color: colors.outlineVariant,
-        ),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: r.iconLarge,
-            color: colors.onSurfaceVariant,
-          ),
+          Icon(icon, size: r.iconLarge, color: colors.onSurfaceVariant),
           SizedBox(height: r.spacingM),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: r.body,
-              color: colors.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: r.body, color: colors.onSurfaceVariant),
           ),
         ],
       ),
@@ -296,10 +269,7 @@ class _StateView extends StatelessWidget {
 }
 
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({
-    required this.message,
-    this.onRetry,
-  });
+  const _ErrorView({required this.message, this.onRetry});
 
   final String message;
   final VoidCallback? onRetry;
@@ -315,9 +285,7 @@ class _ErrorView extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.errorContainer,
         borderRadius: BorderRadius.circular(r.radius),
-        border: Border.all(
-          color: colors.error.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: colors.error.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -341,10 +309,7 @@ class _ErrorView extends StatelessWidget {
               onPressed: onRetry,
               child: Text(
                 'Retry',
-                style: TextStyle(
-                  fontSize: r.body,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w600),
               ),
             ),
         ],

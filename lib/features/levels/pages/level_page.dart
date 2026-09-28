@@ -1,7 +1,6 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/core/widgets/empty_state.dart';
 import 'package:attendance_management_system/features/levels/models/level.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:attendance_management_system/features/levels/dialogs/level_form_dialog.dart';
@@ -9,12 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../dashboard/widgets/dashboard_section.dart';
-import '../../dashboard/widgets/stat_card.dart';
-import '../../dashboard/widgets/statistics_grid.dart';
 
-import '../widgets/level_card.dart';
-import '../widgets/level_grid.dart';
-import '../widgets/level_search_bar.dart';
+import '../widgets/widgets.dart';
 
 class LevelPage extends StatefulWidget {
   const LevelPage({super.key});
@@ -97,29 +92,10 @@ class _LevelPageState extends State<LevelPage> {
       appBar: const AppBarWidget(title: "Levels"),
       endDrawer: const AppDrawer(),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateLevelDialog,
-        icon: const Icon(Icons.add),
-        label: const Text("Add Level"),
-      ),
-
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
-                DashboardSection(
-                  title: "Statistics",
-                  child: StatisticsGrid(
-                    children: [
-                      StatCard(
-                        title: "Total Levels",
-                        value: levels.length.toString(),
-                        icon: Icons.school,
-                      ),
-                    ],
-                  ),
-                ),
-
                 DashboardSection(
                   title: "Manage Levels",
                   child: Column(
@@ -131,25 +107,11 @@ class _LevelPageState extends State<LevelPage> {
 
                       const SizedBox(height: 20),
 
-                      if (levels.isEmpty)
-                        const EmptyState(
-                          title: "No Levels",
-                          message: "Create your first level.",
-                          icon: Icons.school_outlined,
-                        )
-                      else
-                        LevelGrid(
-                          children: levels
-                              .map(
-                                (level) => LevelCard(
-                                  name: level.name,
-                                  onTap: () {},
-                                  onEdit: () => _showEditLevelDialog(level),
-                                  onDelete: () => _showDeleteLevelDialog(level),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                      LevelTable(
+                        levels: levels,
+                        onEdit: _showEditLevelDialog,
+                        onDelete: _showDeleteLevelDialog,
+                      ),
                     ],
                   ),
                 ),

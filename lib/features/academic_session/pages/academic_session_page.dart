@@ -8,8 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../dashboard/widgets/dashboard_section.dart';
-import '../../dashboard/widgets/stat_card.dart';
-import '../../dashboard/widgets/statistics_grid.dart';
 import '../widgets/widgets.dart';
 
 class AcademicSessionPage extends StatefulWidget {
@@ -115,23 +113,28 @@ class _AcademicSessionPageState extends State<AcademicSessionPage> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 DashboardSection(
-                  title: "Statistics",
-                  child: StatisticsGrid(
+                  title: "Manage Academic Sessions",
+                  child: Column(
                     children: [
-                      StatCard(
-                        title: "Total Sessions",
-                        value: provider.academicSessions.length,
-                        icon: Icons.calendar_month_outlined,
+                      AcademicSessionSearchBar(
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value.trim().toLowerCase();
+                          });
+                        },
+                        onAddPressed: _showCreateAcademicSessionDialog,
+                      ),
+
+                      const SizedBox(height: 12),
+                      AcademicSessionTable(
+                        sessions: academicSessions,
+                        onEdit: _showEditAcademicSessionDialog,
+                        onDelete: _showDeleteAcademicSessionDialog,
                       ),
                     ],
                   ),
                 ),
 
-                AcademicSessionTable(
-                  sessions: academicSessions,
-                  onEdit: _showEditAcademicSessionDialog,
-                  onDelete: _showDeleteAcademicSessionDialog,
-                ),
                 const SizedBox(height: 12),
               ],
             ),

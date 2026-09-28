@@ -74,10 +74,7 @@ class _StudentPageState extends State<StudentPage> {
   Future<void> _showBulkExportDialog() async {
     await showDialog(
       context: context,
-      builder: (_) => BulkQrExportDialog(
-        students:
-            _filteredStudents,
-      ),
+      builder: (_) => BulkQrExportDialog(students: _filteredStudents),
     );
   }
 
@@ -91,6 +88,10 @@ class _StudentPageState extends State<StudentPage> {
     }
 
     return _filteredStudents.sublist(start, end);
+  }
+
+  int get _currentStartIndex {
+    return (_currentPage - 1) * _itemsPerPage;
   }
 
   int get _totalPages {
@@ -246,6 +247,7 @@ class _StudentPageState extends State<StudentPage> {
                 onEdit: _showEditStudentDialog,
                 onDelete: _showDeleteStudentDialog,
                 onViewQr: _showStudentQr,
+                startingIndex: _currentStartIndex,
               ),
 
               const SizedBox(height: 20),

@@ -10,12 +10,14 @@ class StudentTable extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onViewQr,
+    required this.startingIndex,
   });
 
   final List<Student> students;
   final ValueChanged<Student> onEdit;
   final ValueChanged<Student> onDelete;
   final ValueChanged<Student> onViewQr;
+  final int startingIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,7 @@ class StudentTable extends StatelessWidget {
         return AppTableRow(
           cells: [
             Text(
-              '${index + 1}',
+              '${startingIndex + index + 1}',
               style: TextStyle(
                 fontSize: r.bodySmall,
                 fontWeight: FontWeight.w600,
