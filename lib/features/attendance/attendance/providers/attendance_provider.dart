@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:attendance_management_system/features/attendance/attendance/models/attendance_record.dart';
+import 'package:attendance_management_system/features/attendance/attendance/models/models.dart';
 import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_verification_result.dart';
 import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 
 class AttendanceProvider extends ChangeNotifier {
   final AttendanceService _attendanceService;
@@ -21,6 +23,8 @@ class AttendanceProvider extends ChangeNotifier {
 
   List<AttendanceRecord> _records = [];
 
+  AttendanceVerification? _verification;
+
   bool get isLoading => _isLoading;
 
   bool get isScanning => _isScanning;
@@ -32,6 +36,8 @@ class AttendanceProvider extends ChangeNotifier {
   List<AttendanceRecord> get records => List.unmodifiable(_records);
 
   int get attendanceCount => _records.length;
+
+  AttendanceVerification? get verification => _verification;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -64,6 +70,42 @@ class AttendanceProvider extends ChangeNotifier {
     _records = [];
     _clearError();
     notifyListeners();
+  }
+
+  void clearVerification() {
+    _verification = null;
+    _clearError();
+    notifyListeners();
+  }
+
+  Future<AttendanceVerificationResult> verifyStudentAttendance({
+    required Course course,
+    required String admissionNumber,
+  }) async {
+    _clearError();
+    _setScanning(true);
+
+    try {
+      final result = await _attendanceService.verifyStudentAttendance(
+        course: course,
+        admissionNumber: admissionNumber,
+      );
+
+      _verification = result.verification;
+
+      return result;
+    } catch (e) {
+      const result = AttendanceVerificationResult(
+        status: AttendanceVerificationResultStatus.error,
+        message: 'Failed to verify student attendance.',
+      );
+
+      _setError(result.message!);
+
+      return result;
+    } finally {
+      _setScanning(false);
+    }
   }
 
   Future<bool> loadRecords(int lectureSessionId) async {

@@ -1,6 +1,10 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
+import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
+import 'package:attendance_management_system/features/attendance/attendance/providers/attendance_provider.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_verification_result.dart';
+import 'package:attendance_management_system/features/attendance/attendance/widgets/attendance_dialog_action.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
@@ -8,6 +12,7 @@ import 'package:attendance_management_system/features/auth/providers/auth_provid
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
+import 'package:attendance_management_system/features/scanner/pages/scanner_page.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,11 +34,14 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await context.read<StudentProvider>().loadStudents();
+      await Future.wait([
+        context.read<StudentProvider>().loadStudents(),
+        context.read<CourseProvider>().loadCourses(),
+      ]);
 
       if (!mounted) return;
 
-      context.read<LectureSessionProvider>().getAverageAttendance();
+      await context.read<LectureSessionProvider>().getAverageAttendance();
     });
   }
 
@@ -93,7 +101,16 @@ class _DashboardPageState extends State<DashboardPage> {
       lectureSessionProvider.lectureSessions,
     );
 
-    if (!mounted || session == null) return;
+    if (!mounted || session == null || session.id == null) return;
+
+    if (session.isCompleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A completed lecture session cannot be started.'),
+        ),
+      );
+      return;
+    }
 
     if (session.isScheduled) {
       final success = await lectureSessionProvider.startLectureSession(session);
@@ -115,7 +132,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
     if (!mounted) return;
 
-    // TODO: Navigate to ActiveAttendancePage.
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveAttendancePage(
+          lectureSession: session,
+          courseName: course.title,
+          courseCode: course.code,
+        ),
+      ),
+    );
   }
 
   Future<void> _showScanAttendanceDialog() async {
@@ -140,10 +166,104 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _verifyAttendance() async {
     final course = await _showCourseSelectionDialog();
 
-    if (!mounted || course == null) return;
+    if (!mounted || course == null || course.id == null) return;
 
-    // TODO: Navigate to AttendanceVerificationPage
-    // and pass the selected course.
+    await _scanStudentForVerification(course);
+  }
+
+  Future<void> _scanStudentForVerification(Course course) async {
+    final admissionNumber = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => ScannerPage()),
+    );
+
+    if (!mounted || admissionNumber == null) return;
+
+    final provider = context.read<AttendanceProvider>();
+
+    final result = await provider.verifyStudentAttendance(
+      course: course,
+      admissionNumber: admissionNumber,
+    );
+
+    if (!mounted) return;
+
+    await _handleVerificationResult(course: course, result: result);
+  }
+
+  Future<void> _handleVerificationResult({
+    required Course course,
+    required AttendanceVerificationResult result,
+  }) async {
+    if (result.isSuccess && result.verification != null) {
+      final action = await showDialog<AttendanceVerificationDialogAction>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) =>
+            AttendanceVerificationDialog(verification: result.verification!),
+      );
+
+      if (!mounted) return;
+
+      if (action == AttendanceVerificationDialogAction.scanAgain) {
+        await _scanStudentForVerification(course);
+      }
+
+      return;
+    }
+
+    if (result.isStudentNotFound) {
+      final action = await showDialog<AttendanceDialogAction>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const InvalidStudentDialog(),
+      );
+
+      if (!mounted) return;
+
+      if (action == AttendanceDialogAction.scanNext) {
+        await _scanStudentForVerification(course);
+      }
+
+      return;
+    }
+
+    if (result.isStudentNotEnrolled) {
+      final student = result.student;
+
+      if (student == null) {
+        await _showVerificationError(
+          result.message ?? 'The student is not enrolled in this course.',
+        );
+        return;
+      }
+
+      final action = await showDialog<AttendanceDialogAction>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => StudentNotEnrolledDialog(student: student),
+      );
+
+      if (!mounted) return;
+
+      if (action == AttendanceDialogAction.scanNext) {
+        await _scanStudentForVerification(course);
+      }
+
+      return;
+    }
+
+    await _showVerificationError(
+      result.message ?? 'Failed to verify student attendance.',
+    );
+  }
+
+  Future<void> _showVerificationError(String message) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AttendanceErrorDialog(message: message),
+    );
   }
 
   @override
@@ -165,7 +285,7 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 StatCard(
                   title: 'Students',
-                  value: studentProvider.students.length.toString(),
+                  value: studentProvider.studentCount?.toString() ?? '-',
                   icon: Icons.people,
                 ),
                 StatCard(

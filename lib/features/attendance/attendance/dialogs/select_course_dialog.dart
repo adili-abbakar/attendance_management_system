@@ -90,7 +90,10 @@ class SelectCourseDialog extends StatelessWidget {
 }
 
 class _CourseOption extends StatelessWidget {
-  const _CourseOption({required this.course, required this.onTap});
+  const _CourseOption({
+    required this.course,
+    required this.onTap,
+  });
 
   final Course course;
   final VoidCallback onTap;
@@ -152,6 +155,43 @@ class _CourseOption extends StatelessWidget {
                         color: colors.onSurfaceVariant,
                       ),
                     ),
+                    if (_hasAcademicSession(course)) ...[
+                      SizedBox(height: r.spacingS),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: r.iconSmall,
+                            color: colors.primary,
+                          ),
+                          SizedBox(width: r.spacingXS),
+                          Expanded(
+                            child: Text(
+                              course.academicSessionName!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: r.bodySmall,
+                                fontWeight: FontWeight.w700,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (_hasLevel(course)) ...[
+                      SizedBox(height: r.spacingXS),
+                      Text(
+                        course.levelName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: r.caption,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -166,5 +206,15 @@ class _CourseOption extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static bool _hasAcademicSession(Course course) {
+    return course.academicSessionName != null &&
+        course.academicSessionName!.trim().isNotEmpty;
+  }
+
+  static bool _hasLevel(Course course) {
+    return course.levelName != null &&
+        course.levelName!.trim().isNotEmpty;
   }
 }

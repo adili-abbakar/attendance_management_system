@@ -1,3 +1,4 @@
 library;
 
-export 'package:attendance_management_system/features/attendance/attendance/widgets/attendance_record_tile.dart';
+export 'attendance_result.dart';
+export 'attendance_verification_result.dart';

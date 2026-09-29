@@ -39,6 +39,7 @@ class StudentProvider extends ChangeNotifier {
 
     try {
       _students = await _service.getStudents();
+      _studentCount = await _service.getStudentsCount();
 
       _error = null;
     } catch (e) {

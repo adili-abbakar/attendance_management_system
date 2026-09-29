@@ -1,8 +1,12 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
-import 'package:attendance_management_system/features/attendance/attendance/models/attendance_record.dart';
+import 'package:attendance_management_system/features/attendance/attendance/models/models.dart';
 import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
+import 'package:attendance_management_system/features/attendance/attendance/results/attendance_verification_result.dart';
 import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/tables/lecture_session_table.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:attendance_management_system/features/courses/enrollments/services/course_enrollment_service.dart';
 import 'package:attendance_management_system/features/courses/enrollments/models/course_student.dart';
@@ -374,6 +378,102 @@ class AttendanceService {
       AttendanceRecordTable.tableName,
       where: '${AttendanceRecordTable.id} = ?',
       whereArgs: [recordId],
+    );
+  }
+
+  Future<AttendanceVerificationResult> verifyStudentAttendance({
+    required Course course,
+    required String admissionNumber,
+  }) async {
+    final student = await _studentService.getStudentByAdmissionNumber(
+      admissionNumber,
+    );
+
+    if (student == null) {
+      return const AttendanceVerificationResult(
+        status: AttendanceVerificationResultStatus.studentNotFound,
+        message: 'No student was found with this admission number.',
+      );
+    }
+
+    if (student.id == null) {
+      return AttendanceVerificationResult(
+        status: AttendanceVerificationResultStatus.invalidStudent,
+        student: student,
+        message: 'The student record is invalid.',
+      );
+    }
+
+    if (course.id == null) {
+      return AttendanceVerificationResult(
+        status: AttendanceVerificationResultStatus.error,
+        student: student,
+        message: 'The selected course is invalid.',
+      );
+    }
+
+    final isEnrolled = await _courseEnrollmentService.isStudentEnrolled(
+      courseId: course.id!,
+      studentId: student.id!,
+    );
+
+    if (!isEnrolled) {
+      return AttendanceVerificationResult(
+        status: AttendanceVerificationResultStatus.studentNotEnrolled,
+        student: student,
+        message: 'This student is not enrolled in the selected course.',
+      );
+    }
+
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT
+      ls.*,
+      ar.${AttendanceRecordTable.id} AS attendance_record_id,
+      ar.${AttendanceRecordTable.status} AS attendance_status,
+      ar.${AttendanceRecordTable.scannedAt} AS attendance_scanned_at
+    FROM ${LectureSessionTable.tableName} ls
+
+    LEFT JOIN ${AttendanceRecordTable.tableName} ar
+      ON ar.${AttendanceRecordTable.lectureSessionId} =
+         ls.${LectureSessionTable.id}
+      AND ar.${AttendanceRecordTable.studentId} = ?
+
+    WHERE ls.${LectureSessionTable.courseId} = ?
+
+    ORDER BY
+      ls.${LectureSessionTable.lectureDate} ASC,
+      ls.${LectureSessionTable.sessionNumber} ASC
+    ''',
+      [student.id!, course.id!],
+    );
+
+    final sessions = result.map((row) {
+      final lectureSession = LectureSession.fromMap(row);
+
+      final attendanceRecordId = row['attendance_record_id'] as int?;
+
+      final scannedAtValue = row['attendance_scanned_at'] as String?;
+
+      return AttendanceVerificationSession(
+        lectureSession: lectureSession,
+        isPresent: attendanceRecordId != null,
+        scannedAt: scannedAtValue == null
+            ? null
+            : DateTime.parse(scannedAtValue),
+      );
+    }).toList();
+
+    return AttendanceVerificationResult(
+      status: AttendanceVerificationResultStatus.success,
+      verification: AttendanceVerification(
+        student: student,
+        course: course,
+        sessions: sessions,
+      ),
+      student: student,
     );
   }
 }
