@@ -46,7 +46,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) =>
-              AcademicSessionProvider(AcademicSessionSerivce.instance),
+              AcademicSessionProvider(AcademicSessionSerivce.instance), 
         ),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(StudentService.instance),

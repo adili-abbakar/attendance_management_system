@@ -5,6 +5,7 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
@@ -45,29 +46,57 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Future<LectureSession?> _showStartAttendanceDialog() async {
-    final provider = context.read<LectureSessionProvider>();
+  Future<Course?> _showCourseSelectionDialog() async {
+    final courses = context.read<CourseProvider>().courses;
 
-    final loaded = await provider.loadLectureSessions();
+    return showDialog<Course?>(
+      context: context,
+      builder: (_) => SelectCourseDialog(courses: courses),
+    );
+  }
 
-    if (!mounted || !loaded) return null;
-
+  Future<LectureSession?> _showLectureSessionSelectionDialog(
+    List<LectureSession> sessions,
+  ) async {
     return showDialog<LectureSession?>(
       context: context,
-      builder: (_) =>
-          StartAttendanceDialog(lectureSessions: provider.lectureSessions),
+      builder: (_) => SelectLectureSessionDialog(sessions: sessions),
     );
   }
 
   Future<void> _startAttendance() async {
-    final session = await _showStartAttendanceDialog();
+    final course = await _showCourseSelectionDialog();
+
+    if (!mounted || course == null || course.id == null) return;
+
+    final lectureSessionProvider = context.read<LectureSessionProvider>();
+
+    final loaded = await lectureSessionProvider.loadLectureSessionsByCourse(
+      course.id!,
+    );
+
+    if (!mounted) return;
+
+    if (!loaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            lectureSessionProvider.errorMessage ??
+                'Failed to load lecture sessions.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final session = await _showLectureSessionSelectionDialog(
+      lectureSessionProvider.lectureSessions,
+    );
 
     if (!mounted || session == null) return;
 
-    final provider = context.read<LectureSessionProvider>();
-
     if (session.isScheduled) {
-      final success = await provider.startLectureSession(session);
+      final success = await lectureSessionProvider.startLectureSession(session);
 
       if (!mounted) return;
 
@@ -75,7 +104,8 @@ class _DashboardPageState extends State<DashboardPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              provider.errorMessage ?? 'Failed to start lecture session.',
+              lectureSessionProvider.errorMessage ??
+                  'Failed to start lecture session.',
             ),
           ),
         );
@@ -108,7 +138,12 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _verifyAttendance() async {
-    // TODO: Open SelectCourseDialog and navigate to verification.
+    final course = await _showCourseSelectionDialog();
+
+    if (!mounted || course == null) return;
+
+    // TODO: Navigate to AttendanceVerificationPage
+    // and pass the selected course.
   }
 
   @override

@@ -1,16 +1,16 @@
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
-import 'package:attendance_management_system/features/courses/models/course.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:flutter/material.dart';
 
-class SelectCourseDialog extends StatelessWidget {
-  const SelectCourseDialog({
+class SelectLectureSessionDialog extends StatelessWidget {
+  const SelectLectureSessionDialog({
     super.key,
-    required this.courses,
-    this.title = 'Select Course',
-    this.emptyMessage = 'No courses available.',
+    required this.sessions,
+    this.title = 'Select Lecture Session',
+    this.emptyMessage = 'No lecture sessions available.',
   });
 
-  final List<Course> courses;
+  final List<LectureSession> sessions;
   final String title;
   final String emptyMessage;
 
@@ -41,14 +41,14 @@ class SelectCourseDialog extends StatelessWidget {
       ),
       content: SizedBox(
         width: dialogWidth,
-        child: courses.isEmpty
+        child: sessions.isEmpty
             ? Padding(
                 padding: EdgeInsets.symmetric(vertical: r.spacingXL),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.school_outlined,
+                      Icons.event_note_outlined,
                       size: r.iconLarge,
                       color: colors.onSurfaceVariant,
                     ),
@@ -67,12 +67,12 @@ class SelectCourseDialog extends StatelessWidget {
             : SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: courses.map((course) {
+                  children: sessions.map((session) {
                     return Padding(
                       padding: EdgeInsets.only(bottom: r.spacingS),
-                      child: _CourseOption(
-                        course: course,
-                        onTap: () => Navigator.pop(context, course),
+                      child: _LectureSessionOption(
+                        session: session,
+                        onTap: () => Navigator.pop(context, session),
                       ),
                     );
                   }).toList(),
@@ -89,10 +89,10 @@ class SelectCourseDialog extends StatelessWidget {
   }
 }
 
-class _CourseOption extends StatelessWidget {
-  const _CourseOption({required this.course, required this.onTap});
+class _LectureSessionOption extends StatelessWidget {
+  const _LectureSessionOption({required this.session, required this.onTap});
 
-  final Course course;
+  final LectureSession session;
   final VoidCallback onTap;
 
   @override
@@ -122,7 +122,7 @@ class _CourseOption extends StatelessWidget {
                   borderRadius: BorderRadius.circular(r.radius),
                 ),
                 child: Icon(
-                  Icons.menu_book_outlined,
+                  Icons.event_note_outlined,
                   size: r.iconMedium,
                   color: colors.primary,
                 ),
@@ -133,7 +133,7 @@ class _CourseOption extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      course.code,
+                      session.lectureSessionName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -144,8 +144,17 @@ class _CourseOption extends StatelessWidget {
                     ),
                     SizedBox(height: r.spacingXS),
                     Text(
-                      course.title,
-                      maxLines: 2,
+                      'Week ${session.weekNumber}',
+                      style: TextStyle(
+                        fontSize: r.bodySmall,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    SizedBox(height: r.spacingXS),
+                    Text(
+                      '${_formatDate(session.lectureDate)} • '
+                      '${session.fromTime} – ${session.toTime}',
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: r.bodySmall,
@@ -156,13 +165,70 @@ class _CourseOption extends StatelessWidget {
                 ),
               ),
               SizedBox(width: r.spacingS),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: r.iconMedium,
-                color: colors.onSurfaceVariant,
-              ),
+              _StatusBadge(status: session.status),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  static String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/'
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.year}';
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.status});
+
+  final LectureSessionStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+    final colors = Theme.of(context).colorScheme;
+
+    final Color backgroundColor;
+    final Color foregroundColor;
+    final String label;
+
+    switch (status) {
+      case LectureSessionStatus.scheduled:
+        backgroundColor = colors.surfaceContainerHighest;
+        foregroundColor = colors.onSurfaceVariant;
+        label = 'Scheduled';
+        break;
+
+      case LectureSessionStatus.active:
+        backgroundColor = colors.primaryContainer;
+        foregroundColor = colors.onPrimaryContainer;
+        label = 'Active';
+        break;
+
+      case LectureSessionStatus.completed:
+        backgroundColor = colors.secondaryContainer;
+        foregroundColor = colors.onSecondaryContainer;
+        label = 'Completed';
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.spacingS,
+        vertical: r.spacingXS,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: r.caption,
+          fontWeight: FontWeight.w600,
+          color: foregroundColor,
         ),
       ),
     );

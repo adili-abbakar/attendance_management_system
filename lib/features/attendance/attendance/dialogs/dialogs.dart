@@ -11,3 +11,4 @@ export 'student_not_enrolled_dialog.dart';
 export 'start_attendance_dialog.dart';
 export 'scan_attendance_dialog.dart';
 export 'select_course_dialog.dart';
+export 'select_lecture_session_dialog.dart';
