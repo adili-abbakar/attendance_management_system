@@ -1,5 +1,7 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
@@ -29,6 +31,7 @@ class _DashboardPageState extends State<DashboardPage> {
       await context.read<StudentProvider>().loadStudents();
 
       if (!mounted) return;
+
       context.read<LectureSessionProvider>().getAverageAttendance();
     });
   }
@@ -42,15 +45,70 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Future<void> _showStartAttendanceDialog() async {
-    final lectureSessions = context
-        .read<LectureSessionProvider>()
-        .loadLectureSessions();
+  Future<LectureSession?> _showStartAttendanceDialog() async {
+    final provider = context.read<LectureSessionProvider>();
 
-    await showDialog(
+    final loaded = await provider.loadLectureSessions();
+
+    if (!mounted || !loaded) return null;
+
+    return showDialog<LectureSession?>(
       context: context,
-      builder: (_) => BulkQrExportDialog(students: students),
+      builder: (_) =>
+          StartAttendanceDialog(lectureSessions: provider.lectureSessions),
     );
+  }
+
+  Future<void> _startAttendance() async {
+    final session = await _showStartAttendanceDialog();
+
+    if (!mounted || session == null) return;
+
+    final provider = context.read<LectureSessionProvider>();
+
+    if (session.isScheduled) {
+      final success = await provider.startLectureSession(session);
+
+      if (!mounted) return;
+
+      if (!success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.errorMessage ?? 'Failed to start lecture session.',
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
+    if (!mounted) return;
+
+    // TODO: Navigate to ActiveAttendancePage.
+  }
+
+  Future<void> _showScanAttendanceDialog() async {
+    final action = await showDialog<AttendanceScanAction>(
+      context: context,
+      builder: (_) => const ScanAttendanceDialog(),
+    );
+
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case AttendanceScanAction.verify:
+        await _verifyAttendance();
+        break;
+
+      case AttendanceScanAction.record:
+        await _startAttendance();
+        break;
+    }
+  }
+
+  Future<void> _verifyAttendance() async {
+    // TODO: Open SelectCourseDialog and navigate to verification.
   }
 
   @override
@@ -66,7 +124,6 @@ class _DashboardPageState extends State<DashboardPage> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           DashboardHeader(userName: user?.name ?? 'Guest', role: 'Lecturer'),
-
           DashboardSection(
             title: 'Statistics',
             child: StatisticsGrid(
@@ -90,7 +147,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-
           DashboardSection(
             title: 'Quick Actions',
             child: QuickActionsGrid(
@@ -98,12 +154,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 QuickActionCard(
                   title: 'Start Attendance',
                   icon: Icons.play_circle_fill,
-                  onTap: () {},
+                  onTap: _startAttendance,
                 ),
                 QuickActionCard(
                   title: 'Scan QR',
                   icon: Icons.qr_code_scanner,
-                  onTap: () {},
+                  onTap: _showScanAttendanceDialog,
                 ),
                 QuickActionCard(
                   title: 'Generate QR',
@@ -118,7 +174,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-
           DashboardSection(
             title: "Today's Sessions",
             actionText: 'View All',
@@ -138,7 +193,6 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
           ),
-
           const SizedBox(height: 12),
         ],
       ),

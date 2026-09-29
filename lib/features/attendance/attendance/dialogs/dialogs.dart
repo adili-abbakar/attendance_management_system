@@ -8,3 +8,6 @@ export 'attendance_success_dialog.dart';
 export 'invalid_student_dialog.dart';
 export 'student_enrolled_dialog.dart';
 export 'student_not_enrolled_dialog.dart';
+export 'start_attendance_dialog.dart';
+export 'scan_attendance_dialog.dart';
+export 'select_course_dialog.dart';
