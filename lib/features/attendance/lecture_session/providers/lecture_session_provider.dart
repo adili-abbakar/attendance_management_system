@@ -74,7 +74,7 @@ class LectureSessionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> loadLectureSessions(int courseId) async {
+  Future<bool> loadLectureSessionsByCourse(int courseId) async {
     _setLoading(true);
     _clearError();
 
@@ -83,6 +83,23 @@ class LectureSessionProvider extends ChangeNotifier {
 
       _lectureSessions = await _lectureSessionService
           .getLectureSessionsByCourse(courseId);
+
+      return true;
+    } catch (e) {
+      _setError('Failed to load lecture sessions.');
+
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> loadLectureSessions() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      _lectureSessions = await _lectureSessionService.getLectureSessions();
 
       return true;
     } catch (e) {
@@ -122,7 +139,7 @@ class LectureSessionProvider extends ChangeNotifier {
     try {
       await _lectureSessionService.createLectureSession(lectureSession);
 
-      await loadLectureSessions(lectureSession.courseId);
+      await loadLectureSessionsByCourse(lectureSession.courseId);
 
       return true;
     } catch (e) {
@@ -144,7 +161,7 @@ class LectureSessionProvider extends ChangeNotifier {
       _selectedLectureSession = await _lectureSessionService
           .getLectureSessionById(lectureSession.id!);
 
-      await loadLectureSessions(lectureSession.courseId);
+      await loadLectureSessionsByCourse(lectureSession.courseId);
 
       return true;
     } catch (e) {
@@ -167,7 +184,7 @@ class LectureSessionProvider extends ChangeNotifier {
         _selectedLectureSession = null;
       }
 
-      await loadLectureSessions(lectureSession.courseId);
+      await loadLectureSessionsByCourse(lectureSession.courseId);
 
       return true;
     } catch (e) {
@@ -189,7 +206,7 @@ class LectureSessionProvider extends ChangeNotifier {
       _selectedLectureSession = await _lectureSessionService
           .getLectureSessionById(lectureSession.id!);
 
-      await loadLectureSessions(lectureSession.courseId);
+      await loadLectureSessionsByCourse(lectureSession.courseId);
 
       return true;
     } catch (e) {
@@ -213,7 +230,7 @@ class LectureSessionProvider extends ChangeNotifier {
       _selectedLectureSession = await _lectureSessionService
           .getLectureSessionById(lectureSession.id!);
 
-      await loadLectureSessions(lectureSession.courseId);
+      await loadLectureSessionsByCourse(lectureSession.courseId);
 
       return true;
     } catch (e) {

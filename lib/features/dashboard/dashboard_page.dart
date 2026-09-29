@@ -29,14 +29,23 @@ class _DashboardPageState extends State<DashboardPage> {
       await context.read<StudentProvider>().loadStudents();
 
       if (!mounted) return;
-
-      context.read<CourseProvider>().getCoursesCount();
       context.read<LectureSessionProvider>().getAverageAttendance();
     });
   }
 
   Future<void> _showBulkExportDialog() async {
     final students = context.read<StudentProvider>().students;
+
+    await showDialog(
+      context: context,
+      builder: (_) => BulkQrExportDialog(students: students),
+    );
+  }
+
+  Future<void> _showStartAttendanceDialog() async {
+    final lectureSessions = context
+        .read<LectureSessionProvider>()
+        .loadLectureSessions();
 
     await showDialog(
       context: context,

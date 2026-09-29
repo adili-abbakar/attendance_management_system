@@ -34,7 +34,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LectureSessionProvider>().loadLectureSessions(
+      context.read<LectureSessionProvider>().loadLectureSessionsByCourse(
         widget.courseId,
       );
     });
@@ -146,7 +146,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
         if (!context.mounted) return;
 
         if (created == true) {
-          await context.read<LectureSessionProvider>().loadLectureSessions(
+          await context.read<LectureSessionProvider>().loadLectureSessionsByCourse(
             widget.courseId,
           );
         }

@@ -13,6 +13,17 @@ class LectureSessionService {
 
   final DatabaseService _databaseService = DatabaseService.instance;
 
+  Future<List<LectureSession>> getLectureSessions() async {
+    final db = await _databaseService.database;
+
+    final result = await db.query(
+      LectureSessionTable.tableName,
+      orderBy: '${LectureSessionTable.lectureDate} DESC',
+    );
+
+    return result.map(LectureSession.fromMap).toList();
+  }
+
   Future<List<LectureSession>> getLectureSessionsByCourse(int courseId) async {
     final db = await _databaseService.database;
 
@@ -172,7 +183,7 @@ class LectureSessionService {
     );
   }
 
-Future<double> calculateAverageAttendance() async {
+  Future<double> calculateAverageAttendance() async {
     final db = await _databaseService.database;
 
     final result = await db.rawQuery('''
@@ -229,7 +240,7 @@ Future<double> calculateAverageAttendance() async {
 
     return (totalAttendance / totalPossibleAttendance) * 100;
   }
-  
+
   Future<double> calculateCourseAverageAttendance(Course course) async {
     final db = await _databaseService.database;
 
