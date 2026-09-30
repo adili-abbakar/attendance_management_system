@@ -1,4 +1,5 @@
 import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
+import 'package:attendance_management_system/core/widgets/widgets.dart';
 import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/lecture_session_form_dialog.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_table.dart';
@@ -45,12 +46,8 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
     final r = AppResponsive.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Lecture Sessions',
-          style: TextStyle(fontSize: r.titleLarge),
-        ),
-      ),
+      appBar: AppBarWidget(title: 'Lecture Sessions'),
+      endDrawer: AppDrawer(),
       body: Consumer<LectureSessionProvider>(
         builder: (context, provider, child) {
           final sessions = _filterSessions(provider.lectureSessions);
@@ -146,9 +143,9 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
         if (!context.mounted) return;
 
         if (created == true) {
-          await context.read<LectureSessionProvider>().loadLectureSessionsByCourse(
-            widget.courseId,
-          );
+          await context
+              .read<LectureSessionProvider>()
+              .loadLectureSessionsByCourse(widget.courseId);
         }
       },
       icon: Icon(Icons.add, size: r.buttonIcon),

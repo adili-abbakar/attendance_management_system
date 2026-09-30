@@ -10,6 +10,8 @@ import 'package:attendance_management_system/features/students/models/student.da
 import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:attendance_management_system/core/widgets/widgets.dart';
+
 
 class ActiveAttendancePage extends StatefulWidget {
   const ActiveAttendancePage({
@@ -45,12 +47,8 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
     final r = AppResponsive.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Active Attendance',
-          style: TextStyle(fontSize: r.titleLarge),
-        ),
-      ),
+      appBar: AppBarWidget(title: 'Active Attendance'),
+      endDrawer: AppDrawer(),
       body: Consumer<AttendanceProvider>(
         builder: (context, provider, child) {
           return Padding(

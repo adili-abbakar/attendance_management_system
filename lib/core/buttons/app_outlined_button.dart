@@ -8,12 +8,14 @@ class AppOutlinedButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.isIconLeading = true,
+    this.fullWidth = true,
   });
 
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isIconLeading;
+  final bool fullWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -22,30 +24,62 @@ class AppOutlinedButton extends StatelessWidget {
     Widget buttonContent;
 
     if (icon == null) {
-      buttonContent = Text(text, style: TextStyle(fontSize: r.body));
+      buttonContent = Text(
+        text,
+        style: TextStyle(fontSize: r.body),
+      );
     } else {
       buttonContent = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isIconLeading) ...[
-            Icon(icon, size: r.buttonIcon),
+            Icon(
+              icon,
+              size: r.buttonIcon,
+            ),
             SizedBox(width: r.spacingS),
           ],
 
-          Text(text, style: TextStyle(fontSize: r.body)),
+          Text(
+            text,
+            style: TextStyle(fontSize: r.body),
+          ),
 
           if (!isIconLeading) ...[
             SizedBox(width: r.spacingS),
-            Icon(icon, size: r.buttonIcon),
+            Icon(
+              icon,
+              size: r.buttonIcon,
+            ),
           ],
         ],
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
+    final button = SizedBox(
       height: r.buttonHeight,
-      child: OutlinedButton(onPressed: onPressed, child: buttonContent),
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.symmetric(
+            horizontal: r.spacingM,
+            vertical: r.spacingS,
+          ),
+        ),
+        child: buttonContent,
+      ),
     );
+
+    if (fullWidth) {
+      return SizedBox(
+        width: double.infinity,
+        height: r.buttonHeight,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }
+

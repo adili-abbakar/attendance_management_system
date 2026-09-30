@@ -15,7 +15,6 @@ class AttendanceVerificationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
 
     final screenWidth = MediaQuery.sizeOf(context).width;
     final availableWidth = screenWidth - (r.dialogInset * 2);
@@ -225,10 +224,6 @@ class _SessionItem extends StatelessWidget {
     final colors = theme.colorScheme;
 
     final session = verificationSession.lectureSession;
-
-    final statusColor = verificationSession.isPresent
-        ? colors.primary
-        : colors.error;
 
     final statusBackground = verificationSession.isPresent
         ? colors.primaryContainer

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+import 'package:attendance_management_system/core/buttons/buttons.dart';
+import 'package:flutter/material.dart';
 
 class CourseActionsBar extends StatelessWidget {
   const CourseActionsBar({
@@ -9,12 +9,14 @@ class CourseActionsBar extends StatelessWidget {
     required this.onAddStudent,
     required this.onLectureSessions,
     required this.onRefresh,
+    required this.onExportBulkQr,
   });
 
   final VoidCallback onImportStudents;
   final VoidCallback onAddStudent;
   final VoidCallback onLectureSessions;
   final VoidCallback onRefresh;
+  final VoidCallback onExportBulkQr;
 
   @override
   Widget build(BuildContext context) {
@@ -32,66 +34,38 @@ class CourseActionsBar extends StatelessWidget {
           runSpacing: r.spacingS,
           alignment: WrapAlignment.start,
           children: [
-            FilledButton.icon(
+            PrimaryButton(
+              text: 'Import Students',
+              icon: Icons.upload_file_outlined,
               onPressed: onImportStudents,
-              style: FilledButton.styleFrom(
-                minimumSize: Size(0, r.buttonHeight),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(
-                  horizontal: r.spacingM,
-                  vertical: r.spacingS,
-                ),
-              ),
-              icon: Icon(Icons.upload_file_outlined, size: r.buttonIcon),
-              label: Text(
-                'Import Students',
-                style: TextStyle(fontSize: r.body),
-              ),
             ),
 
-            OutlinedButton.icon(
+            AppOutlinedButton(
+              text: 'Add Student',
+              icon: Icons.person_add_alt_1_outlined,
               onPressed: onAddStudent,
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(0, r.buttonHeight),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(
-                  horizontal: r.spacingM,
-                  vertical: r.spacingS,
-                ),
-              ),
-              icon: Icon(Icons.person_add_alt_1_outlined, size: r.buttonIcon),
-              label: Text('Add Student', style: TextStyle(fontSize: r.body)),
+              fullWidth: false,
             ),
 
-            OutlinedButton.icon(
+            AppOutlinedButton(
+              text: 'Lecture Sessions',
+              icon: Icons.event_note_outlined,
               onPressed: onLectureSessions,
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(0, r.buttonHeight),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(
-                  horizontal: r.spacingM,
-                  vertical: r.spacingS,
-                ),
-              ),
-              icon: Icon(Icons.event_note_outlined, size: r.buttonIcon),
-              label: Text(
-                'Lecture Sessions',
-                style: TextStyle(fontSize: r.body),
-              ),
+              fullWidth: false,
             ),
 
-            OutlinedButton.icon(
+            AppOutlinedButton(
+              text: 'Export QR',
+              icon: Icons.qr_code_2_outlined,
+              onPressed: onExportBulkQr,
+              fullWidth: false,
+            ),
+
+            AppOutlinedButton(
+              text: 'Refresh',
+              icon: Icons.refresh_rounded,
               onPressed: onRefresh,
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(0, r.buttonHeight),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.symmetric(
-                  horizontal: r.spacingM,
-                  vertical: r.spacingS,
-                ),
-              ),
-              icon: Icon(Icons.refresh, size: r.buttonIcon),
-              label: Text('Refresh', style: TextStyle(fontSize: r.body)),
+              fullWidth: false,
             ),
           ],
         ),

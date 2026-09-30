@@ -7,6 +7,8 @@ class StudentPagination extends StatelessWidget {
     required this.totalPages,
     required this.onPrevious,
     required this.onNext,
+    this.totalItems,
+    this.itemsPerPage,
   });
 
   final int currentPage;
@@ -15,11 +17,18 @@ class StudentPagination extends StatelessWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
 
+  /// Optional values used to show how many items are being paginated.
+  final int? totalItems;
+  final int? itemsPerPage;
+
   @override
   Widget build(BuildContext context) {
     if (totalPages <= 1) {
       return const SizedBox.shrink();
     }
+
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -43,7 +52,7 @@ class StudentPagination extends StatelessWidget {
               Icons.chevron_left,
               size: 18,
             ),
-            label: const Text("Previous"),
+            label: const Text('Previous'),
           ),
 
           Container(
@@ -52,12 +61,12 @@ class StudentPagination extends StatelessWidget {
               vertical: 8,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: colors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               'Page $currentPage of $totalPages',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: theme.textTheme.bodySmall,
             ),
           ),
 
@@ -75,7 +84,7 @@ class StudentPagination extends StatelessWidget {
               Icons.chevron_right,
               size: 18,
             ),
-            label: const Text("Next"),
+            label: const Text('Next'),
           ),
         ],
       ),

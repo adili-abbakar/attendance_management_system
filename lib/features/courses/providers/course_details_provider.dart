@@ -20,9 +20,14 @@ class CourseDetailsProvider extends ChangeNotifier {
   bool _sortAscending = true;
 
   int _currentPage = 1;
+
   static const int _pageSize = 20;
 
+  double? _averageCourseAttendance;
+  int? _lectureSessionsCount;
+
   bool get isLoading => _isLoading;
+
   String? get error => _error;
 
   List<Student> get students => _students;
@@ -39,11 +44,7 @@ class CourseDetailsProvider extends ChangeNotifier {
 
   int get pageSize => _pageSize;
 
-  double? _averageCourseAttendance;
-
   double? get averageCourseAttendance => _averageCourseAttendance;
-
-  int? _lectureSessionsCount;
 
   int? get lectureSessionsCount => _lectureSessionsCount;
 
@@ -59,16 +60,19 @@ class CourseDetailsProvider extends ChangeNotifier {
 
   Future<void> loadStudents() async {
     _isLoading = true;
+    _error = null;
+
     notifyListeners();
 
     try {
-      _students = await CourseEnrollmentService.instance.getStudentsForCourse(
+      _students =
+          await CourseEnrollmentService.instance.getStudentsForCourse(
         course.id!,
       );
 
-      _error = null;
+      _applyFilters(notify: false);
 
-      _applyFilters();
+      _error = null;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -78,7 +82,9 @@ class CourseDetailsProvider extends ChangeNotifier {
   }
 
   int get totalPages {
-    if (_filteredStudents.isEmpty) return 1;
+    if (_filteredStudents.isEmpty) {
+      return 1;
+    }
 
     return (_filteredStudents.length / _pageSize).ceil();
   }
@@ -90,17 +96,16 @@ class CourseDetailsProvider extends ChangeNotifier {
       return [];
     }
 
-    var end = start + _pageSize;
-
-    if (end > _filteredStudents.length) {
-      end = _filteredStudents.length;
-    }
+    final end = (start + _pageSize).clamp(
+      0,
+      _filteredStudents.length,
+    );
 
     return _filteredStudents.sublist(start, end);
   }
 
   void search(String value) {
-    _searchQuery = value;
+    _searchQuery = value.trim();
 
     _applyFilters();
   }
@@ -118,7 +123,9 @@ class CourseDetailsProvider extends ChangeNotifier {
   }
 
   void previousPage() {
-    if (_currentPage <= 1) return;
+    if (_currentPage <= 1) {
+      return;
+    }
 
     _currentPage--;
 
@@ -126,37 +133,53 @@ class CourseDetailsProvider extends ChangeNotifier {
   }
 
   void nextPage() {
-    if (_currentPage >= totalPages) return;
+    if (_currentPage >= totalPages) {
+      return;
+    }
 
     _currentPage++;
 
     notifyListeners();
   }
 
-  void _applyFilters({bool notify = true}) {
+  void _applyFilters({
+    bool notify = true,
+  }) {
     var results = List<Student>.from(_students);
 
+    // Active/inactive filter.
     if (_showActiveOnly) {
-      results = results.where((e) => e.isActive).toList();
+      results = results
+          .where((student) => student.isActive)
+          .toList();
     }
 
+    // Search filter.
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
 
       results = results.where((student) {
-        return student.fullName.toLowerCase().contains(query) ||
-            student.admissionNumber.toLowerCase().contains(query);
+        return student.fullName
+                .toLowerCase()
+                .contains(query) ||
+            student.admissionNumber
+                .toLowerCase()
+                .contains(query);
       }).toList();
     }
 
+    // Sorting.
     results.sort((a, b) {
       final comparison = a.fullName.compareTo(b.fullName);
 
-      return _sortAscending ? comparison : -comparison;
+      return _sortAscending
+          ? comparison
+          : -comparison;
     });
 
     _filteredStudents = results;
 
+    // Any change to filtering/search/sorting starts from page 1.
     _currentPage = 1;
 
     if (notify) {
@@ -170,22 +193,29 @@ class CourseDetailsProvider extends ChangeNotifier {
 
   Future<bool> removeStudent(Student student) async {
     try {
-      final success = await CourseEnrollmentService.instance
-          .removeStudentFromCourse(
-            courseId: course.id!,
-            studentId: student.id!,
-          );
+      final success =
+          await CourseEnrollmentService.instance
+              .removeStudentFromCourse(
+        courseId: course.id!,
+        studentId: student.id!,
+      );
 
-      if (!success) return false;
+      if (!success) {
+        return false;
+      }
 
-      _students.removeWhere((s) => s.id == student.id);
+      _students.removeWhere(
+        (studentItem) => studentItem.id == student.id,
+      );
 
       _applyFilters();
 
       return true;
     } catch (e) {
       _error = e.toString();
+
       notifyListeners();
+
       return false;
     }
   }

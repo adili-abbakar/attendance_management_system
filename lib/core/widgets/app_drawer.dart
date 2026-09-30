@@ -2,7 +2,6 @@ import 'package:attendance_management_system/core/widgets/auth_tile.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/academic_session/pages/academic_session_page.dart';
 import 'package:attendance_management_system/features/courses/pages/course_page.dart';
-import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:attendance_management_system/features/levels/pages/level_page.dart';
 import 'package:attendance_management_system/features/students/pages/student_page.dart';
 import 'package:flutter/material.dart';
@@ -61,13 +60,7 @@ class AppDrawer extends StatelessWidget {
                     title: "Dashboard",
                     onTap: () {
                       Navigator.pop(context);
-
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DashboardPage(),
-                        ),
-                      );
+                      Navigator.popUntil(context, (route) => route.isFirst);
                     },
                   ),
 
@@ -77,7 +70,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
 
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const CoursePage()),
                       );
@@ -90,7 +83,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
 
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const LevelPage()),
                       );
@@ -103,7 +96,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
 
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const AcademicSessionPage(),
@@ -118,7 +111,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
 
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const StudentPage()),
                       );

@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,12 +46,8 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     final r = AppResponsive.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Lecture Session Details',
-          style: TextStyle(fontSize: r.titleLarge),
-        ),
-      ),
+      appBar: AppBarWidget(title: 'Lecture Session Details'),
+      endDrawer: AppDrawer(),
       body: Consumer<LectureSessionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.selectedLectureSession == null) {
