@@ -37,6 +37,7 @@ class _DashboardPageState extends State<DashboardPage> {
       await Future.wait([
         context.read<StudentProvider>().loadStudents(),
         context.read<CourseProvider>().loadCourses(),
+        context.read<CourseProvider>().getCoursesCount(),
       ]);
 
       if (!mounted) return;
