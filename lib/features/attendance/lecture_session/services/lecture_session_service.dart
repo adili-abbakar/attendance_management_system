@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/data/database/database_service.dart';
 import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/models.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/tables/lecture_session_table.dart';
 import 'package:attendance_management_system/features/courses/enrollments/tables/course_student_table.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
@@ -186,42 +186,59 @@ class LectureSessionService {
   Future<double> calculateAverageAttendance() async {
     final db = await _databaseService.database;
 
+    /*
+     * Do not join course students, lecture sessions and attendance
+     * records directly.
+     *
+     * Doing that multiplies rows and causes attendance counts to
+     * become artificially large.
+     *
+     * Instead, calculate each value independently for every course.
+     */
     final result = await db.rawQuery('''
-    SELECT
-      COALESCE(SUM(course_stats.attendance_count), 0)
-        AS total_attendance,
-
-      COALESCE(SUM(
-        course_stats.student_count * course_stats.lecture_session_count
-      ), 0) AS total_possible_attendance
-
-    FROM (
       SELECT
-        c.id,
+        COALESCE(
+          SUM(course_stats.attendance_count),
+          0
+        ) AS total_attendance,
 
-        COUNT(DISTINCT cs.student_id) AS student_count,
+        COALESCE(
+          SUM(
+            course_stats.student_count *
+            course_stats.lecture_session_count
+          ),
+          0
+        ) AS total_possible_attendance
 
-        COUNT(DISTINCT ls.${LectureSessionTable.id})
-          AS lecture_session_count,
+      FROM (
+        SELECT
+          c.${CourseTable.id} AS course_id,
 
-        COUNT(ar.${AttendanceRecordTable.id})
-          AS attendance_count
+          (
+            SELECT COUNT(*)
+            FROM ${CourseStudentTable.tableName} cs
+            WHERE cs.${CourseStudentTable.courseId} = c.${CourseTable.id}
+          ) AS student_count,
 
-      FROM ${CourseTable.tableName} c
+          (
+            SELECT COUNT(*)
+            FROM ${LectureSessionTable.tableName} ls
+            WHERE ls.${LectureSessionTable.courseId} = c.${CourseTable.id}
+          ) AS lecture_session_count,
 
-      LEFT JOIN ${CourseStudentTable.tableName} cs
-        ON cs.course_id = c.id
+          (
+            SELECT COUNT(*)
+            FROM ${AttendanceRecordTable.tableName} ar
+            INNER JOIN ${LectureSessionTable.tableName} ls2
+              ON ar.${AttendanceRecordTable.lectureSessionId} =
+                 ls2.${LectureSessionTable.id}
+            WHERE ls2.${LectureSessionTable.courseId} =
+                  c.${CourseTable.id}
+          ) AS attendance_count
 
-      LEFT JOIN ${LectureSessionTable.tableName} ls
-        ON ls.${LectureSessionTable.courseId} = c.id
-
-      LEFT JOIN ${AttendanceRecordTable.tableName} ar
-        ON ar.${AttendanceRecordTable.lectureSessionId} =
-           ls.${LectureSessionTable.id}
-
-      GROUP BY c.id
-    ) AS course_stats
-    ''');
+        FROM ${CourseTable.tableName} c
+      ) AS course_stats
+      ''');
 
     if (result.isEmpty) {
       return 0.0;
@@ -229,16 +246,26 @@ class LectureSessionService {
 
     final row = result.first;
 
-    final totalAttendance = row['total_attendance'] as int? ?? 0;
+    final totalAttendance =
+        (row['total_attendance'] as num?)?.toDouble() ?? 0.0;
 
     final totalPossibleAttendance =
-        row['total_possible_attendance'] as int? ?? 0;
+        (row['total_possible_attendance'] as num?)?.toDouble() ?? 0.0;
 
-    if (totalPossibleAttendance == 0) {
+    if (totalPossibleAttendance <= 0) {
       return 0.0;
     }
 
-    return (totalAttendance / totalPossibleAttendance) * 100;
+    final percentage = (totalAttendance / totalPossibleAttendance) * 100;
+
+    /*
+     * Attendance percentage should never exceed 100%.
+     *
+     * The SQL above already prevents the previous multiplication
+     * problem, but this also protects the displayed statistic from
+     * bad/duplicate data.
+     */
+    return percentage.clamp(0.0, 100.0);
   }
 
   Future<double> calculateCourseAverageAttendance(Course course) async {
@@ -246,35 +273,45 @@ class LectureSessionService {
 
     final result = await db.rawQuery(
       '''
-    SELECT
-      COUNT(ar.${AttendanceRecordTable.id}) AS attendance_record_count,
-      COUNT(DISTINCT ls.${LectureSessionTable.id}) AS lecture_session_count
-    FROM ${LectureSessionTable.tableName} ls
-    LEFT JOIN ${AttendanceRecordTable.tableName} ar
-      ON ar.${AttendanceRecordTable.lectureSessionId} =
-         ls.${LectureSessionTable.id}
-    WHERE ls.${LectureSessionTable.courseId} = ?
-    ''',
+      SELECT
+        COUNT(ar.${AttendanceRecordTable.id})
+          AS attendance_record_count,
+
+        COUNT(DISTINCT ls.${LectureSessionTable.id})
+          AS lecture_session_count
+
+      FROM ${LectureSessionTable.tableName} ls
+
+      LEFT JOIN ${AttendanceRecordTable.tableName} ar
+        ON ar.${AttendanceRecordTable.lectureSessionId} =
+           ls.${LectureSessionTable.id}
+
+      WHERE ls.${LectureSessionTable.courseId} = ?
+      ''',
       [course.id],
     );
 
-    if (result.isNotEmpty) {
-      final row = result.first;
-
-      final attendanceRecordCount = row['attendance_record_count'] as int;
-
-      final lectureSessionsCount = row['lecture_session_count'] as int;
-
-      if (course.studentCount == 0 || lectureSessionsCount == 0) {
-        return 0.0;
-      }
-
-      return (attendanceRecordCount /
-              (course.studentCount * lectureSessionsCount)) *
-          100;
+    if (result.isEmpty) {
+      return 0.0;
     }
 
-    return 0.0;
+    final row = result.first;
+
+    final attendanceRecordCount =
+        (row['attendance_record_count'] as num?)?.toInt() ?? 0;
+
+    final lectureSessionsCount =
+        (row['lecture_session_count'] as num?)?.toInt() ?? 0;
+
+    if (course.studentCount == 0 || lectureSessionsCount == 0) {
+      return 0.0;
+    }
+
+    final percentage =
+        (attendanceRecordCount / (course.studentCount * lectureSessionsCount)) *
+        100;
+
+    return percentage.clamp(0.0, 100.0);
   }
 
   Future<int> getLectureSessionCount(int courseId) async {
@@ -282,12 +319,73 @@ class LectureSessionService {
 
     final result = await db.rawQuery(
       '''
-  select count(*) as lecture_session_count 
-  from ${LectureSessionTable.tableName} where ${LectureSessionTable.courseId} = ?
-''',
+      SELECT COUNT(*) AS lecture_session_count
+      FROM ${LectureSessionTable.tableName}
+      WHERE ${LectureSessionTable.courseId} = ?
+      ''',
       [courseId],
     );
 
-    return result.first['lecture_session_count'] as int;
+    return (result.first['lecture_session_count'] as num).toInt();
+  }
+
+  Future<List<LectureSession>> getTodayLectureSessions() async {
+    final now = DateTime.now();
+
+    final startOfDay = DateTime(now.year, now.month, now.day);
+
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    final db = await _databaseService.database;
+
+    final maps = await db.query(
+      LectureSessionTable.tableName,
+      where:
+          '${LectureSessionTable.lectureDate} >= ? '
+          'AND ${LectureSessionTable.lectureDate} < ?',
+      whereArgs: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+      orderBy: '${LectureSessionTable.fromTime} ASC',
+    );
+
+    return maps.map(LectureSession.fromMap).toList();
+  }
+
+Future<LectureSessionAttendanceStats> getLectureSessionAttendanceStats(
+    int lectureSessionId,
+  ) async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT
+      (
+        SELECT COUNT(*)
+        FROM ${AttendanceRecordTable.tableName} ar
+        WHERE ar.${AttendanceRecordTable.lectureSessionId} = ?
+      ) AS present_count,
+      (
+        SELECT COUNT(*)
+        FROM ${CourseStudentTable.tableName} cs
+        INNER JOIN ${LectureSessionTable.tableName} ls
+          ON ls.${LectureSessionTable.courseId} = cs.course_id
+        WHERE ls.${LectureSessionTable.id} = ?
+      ) AS total_students
+    ''',
+      [lectureSessionId, lectureSessionId],
+    );
+
+    if (result.isEmpty) {
+      return const LectureSessionAttendanceStats(
+        presentCount: 0,
+        totalStudents: 0,
+      );
+    }
+
+    final row = result.first;
+
+    return LectureSessionAttendanceStats(
+      presentCount: (row['present_count'] as int?) ?? 0,
+      totalStudents: (row['total_students'] as int?) ?? 0,
+    );
   }
 }

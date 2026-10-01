@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session_attendance_stats.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 
 class LectureSessionDetailsPage extends StatefulWidget {
@@ -15,14 +16,23 @@ class LectureSessionDetailsPage extends StatefulWidget {
     required this.startSession,
     required this.completeSession,
     required this.viewAttendance,
+    this.updateSession,
+    this.deleteSession,
   });
 
   final int lectureSessionId;
   final String courseName;
   final String courseCode;
+
   final Future<void> Function(LectureSession lectureSession) startSession;
+
   final Future<void> Function(LectureSession lectureSession) completeSession;
+
   final void Function(LectureSession lectureSession) viewAttendance;
+
+  final Future<void> Function(LectureSession lectureSession)? updateSession;
+
+  final Future<void> Function(LectureSession lectureSession)? deleteSession;
 
   @override
   State<LectureSessionDetailsPage> createState() =>
@@ -47,7 +57,7 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
 
     return Scaffold(
       appBar: AppBarWidget(title: 'Lecture Session Details'),
-      endDrawer: AppDrawer(),
+      endDrawer: const AppDrawer(),
       body: Consumer<LectureSessionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.selectedLectureSession == null) {
@@ -74,7 +84,12 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
             child: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: r.dialogWidth),
-                child: _buildDetails(context, r, lectureSession),
+                child: _buildDetails(
+                  context,
+                  r,
+                  lectureSession,
+                  provider.selectedSessionAttendanceStats,
+                ),
               ),
             ),
           );
@@ -87,6 +102,7 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     BuildContext context,
     AppResponsive r,
     LectureSession lectureSession,
+    LectureSessionAttendanceStats? attendanceStats,
   ) {
     final colors = Theme.of(context).colorScheme;
 
@@ -107,87 +123,318 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
 
         SizedBox(height: r.spacingL),
 
-        Card(
-          color: colors.surfaceBright,
-          child: Padding(
-            padding: EdgeInsets.all(r.cardPadding),
-            child: Column(
-              children: [
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.numbers,
-                  label: 'Lecture Session',
-                  value: lectureSession.lectureSessionName,
-                ),
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.calendar_view_week_outlined,
-                  label: 'Week',
-                  value: lectureSession.weekNumber.toString(),
-                ),
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.calendar_today_outlined,
-                  label: 'Lecture Date',
-                  value: _formatDate(lectureSession.lectureDate),
-                ),
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.access_time_outlined,
-                  label: 'Time',
-                  value:
-                      '${lectureSession.fromTime} – '
-                      '${lectureSession.toTime}',
-                ),
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.timer_outlined,
-                  label: 'Duration',
-                  value: _formatDuration(lectureSession.durationMinutes),
-                ),
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.info_outline,
-                  label: 'Status',
-                  value: _statusLabel(lectureSession.status),
-                ),
-                if (lectureSession.startedAt != null) ...[
-                  _buildDivider(r),
-                  _buildDetailRow(
-                    context,
-                    r,
-                    icon: Icons.play_circle_outline,
-                    label: 'Started At',
-                    value: _formatDateTime(lectureSession.startedAt!),
-                  ),
-                ],
-                _buildDivider(r),
-                _buildDetailRow(
-                  context,
-                  r,
-                  icon: Icons.update,
-                  label: 'Last Updated',
-                  value: _formatDateTime(lectureSession.updatedAt),
-                ),
-              ],
-            ),
-          ),
-        ),
+        _buildAttendanceSummary(context, r, attendanceStats),
 
         SizedBox(height: r.spacingL),
 
-        _buildStatusAction(context, r, lectureSession),
+        _buildInformationCard(context, r, lectureSession),
+
+        SizedBox(height: r.spacingL),
+
+        _buildManagementActions(context, r, lectureSession),
+      ],
+    );
+  }
+
+  Widget _buildAttendanceSummary(
+    BuildContext context,
+    AppResponsive r,
+    LectureSessionAttendanceStats? stats,
+  ) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    final presentCount = stats?.presentCount ?? 0;
+    final totalStudents = stats?.totalStudents ?? 0;
+    final percentage = stats?.attendancePercentage ?? 0;
+
+    return Card(
+      color: colors.surfaceBright,
+      elevation: 1,
+      child: Padding(
+        padding: EdgeInsets.all(r.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Attendance',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            SizedBox(height: r.spacingM),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$presentCount',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 3),
+                  child: Text(
+                    ' / $totalStudents present',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colors.primary,
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: r.spacingS),
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: totalStudents == 0
+                    ? 0
+                    : (presentCount / totalStudents).clamp(0.0, 1.0),
+                minHeight: 7,
+              ),
+            ),
+
+            SizedBox(height: r.spacingXS),
+
+            Text(
+              '$presentCount of $totalStudents students present',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInformationCard(
+    BuildContext context,
+    AppResponsive r,
+    LectureSession lectureSession,
+  ) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Card(
+      color: colors.surfaceBright,
+      elevation: 1,
+      child: Padding(
+        padding: EdgeInsets.all(r.cardPadding),
+        child: Column(
+          children: [
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.numbers,
+              label: 'Lecture Session',
+              value: lectureSession.lectureSessionName,
+            ),
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.calendar_view_week_outlined,
+              label: 'Week',
+              value: lectureSession.weekNumber.toString(),
+            ),
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.calendar_today_outlined,
+              label: 'Lecture Date',
+              value: _formatDate(lectureSession.lectureDate),
+            ),
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.access_time_outlined,
+              label: 'Time',
+              value:
+                  '${lectureSession.fromTime} – '
+                  '${lectureSession.toTime}',
+            ),
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.timer_outlined,
+              label: 'Duration',
+              value: _formatDuration(lectureSession.durationMinutes),
+            ),
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.info_outline,
+              label: 'Status',
+              value: _statusLabel(lectureSession.status),
+            ),
+
+            if (lectureSession.startedAt != null) ...[
+              _buildDivider(r),
+
+              _buildDetailRow(
+                context,
+                r,
+                icon: Icons.play_circle_outline,
+                label: 'Started At',
+                value: _formatDateTime(lectureSession.startedAt!),
+              ),
+            ],
+
+            _buildDivider(r),
+
+            _buildDetailRow(
+              context,
+              r,
+              icon: Icons.update,
+              label: 'Last Updated',
+              value: _formatDateTime(lectureSession.updatedAt),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManagementActions(
+    BuildContext context,
+    AppResponsive r,
+    LectureSession lectureSession,
+  ) {
+    final isPhone = r.isPhone;
+
+    final viewAttendanceButton = OutlinedButton.icon(
+      onPressed: () => widget.viewAttendance(lectureSession),
+      icon: Icon(Icons.fact_check_outlined, size: r.buttonIcon),
+      label: const Text('View Attendance'),
+    );
+
+    final startButton = FilledButton.icon(
+      onPressed: () => widget.startSession(lectureSession),
+      icon: Icon(Icons.play_arrow, size: r.buttonIcon),
+      label: const Text('Start Lecture'),
+    );
+
+    final completeButton = FilledButton.icon(
+      onPressed: () => widget.completeSession(lectureSession),
+      icon: Icon(Icons.check_circle_outline, size: r.buttonIcon),
+      label: const Text('Complete Lecture'),
+    );
+
+    final updateButton = OutlinedButton.icon(
+      onPressed: widget.updateSession == null
+          ? null
+          : () => widget.updateSession!(lectureSession),
+      icon: Icon(Icons.edit_outlined, size: r.buttonIcon),
+      label: const Text('Update'),
+    );
+
+    final deleteButton = OutlinedButton.icon(
+      onPressed: widget.deleteSession == null
+          ? null
+          : () => widget.deleteSession!(lectureSession),
+      icon: Icon(Icons.delete_outline, size: r.buttonIcon),
+      label: const Text('Delete'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Management',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+
+        SizedBox(height: r.spacingM),
+
+        if (lectureSession.isScheduled) ...[
+          SizedBox(
+            width: double.infinity,
+            height: r.buttonHeight,
+            child: startButton,
+          ),
+
+          SizedBox(height: r.spacingS),
+        ],
+
+        if (lectureSession.isActive) ...[
+          SizedBox(
+            width: double.infinity,
+            height: r.buttonHeight,
+            child: completeButton,
+          ),
+
+          SizedBox(height: r.spacingS),
+        ],
+
+        SizedBox(
+          width: double.infinity,
+          height: r.buttonHeight,
+          child: viewAttendanceButton,
+        ),
+
+        SizedBox(height: r.spacingM),
+
+        if (isPhone)
+          Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: r.buttonHeight,
+                child: updateButton,
+              ),
+              SizedBox(height: r.spacingS),
+              SizedBox(
+                width: double.infinity,
+                height: r.buttonHeight,
+                child: deleteButton,
+              ),
+            ],
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(height: r.buttonHeight, child: updateButton),
+              ),
+              SizedBox(width: r.spacingS),
+              Expanded(
+                child: SizedBox(height: r.buttonHeight, child: deleteButton),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -225,52 +472,6 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     );
   }
 
-  Widget _buildStatusAction(
-    BuildContext context,
-    AppResponsive r,
-    LectureSession lectureSession,
-  ) {
-    return Column(
-      children: [
-        if (lectureSession.isScheduled)
-          SizedBox(
-            width: double.infinity,
-            height: r.buttonHeight,
-            child: FilledButton.icon(
-              onPressed: () => widget.startSession(lectureSession),
-              icon: Icon(Icons.play_arrow, size: r.buttonIcon),
-              label: const Text('Start Lecture'),
-            ),
-          ),
-
-        if (lectureSession.isScheduled) SizedBox(height: r.spacingS),
-
-        if (lectureSession.isActive)
-          SizedBox(
-            width: double.infinity,
-            height: r.buttonHeight,
-            child: FilledButton.icon(
-              onPressed: () => widget.completeSession(lectureSession),
-              icon: Icon(Icons.check_circle_outline, size: r.buttonIcon),
-              label: const Text('Complete Lecture'),
-            ),
-          ),
-
-        if (lectureSession.isActive) SizedBox(height: r.spacingS),
-
-        SizedBox(
-          width: double.infinity,
-          height: r.buttonHeight,
-          child: OutlinedButton.icon(
-            onPressed: () => widget.viewAttendance(lectureSession),
-            icon: Icon(Icons.remove_red_eye_outlined, size: r.buttonIcon),
-            label: const Text('View Attendance'),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildDivider(AppResponsive r) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.spacingM),
@@ -282,8 +483,10 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     switch (status) {
       case LectureSessionStatus.scheduled:
         return 'Scheduled';
+
       case LectureSessionStatus.active:
         return 'Active';
+
       case LectureSessionStatus.completed:
         return 'Completed';
     }

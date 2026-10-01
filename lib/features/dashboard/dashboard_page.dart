@@ -1,18 +1,20 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
-import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/scan_attendance_dialog.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/select_course_dialog.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/select_lecture_session_dialog.dart';
 import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
-import 'package:attendance_management_system/features/attendance/attendance/providers/attendance_provider.dart';
-import 'package:attendance_management_system/features/attendance/attendance/results/attendance_verification_result.dart';
-import 'package:attendance_management_system/features/attendance/attendance/widgets/attendance_dialog_action.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/pages/todays_sessions_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_tile.dart';
+import 'package:attendance_management_system/features/attendance/verification/helpers/attendance_verification_helper.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
-import 'package:attendance_management_system/features/scanner/pages/scanner_page.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
         context.read<StudentProvider>().loadStudents(),
         context.read<CourseProvider>().loadCourses(),
         context.read<CourseProvider>().getCoursesCount(),
+        context.read<LectureSessionProvider>().loadTodayLectureSessions(),
       ]);
 
       if (!mounted) return;
@@ -76,7 +79,9 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _startAttendance() async {
     final course = await _showCourseSelectionDialog();
 
-    if (!mounted || course == null || course.id == null) return;
+    if (!mounted || course == null || course.id == null) {
+      return;
+    }
 
     final lectureSessionProvider = context.read<LectureSessionProvider>();
 
@@ -102,7 +107,9 @@ class _DashboardPageState extends State<DashboardPage> {
       lectureSessionProvider.lectureSessions,
     );
 
-    if (!mounted || session == null || session.id == null) return;
+    if (!mounted || session == null || session.id == null) {
+      return;
+    }
 
     if (session.isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -167,104 +174,184 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _verifyAttendance() async {
     final course = await _showCourseSelectionDialog();
 
-    if (!mounted || course == null || course.id == null) return;
-
-    await _scanStudentForVerification(course);
-  }
-
-  Future<void> _scanStudentForVerification(Course course) async {
-    final admissionNumber = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(builder: (_) => ScannerPage()),
-    );
-
-    if (!mounted || admissionNumber == null) return;
-
-    final provider = context.read<AttendanceProvider>();
-
-    final result = await provider.verifyStudentAttendance(
-      course: course,
-      admissionNumber: admissionNumber,
-    );
-
-    if (!mounted) return;
-
-    await _handleVerificationResult(course: course, result: result);
-  }
-
-  Future<void> _handleVerificationResult({
-    required Course course,
-    required AttendanceVerificationResult result,
-  }) async {
-    if (result.isSuccess && result.verification != null) {
-      final action = await showDialog<AttendanceVerificationDialogAction>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) =>
-            AttendanceVerificationDialog(verification: result.verification!),
-      );
-
-      if (!mounted) return;
-
-      if (action == AttendanceVerificationDialogAction.scanAgain) {
-        await _scanStudentForVerification(course);
-      }
-
+    if (!mounted || course == null || course.id == null) {
       return;
     }
 
-    if (result.isStudentNotFound) {
-      final action = await showDialog<AttendanceDialogAction>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const InvalidStudentDialog(),
-      );
-
-      if (!mounted) return;
-
-      if (action == AttendanceDialogAction.scanNext) {
-        await _scanStudentForVerification(course);
-      }
-
-      return;
-    }
-
-    if (result.isStudentNotEnrolled) {
-      final student = result.student;
-
-      if (student == null) {
-        await _showVerificationError(
-          result.message ?? 'The student is not enrolled in this course.',
-        );
-        return;
-      }
-
-      final action = await showDialog<AttendanceDialogAction>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => StudentNotEnrolledDialog(student: student),
-      );
-
-      if (!mounted) return;
-
-      if (action == AttendanceDialogAction.scanNext) {
-        await _scanStudentForVerification(course);
-      }
-
-      return;
-    }
-
-    await _showVerificationError(
-      result.message ?? 'Failed to verify student attendance.',
-    );
-  }
-
-  Future<void> _showVerificationError(String message) async {
-    await showDialog<void>(
+    await AttendanceVerificationHelper.verifyStudent(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => AttendanceErrorDialog(message: message),
+      course: course,
     );
+  }
+
+  Course? _findCourse(CourseProvider courseProvider, int courseId) {
+    for (final course in courseProvider.courses) {
+      if (course.id == courseId) {
+        return course;
+      }
+    }
+
+    return null;
+  }
+
+  void _openTodaysSessions() {
+    final lectureSessionProvider = context.read<LectureSessionProvider>();
+    final courseProvider = context.read<CourseProvider>();
+    final sessions = lectureSessionProvider.todayLectureSessions;
+
+    final sessionData = sessions.map((session) {
+      final course = _findCourse(courseProvider, session.courseId);
+
+      return LectureSessionTileData(
+        courseCode: course?.code ?? 'Unknown Course',
+        courseTitle: course?.title ?? 'Unknown Course',
+        sessionName: session.lectureSessionName,
+        time: '${session.fromTime} - ${session.toTime}',
+        students: course?.studentCount ?? 0,
+        status: _sessionStatusLabel(session),
+        onTap: course == null
+            ? null
+            : () => _openLectureSessionDetails(context, session, course),
+      );
+    }).toList();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TodaysSessionsPage(sessions: sessionData),
+      ),
+    );
+  }
+
+  void _openLectureSessionDetails(
+    BuildContext context,
+    LectureSession lectureSession,
+    Course course,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LectureSessionDetailsPage(
+          lectureSessionId: lectureSession.id!,
+          courseName: course.title,
+          courseCode: course.code,
+          startSession: (session) =>
+              _startSessionFromDashboard(context, session, course),
+          completeSession: (session) =>
+              _completeSessionFromDashboard(context, session),
+          viewAttendance: (session) =>
+              _viewAttendanceFromDashboard(context, session, course),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startSessionFromDashboard(
+    BuildContext context,
+    LectureSession lectureSession,
+    Course course,
+  ) async {
+    final provider = context.read<LectureSessionProvider>();
+
+    final success = await provider.startLectureSession(lectureSession);
+
+    if (!context.mounted) return;
+
+    if (!success) {
+      _showResult(
+        context,
+        provider.errorMessage ?? 'Failed to start lecture session.',
+      );
+      return;
+    }
+
+    final updatedSession =
+        provider.selectedLectureSession ??
+        lectureSession.copyWith(status: LectureSessionStatus.active);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveAttendancePage(
+          lectureSession: updatedSession,
+          courseName: course.title,
+          courseCode: course.code,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _completeSessionFromDashboard(
+    BuildContext context,
+    LectureSession lectureSession,
+  ) async {
+    final provider = context.read<LectureSessionProvider>();
+
+    final success = await provider.completeLectureSession(lectureSession);
+
+    if (!context.mounted) return;
+
+    _showResult(
+      context,
+      success
+          ? 'Lecture session completed.'
+          : provider.errorMessage ?? 'Failed to complete lecture session.',
+    );
+  }
+
+  void _viewAttendanceFromDashboard(
+    BuildContext context,
+    LectureSession lectureSession,
+    Course course,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveAttendancePage(
+          lectureSession: lectureSession,
+          courseCode: course.code,
+          courseName: course.title,
+        ),
+      ),
+    );
+  }
+
+  String _sessionStatusLabel(LectureSession session) {
+    switch (session.status) {
+      case LectureSessionStatus.scheduled:
+        return 'Scheduled';
+
+      case LectureSessionStatus.active:
+        return 'Active';
+
+      case LectureSessionStatus.completed:
+        return 'Completed';
+    }
+  }
+
+  LectureSessionTileData _buildTodaySessionTileData(
+    LectureSession session,
+    CourseProvider courseProvider,
+  ) {
+    final course = _findCourse(courseProvider, session.courseId);
+
+    return LectureSessionTileData(
+      courseCode: course?.code ?? 'Unknown Course',
+      courseTitle: course?.title ?? 'Unknown Course',
+      sessionName: session.lectureSessionName,
+      time: '${session.fromTime} - ${session.toTime}',
+      students: course?.studentCount ?? 0,
+      status: _sessionStatusLabel(session),
+      onTap: course == null
+          ? null
+          : () => _openLectureSessionDetails(context, session, course),
+    );
+  }
+
+  void _showResult(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -273,6 +360,13 @@ class _DashboardPageState extends State<DashboardPage> {
     final courseProvider = context.watch<CourseProvider>();
     final lectureSessionProvider = context.watch<LectureSessionProvider>();
 
+    final todaySessions = lectureSessionProvider.todayLectureSessions;
+
+    final visibleTodaySessions = todaySessions
+        .take(4)
+        .map((session) => _buildTodaySessionTileData(session, courseProvider))
+        .toList();
+
     return Scaffold(
       appBar: AppBarWidget(title: 'Dashboard'),
       endDrawer: const AppDrawer(),
@@ -280,6 +374,7 @@ class _DashboardPageState extends State<DashboardPage> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           DashboardHeader(userName: user?.name ?? 'Guest', role: 'Lecturer'),
+
           DashboardSection(
             title: 'Statistics',
             child: StatisticsGrid(
@@ -303,6 +398,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
+
           DashboardSection(
             title: 'Quick Actions',
             child: QuickActionsGrid(
@@ -330,27 +426,72 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
+
           DashboardSection(
             title: "Today's Sessions",
             actionText: 'View All',
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (_, index) {
-                return AttendanceSessionCard(
-                  courseCode: 'CSC 401',
-                  courseTitle: 'Software Engineering',
-                  time: '09:00 AM',
-                  students: 120,
-                  onTap: () {},
-                );
-              },
-            ),
+            onActionPressed: _openTodaysSessions,
+            child: visibleTodaySessions.isEmpty
+                ? const _NoTodaySessions()
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: visibleTodaySessions.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final session = visibleTodaySessions[index];
+
+                      return LectureSessionTile(
+                        courseCode: session.courseCode,
+                        courseTitle: session.courseTitle,
+                        sessionName: session.sessionName,
+                        time: session.time,
+                        students: session.students,
+                        status: session.status,
+                        onTap: session.onTap,
+                      );
+                    },
+                  ),
           ),
+
           const SizedBox(height: 12),
         ],
+      ),
+    );
+  }
+}
+
+class _NoTodaySessions extends StatelessWidget {
+  const _NoTodaySessions();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      color: colors.surfaceBright,
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Row(
+          children: [
+            Icon(
+              Icons.event_available_outlined,
+              color: colors.onSurfaceVariant,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No lecture sessions scheduled for today.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/models/models.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 
 class LectureSessionProvider extends ChangeNotifier {
@@ -20,6 +20,10 @@ class LectureSessionProvider extends ChangeNotifier {
 
   List<LectureSession> _lectureSessions = [];
 
+  double? _averageAttendance;
+
+  List<LectureSession> _todayLectureSessions = [];
+
   bool get isLoading => _isLoading;
 
   String? get errorMessage => _errorMessage;
@@ -28,19 +32,52 @@ class LectureSessionProvider extends ChangeNotifier {
 
   LectureSession? get selectedLectureSession => _selectedLectureSession;
 
-  double? _averageAttendance;
+  List<LectureSession> get lectureSessions =>
+      List.unmodifiable(_lectureSessions);
 
   double? get averageAttendance => _averageAttendance;
 
+  LectureSessionAttendanceStats? _selectedSessionAttendanceStats;
+
+  LectureSessionAttendanceStats? get selectedSessionAttendanceStats =>
+      _selectedSessionAttendanceStats;
+
+  List<LectureSession> get todayLectureSessions =>
+      List.unmodifiable(_todayLectureSessions);
+
+  Future<bool> loadTodayLectureSessions() async {
+    _errorMessage = null;
+
+    try {
+      _todayLectureSessions = await _lectureSessionService
+          .getTodayLectureSessions();
+
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _todayLectureSessions = [];
+
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
   Future<void> getAverageAttendance() async {
-    _averageAttendance = await LectureSessionService.instance
-        .calculateAverageAttendance();
+    try {
+      _averageAttendance = await _lectureSessionService
+          .calculateAverageAttendance();
+    } catch (e) {
+      _averageAttendance = 0.0;
+      _errorMessage = e.toString();
+    }
 
     notifyListeners();
   }
 
-  List<LectureSession> get lectureSessions =>
-      List.unmodifiable(_lectureSessions);
+  Future<void> refreshDashboardData() async {
+    await Future.wait([loadTodayLectureSessions(), getAverageAttendance()]);
+  }
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -87,7 +124,6 @@ class LectureSessionProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _setError('Failed to load lecture sessions.');
-
       return false;
     } finally {
       _setLoading(false);
@@ -104,7 +140,6 @@ class LectureSessionProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _setError('Failed to load lecture sessions.');
-
       return false;
     } finally {
       _setLoading(false);
@@ -120,12 +155,23 @@ class LectureSessionProvider extends ChangeNotifier {
         lectureSessionId,
       );
 
+      if (lectureSession == null) {
+        _selectedLectureSession = null;
+        _selectedSessionAttendanceStats = null;
+        _setError('Lecture session not found.');
+        return null;
+      }
+
       _selectedLectureSession = lectureSession;
+
+      _selectedSessionAttendanceStats = await _lectureSessionService
+          .getLectureSessionAttendanceStats(lectureSessionId);
 
       return lectureSession;
     } catch (e) {
+      _selectedLectureSession = null;
+      _selectedSessionAttendanceStats = null;
       _setError('Failed to load lecture session.');
-
       return null;
     } finally {
       _setLoading(false);
@@ -141,10 +187,11 @@ class LectureSessionProvider extends ChangeNotifier {
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
 
+      await refreshDashboardData();
+
       return true;
     } catch (e) {
       _setError('Failed to create lecture session.');
-
       return false;
     } finally {
       _setLoading(false);
@@ -163,10 +210,11 @@ class LectureSessionProvider extends ChangeNotifier {
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
 
+      await refreshDashboardData();
+
       return true;
     } catch (e) {
       _setError('Failed to update lecture session.');
-
       return false;
     } finally {
       _setLoading(false);
@@ -186,10 +234,11 @@ class LectureSessionProvider extends ChangeNotifier {
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
 
+      await refreshDashboardData();
+
       return true;
     } catch (e) {
       _setError('Failed to delete lecture session.');
-
       return false;
     } finally {
       _setLoading(false);
@@ -207,6 +256,8 @@ class LectureSessionProvider extends ChangeNotifier {
           .getLectureSessionById(lectureSession.id!);
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
+
+      await refreshDashboardData();
 
       return true;
     } catch (e) {
@@ -231,6 +282,8 @@ class LectureSessionProvider extends ChangeNotifier {
           .getLectureSessionById(lectureSession.id!);
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
+
+      await refreshDashboardData();
 
       return true;
     } catch (e) {

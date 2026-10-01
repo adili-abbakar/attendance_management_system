@@ -1,5 +1,5 @@
-import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/core/buttons/buttons.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:flutter/material.dart';
 
 class CourseActionsBar extends StatelessWidget {
@@ -8,6 +8,7 @@ class CourseActionsBar extends StatelessWidget {
     required this.onImportStudents,
     required this.onAddStudent,
     required this.onLectureSessions,
+    required this.onVerifyAttendance,
     required this.onRefresh,
     required this.onExportBulkQr,
   });
@@ -15,6 +16,7 @@ class CourseActionsBar extends StatelessWidget {
   final VoidCallback onImportStudents;
   final VoidCallback onAddStudent;
   final VoidCallback onLectureSessions;
+  final VoidCallback onVerifyAttendance;
   final VoidCallback onRefresh;
   final VoidCallback onExportBulkQr;
 
@@ -51,6 +53,13 @@ class CourseActionsBar extends StatelessWidget {
               text: 'Lecture Sessions',
               icon: Icons.event_note_outlined,
               onPressed: onLectureSessions,
+              fullWidth: false,
+            ),
+
+            AppOutlinedButton(
+              text: 'Verify Attendance',
+              icon: Icons.fact_check_outlined,
+              onPressed: onVerifyAttendance,
               fullWidth: false,
             ),
 

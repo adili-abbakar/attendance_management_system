@@ -228,9 +228,26 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
           lectureSessionId: lectureSession.id!,
           courseName: widget.courseName,
           courseCode: widget.courseCode,
+
           startSession: (session) => _startSession(context, session),
+
           completeSession: (session) => _completeSession(context, session),
+
           viewAttendance: (session) => _viewAttendance(context, session),
+
+          updateSession: (session) async {
+            await showDialog(
+              context: context,
+              builder: (_) => LectureSessionFormDialog(
+                courseId: widget.courseId,
+                initialSession: session,
+              ),
+            );
+          },
+
+          deleteSession: (session) async {
+            await _showDeleteSessionDialog(context, session);
+          },
         ),
       ),
     );
