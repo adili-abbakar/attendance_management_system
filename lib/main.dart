@@ -16,7 +16,7 @@ import 'package:attendance_management_system/features/academic_session/services/
 import 'package:attendance_management_system/features/courses/services/course_service.dart';
 import 'package:attendance_management_system/features/levels/services/level_service.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
-import 'package:attendance_management_system/features/splash/splash_screen.dart';
+import 'package:attendance_management_system/features/welcome/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +46,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) =>
-              AcademicSessionProvider(AcademicSessionSerivce.instance), 
+              AcademicSessionProvider(AcademicSessionSerivce.instance),
         ),
         ChangeNotifierProvider(
           create: (_) => StudentProvider(StudentService.instance),
@@ -55,7 +55,7 @@ Future<void> main() async {
           create: (context) =>
               StudentImportProvider(context.read<StudentProvider>()),
         ),
-        ChangeNotifierProvider(
+        ChangeNotifierProvider( 
           create: (_) => QrExportProvider(
             pdfService: const QrPdfService(),
             pngService: const QrPngService(),
@@ -82,9 +82,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const SplashScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }

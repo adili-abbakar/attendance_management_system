@@ -40,11 +40,19 @@ class AttendanceProvider extends ChangeNotifier {
   AttendanceVerification? get verification => _verification;
 
   void _setLoading(bool value) {
+    if (_isLoading == value) {
+      return;
+    }
+
     _isLoading = value;
     notifyListeners();
   }
 
   void _setScanning(bool value) {
+    if (_isScanning == value) {
+      return;
+    }
+
     _isScanning = value;
     notifyListeners();
   }
@@ -61,20 +69,25 @@ class AttendanceProvider extends ChangeNotifier {
   void selectLectureSession(int lectureSessionId) {
     _lectureSessionId = lectureSessionId;
     _records = [];
+    _verification = null;
     _clearError();
+
     notifyListeners();
   }
 
   void clearSelection() {
     _lectureSessionId = null;
     _records = [];
+    _verification = null;
     _clearError();
+
     notifyListeners();
   }
 
   void clearVerification() {
     _verification = null;
     _clearError();
+
     notifyListeners();
   }
 
@@ -92,6 +105,8 @@ class AttendanceProvider extends ChangeNotifier {
       );
 
       _verification = result.verification;
+
+      notifyListeners();
 
       return result;
     } catch (e) {
@@ -115,13 +130,16 @@ class AttendanceProvider extends ChangeNotifier {
     try {
       _lectureSessionId = lectureSessionId;
 
-      _records = await _attendanceService.getRecordsByLectureSession(
+      final records = await _attendanceService.getRecordsByLectureSession(
         lectureSessionId,
       );
+
+      _records = records;
 
       return true;
     } catch (e) {
       _setError('Failed to load attendance records.');
+
       return false;
     } finally {
       _setLoading(false);
@@ -136,13 +154,22 @@ class AttendanceProvider extends ChangeNotifier {
     _setScanning(true);
 
     try {
+      _lectureSessionId = lectureSessionId;
+
       final result = await _attendanceService.recordAttendance(
         lectureSessionId: lectureSessionId,
         admissionNumber: admissionNumber,
       );
 
       if (result.isSuccess && result.record != null) {
-        _records = [..._records, result.record!];
+        final alreadyExists = _records.any(
+          (record) => record.id == result.record!.id,
+        );
+
+        if (!alreadyExists) {
+          _records = [..._records, result.record!];
+        }
+
         notifyListeners();
       }
 
@@ -172,6 +199,7 @@ class AttendanceProvider extends ChangeNotifier {
       );
     } catch (e) {
       _setError('Failed to check attendance.');
+
       return false;
     }
   }
@@ -181,6 +209,7 @@ class AttendanceProvider extends ChangeNotifier {
       return await _attendanceService.getAttendanceCount(lectureSessionId);
     } catch (e) {
       _setError('Failed to get attendance count.');
+
       return 0;
     }
   }

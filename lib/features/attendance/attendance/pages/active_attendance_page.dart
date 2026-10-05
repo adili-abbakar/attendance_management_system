@@ -1,29 +1,29 @@
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
+import 'package:attendance_management_system/core/widgets/widgets.dart';
+import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
 import 'package:attendance_management_system/features/attendance/attendance/providers/attendance_provider.dart';
 import 'package:attendance_management_system/features/attendance/attendance/results/attendance_result.dart';
 import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
 import 'package:attendance_management_system/features/attendance/attendance/widgets/widgets.dart';
-import 'package:attendance_management_system/features/attendance/attendance/dialogs/dialogs.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/helpers/lecture_session_helper.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/scanner/pages/scanner_page.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:attendance_management_system/core/widgets/widgets.dart';
-
 
 class ActiveAttendancePage extends StatefulWidget {
   const ActiveAttendancePage({
     super.key,
     required this.lectureSession,
-    required this.courseName,
-    required this.courseCode,
+    required this.course,
   });
 
   final LectureSession lectureSession;
-  final String courseName;
-  final String courseCode;
+  final Course course;
 
   @override
   State<ActiveAttendancePage> createState() => _ActiveAttendancePageState();
@@ -33,74 +33,155 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
   final StudentService _studentService = StudentService.instance;
   final AttendanceService _attendanceService = AttendanceService.instance;
 
+  int get _lectureSessionId => widget.lectureSession.id!;
+
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AttendanceProvider>().loadRecords(widget.lectureSession.id!);
+      _loadPageData();
     });
+  }
+
+  Future<void> _loadPageData() async {
+    if (!mounted) return;
+
+    final lectureSessionProvider = context.read<LectureSessionProvider>();
+    final attendanceProvider = context.read<AttendanceProvider>();
+
+    await Future.wait([
+      lectureSessionProvider.loadLectureSession(_lectureSessionId),
+      attendanceProvider.loadRecords(_lectureSessionId),
+    ]);
+  }
+
+  LectureSession _currentLectureSession(LectureSessionProvider provider) {
+    return provider.selectedLectureSession ?? widget.lectureSession;
   }
 
   @override
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
 
-    return Scaffold(
-      appBar: AppBarWidget(title: 'Active Attendance'),
-      endDrawer: AppDrawer(),
-      body: Consumer<AttendanceProvider>(
-        builder: (context, provider, child) {
-          return Padding(
+    return Consumer2<LectureSessionProvider, AttendanceProvider>(
+      builder: (context, lectureSessionProvider, attendanceProvider, child) {
+        final lectureSession = _currentLectureSession(lectureSessionProvider);
+
+        return Scaffold(
+          appBar: AppBarWidget(title: 'Active Attendance'),
+          endDrawer: AppDrawer(),
+
+          body: Padding(
             padding: EdgeInsets.all(r.pagePadding),
             child: Column(
               children: [
                 ActiveAttendanceHeader(
-                  lectureSession: widget.lectureSession,
-                  courseName: widget.courseName,
-                  courseCode: widget.courseCode,
-                  attendanceCount: provider.attendanceCount,
+                  lectureSession: lectureSession,
+                  courseName: widget.course.title,
+                  courseCode: widget.course.code,
+                  attendanceCount: attendanceProvider.attendanceCount,
                 ),
+
                 SizedBox(height: r.spacingL),
+
                 Expanded(
                   child: AttendanceRecordsList(
-                    lectureSessionId: widget.lectureSession.id!,
-                    records: provider.records,
-                    isLoading: provider.isLoading,
-                    errorMessage: provider.errorMessage,
+                    lectureSessionId: lectureSession.id!,
+                    records: attendanceProvider.records,
+                    isLoading: attendanceProvider.isLoading,
+                    errorMessage: attendanceProvider.errorMessage,
                     onRetry: () {
-                      provider.loadRecords(widget.lectureSession.id!);
+                      attendanceProvider.loadRecords(lectureSession.id!);
                     },
                     studentService: _studentService,
                   ),
                 ),
               ],
             ),
-          );
-        },
-      ),
-      floatingActionButton: Consumer<AttendanceProvider>(
-        builder: (context, provider, child) {
-          return FloatingActionButton.extended(
-            onPressed: provider.isScanning ? null : () => _openScanner(context),
-            icon: provider.isScanning
+          ),
+
+          floatingActionButton: _buildFloatingActions(
+            context,
+            lectureSession,
+            attendanceProvider,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget? _buildFloatingActions(
+    BuildContext context,
+    LectureSession lectureSession,
+    AttendanceProvider attendanceProvider,
+  ) {
+    if (lectureSession.isActive) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () async {
+              await LectureSessionHelper.completeSession(
+                context,
+                lectureSession,
+              );
+            },
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('Complete Attendance'),
+          ),
+
+          const SizedBox(height: 12),
+
+          FloatingActionButton.extended(
+            onPressed: attendanceProvider.isScanning
+                ? null
+                : () => _openScanner(context),
+            icon: attendanceProvider.isScanning
                 ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.qr_code_scanner),
-            label: Text(provider.isScanning ? 'Processing...' : 'Scan QR'),
-          );
-        },
-      ),
-    );
+            label: Text(
+              attendanceProvider.isScanning ? 'Processing...' : 'Scan QR',
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (lectureSession.isScheduled) {
+      return FloatingActionButton.extended(
+        onPressed: lectureSessionProviderIsLoading(context)
+            ? null
+            : () async {
+                await LectureSessionHelper.startSession(
+                  context,
+                  lectureSession,
+                  isInActivaPage: true,
+                  course: widget.course,
+                );
+              },
+        icon: const Icon(Icons.play_arrow),
+        label: const Text('Start Lecture'),
+      );
+    }
+
+    // Completed session.
+    return null;
+  }
+
+  bool lectureSessionProviderIsLoading(BuildContext context) {
+    return context.read<LectureSessionProvider>().isLoading;
   }
 
   Future<void> _openScanner(BuildContext context) async {
     final admissionNumber = await Navigator.push<String>(
       context,
-      MaterialPageRoute(builder: (_) => ScannerPage()),
+      MaterialPageRoute(builder: (_) => const ScannerPage()),
     );
 
     if (!context.mounted || admissionNumber == null) {
@@ -114,7 +195,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
     BuildContext context,
     String admissionNumber,
   ) async {
-    final provider = context.read<AttendanceProvider>();
+    final attendanceProvider = context.read<AttendanceProvider>();
 
     final student = await _studentService.getStudentByAdmissionNumber(
       admissionNumber,
@@ -126,19 +207,17 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
 
     if (student == null) {
       await _showInvalidStudentDialog(context);
-
       return;
     }
 
     if (student.id == null) {
       await _showErrorDialog(context, 'The student record is invalid.');
-
       return;
     }
 
     final isEnrolled = await _attendanceService
         .isStudentEnrolledForLectureSession(
-          lectureSessionId: widget.lectureSession.id!,
+          lectureSessionId: _lectureSessionId,
           studentId: student.id!,
         );
 
@@ -148,12 +227,11 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
 
     if (!isEnrolled) {
       await _showNotEnrolledDialog(context, student);
-
       return;
     }
 
-    final result = await provider.recordAttendance(
-      lectureSessionId: widget.lectureSession.id!,
+    final result = await attendanceProvider.recordAttendance(
+      lectureSessionId: _lectureSessionId,
       admissionNumber: admissionNumber,
     );
 
@@ -281,7 +359,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
 
   Future<void> _enrollStudentOnly(BuildContext context, Student student) async {
     final result = await _attendanceService.enrollStudent(
-      lectureSessionId: widget.lectureSession.id!,
+      lectureSessionId: _lectureSessionId,
       admissionNumber: student.admissionNumber,
     );
 
@@ -297,9 +375,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
       return;
     }
 
-    await context.read<AttendanceProvider>().loadRecords(
-      widget.lectureSession.id!,
-    );
+    await context.read<AttendanceProvider>().loadRecords(_lectureSessionId);
 
     if (!context.mounted) {
       return;
@@ -322,7 +398,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
 
   Future<void> _enrollAndRecord(BuildContext context, Student student) async {
     final result = await _attendanceService.enrollAndRecordAttendance(
-      lectureSessionId: widget.lectureSession.id!,
+      lectureSessionId: _lectureSessionId,
       admissionNumber: student.admissionNumber,
     );
 
@@ -335,9 +411,7 @@ class _ActiveAttendancePageState extends State<ActiveAttendancePage> {
       return;
     }
 
-    await context.read<AttendanceProvider>().loadRecords(
-      widget.lectureSession.id!,
-    );
+    await context.read<AttendanceProvider>().loadRecords(_lectureSessionId);
 
     if (!context.mounted) {
       return;

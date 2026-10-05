@@ -1,4 +1,6 @@
 import 'package:attendance_management_system/core/widgets/widgets.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/helpers/lecture_session_helper.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,28 +13,11 @@ class LectureSessionDetailsPage extends StatefulWidget {
   const LectureSessionDetailsPage({
     super.key,
     required this.lectureSessionId,
-    required this.courseName,
-    required this.courseCode,
-    required this.startSession,
-    required this.completeSession,
-    required this.viewAttendance,
-    this.updateSession,
-    this.deleteSession,
+    required this.course,
   });
 
   final int lectureSessionId;
-  final String courseName;
-  final String courseCode;
-
-  final Future<void> Function(LectureSession lectureSession) startSession;
-
-  final Future<void> Function(LectureSession lectureSession) completeSession;
-
-  final void Function(LectureSession lectureSession) viewAttendance;
-
-  final Future<void> Function(LectureSession lectureSession)? updateSession;
-
-  final Future<void> Function(LectureSession lectureSession)? deleteSession;
+  final Course course;
 
   @override
   State<LectureSessionDetailsPage> createState() =>
@@ -117,7 +102,7 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
         SizedBox(height: r.spacingXS),
 
         Text(
-          '${widget.courseName} (${widget.courseCode})',
+          '${widget.course.title} (${widget.course.code})',
           style: TextStyle(fontSize: r.body, color: colors.onSurfaceVariant),
         ),
 
@@ -331,35 +316,51 @@ class _LectureSessionDetailsPageState extends State<LectureSessionDetailsPage> {
     final isPhone = r.isPhone;
 
     final viewAttendanceButton = OutlinedButton.icon(
-      onPressed: () => widget.viewAttendance(lectureSession),
+      onPressed: () => LectureSessionHelper.viewAttendance(
+        context,
+        lectureSession,
+        course: widget.course,
+      ),
       icon: Icon(Icons.fact_check_outlined, size: r.buttonIcon),
       label: const Text('View Attendance'),
     );
 
     final startButton = FilledButton.icon(
-      onPressed: () => widget.startSession(lectureSession),
+      onPressed: () => LectureSessionHelper.startSession(
+        context,
+        lectureSession,
+        course: widget.course,
+      ),
       icon: Icon(Icons.play_arrow, size: r.buttonIcon),
       label: const Text('Start Lecture'),
     );
 
     final completeButton = FilledButton.icon(
-      onPressed: () => widget.completeSession(lectureSession),
+      onPressed: () =>
+          LectureSessionHelper.completeSession(context, lectureSession),
       icon: Icon(Icons.check_circle_outline, size: r.buttonIcon),
       label: const Text('Complete Lecture'),
     );
 
     final updateButton = OutlinedButton.icon(
-      onPressed: widget.updateSession == null
-          ? null
-          : () => widget.updateSession!(lectureSession),
+      onPressed: () {
+        if (widget.course.id == null) {
+          return;
+        }
+
+        LectureSessionHelper.updateSession(
+          context,
+          lectureSession,
+          widget.course.id!,
+        );
+      },
       icon: Icon(Icons.edit_outlined, size: r.buttonIcon),
       label: const Text('Update'),
     );
 
     final deleteButton = OutlinedButton.icon(
-      onPressed: widget.deleteSession == null
-          ? null
-          : () => widget.deleteSession!(lectureSession),
+      onPressed: () =>
+          LectureSessionHelper.deleteSession(context, lectureSession),
       icon: Icon(Icons.delete_outline, size: r.buttonIcon),
       label: const Text('Delete'),
       style: OutlinedButton.styleFrom(

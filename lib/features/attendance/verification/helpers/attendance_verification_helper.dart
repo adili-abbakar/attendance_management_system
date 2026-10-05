@@ -10,14 +10,6 @@ import 'package:provider/provider.dart';
 class AttendanceVerificationHelper {
   const AttendanceVerificationHelper._();
 
-  /// Starts the complete attendance verification workflow for a course.
-  ///
-  /// This includes:
-  /// - Opening the scanner.
-  /// - Reading the student's admission number.
-  /// - Verifying the student through [AttendanceProvider].
-  /// - Showing the appropriate verification result dialog.
-  /// - Allowing the user to scan another student when requested.
   static Future<void> verifyStudent({
     required BuildContext context,
     required Course course,
@@ -25,7 +17,6 @@ class AttendanceVerificationHelper {
     await _scanStudent(context: context, course: course);
   }
 
-  /// Opens the scanner and verifies the scanned student.
   static Future<void> _scanStudent({
     required BuildContext context,
     required Course course,
@@ -57,7 +48,6 @@ class AttendanceVerificationHelper {
     );
   }
 
-  /// Handles every possible attendance verification result.
   static Future<void> _handleVerificationResult({
     required BuildContext context,
     required Course course,
@@ -135,7 +125,6 @@ class AttendanceVerificationHelper {
     );
   }
 
-  /// Displays a generic attendance verification error.
   static Future<void> _showVerificationError({
     required BuildContext context,
     required String message,

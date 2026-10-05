@@ -1,14 +1,14 @@
 import 'package:attendance_management_system/features/dashboard/dashboard_page.dart';
 import 'package:flutter/material.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void initState() {
     super.initState();
@@ -22,15 +22,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const DashboardPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const DashboardPage()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -39,7 +36,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final shortestSide = size.shortestSide;
-            final iconSize = shortestSide * 0.22;
+
+            final imageWidth = (shortestSide * 0.82).clamp(280.0, 500.0);
 
             return Center(
               child: Padding(
@@ -49,19 +47,18 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: iconSize.clamp(300.0, 460.0),
-                        height: iconSize.clamp(300.0, 460.0),
-                        child: FittedBox(
-                          fit: BoxFit.cover,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: SizedBox(
+                          width: imageWidth,
                           child: Image.asset(
-                            'assets/images/welcome.png',
-                            color: colors.primary,
+                            'assets/images/banner.png',
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       const CircularProgressIndicator(),
                     ],

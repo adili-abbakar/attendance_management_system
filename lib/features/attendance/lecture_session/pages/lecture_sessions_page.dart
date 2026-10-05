@@ -1,27 +1,19 @@
-import 'package:attendance_management_system/core/dialogs/delete_confirmation_dialog.dart';
 import 'package:attendance_management_system/core/widgets/widgets.dart';
-import 'package:attendance_management_system/features/attendance/attendance/pages/active_attendance_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/dialogs/lecture_session_form_dialog.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/helpers/lecture_session_helper.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_table.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 
 class LectureSessionsPage extends StatefulWidget {
-  const LectureSessionsPage({
-    super.key,
-    required this.courseId,
-    required this.courseName,
-    required this.courseCode,
-  });
+  const LectureSessionsPage({super.key, required this.course});
 
-  final int courseId;
-  final String courseName;
-  final String courseCode;
+  final Course course;
 
   @override
   State<LectureSessionsPage> createState() => _LectureSessionsPageState();
@@ -36,7 +28,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LectureSessionProvider>().loadLectureSessionsByCourse(
-        widget.courseId,
+        widget.course.id!,
       );
     });
   }
@@ -68,33 +60,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
                 Expanded(
                   child: LectureSessionTable(
                     sessions: sessions,
-                    onTap: (session) {
-                      _openDetails(context, session);
-                    },
-                    onUpdate: (session) {
-                      showDialog(
-                        context: context,
-                        builder: (_) => LectureSessionFormDialog(
-                          courseId: widget.courseId,
-                          initialSession: session,
-                        ),
-                      );
-                    },
-                    onDetails: (session) {
-                      _openDetails(context, session);
-                    },
-                    onAttendance: (session) {
-                      _viewAttendance(context, session);
-                    },
-                    onStart: (session) async {
-                      await _startSession(context, session);
-                    },
-                    onComplete: (session) async {
-                      await _completeSession(context, session);
-                    },
-                    onDelete: (session) async {
-                      await _showDeleteSessionDialog(context, session);
-                    },
+                    course: widget.course,
                   ),
                 ),
               ],
@@ -112,7 +78,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${widget.courseName} (${widget.courseCode})',
+          '${widget.course.title} (${widget.course.code})',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -137,7 +103,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       onPressed: () async {
         final created = await showDialog<bool>(
           context: context,
-          builder: (_) => LectureSessionFormDialog(courseId: widget.courseId),
+          builder: (_) => LectureSessionFormDialog(courseId: widget.course.id!),
         );
 
         if (!context.mounted) return;
@@ -145,7 +111,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
         if (created == true) {
           await context
               .read<LectureSessionProvider>()
-              .loadLectureSessionsByCourse(widget.courseId);
+              .loadLectureSessionsByCourse(widget.course.id!);
         }
       },
       icon: Icon(Icons.add, size: r.buttonIcon),
@@ -210,7 +176,7 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
       final values = [
         session.lectureSessionName,
         session.weekNumber.toString(),
-        _formatDate(session.lectureDate),
+        LectureSessionHelper.formatDate(session.lectureDate),
         session.fromTime,
         session.toTime,
         session.status.name,
@@ -218,150 +184,5 @@ class _LectureSessionsPageState extends State<LectureSessionsPage> {
 
       return values.any((value) => value.toLowerCase().contains(_searchQuery));
     }).toList();
-  }
-
-  void _openDetails(BuildContext context, LectureSession lectureSession) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => LectureSessionDetailsPage(
-          lectureSessionId: lectureSession.id!,
-          courseName: widget.courseName,
-          courseCode: widget.courseCode,
-
-          startSession: (session) => _startSession(context, session),
-
-          completeSession: (session) => _completeSession(context, session),
-
-          viewAttendance: (session) => _viewAttendance(context, session),
-
-          updateSession: (session) async {
-            await showDialog(
-              context: context,
-              builder: (_) => LectureSessionFormDialog(
-                courseId: widget.courseId,
-                initialSession: session,
-              ),
-            );
-          },
-
-          deleteSession: (session) async {
-            await _showDeleteSessionDialog(context, session);
-          },
-        ),
-      ),
-    );
-  }
-
-  Future<void> _startSession(
-    BuildContext context,
-    LectureSession lectureSession,
-  ) async {
-    final provider = context.read<LectureSessionProvider>();
-
-    final success = await provider.startLectureSession(lectureSession);
-
-    if (!context.mounted) return;
-
-    if (!success) {
-      _showResult(
-        context,
-        provider.errorMessage ?? 'Failed to start lecture session.',
-      );
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(
-          lectureSession: lectureSession.copyWith(
-            status: LectureSessionStatus.active,
-          ),
-          courseName: widget.courseName,
-          courseCode: widget.courseCode,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _completeSession(
-    BuildContext context,
-    LectureSession lectureSession,
-  ) async {
-    final provider = context.read<LectureSessionProvider>();
-
-    final success = await provider.completeLectureSession(lectureSession);
-
-    if (!context.mounted) return;
-
-    _showResult(
-      context,
-      success
-          ? 'Lecture session completed.'
-          : provider.errorMessage ?? 'Failed to complete lecture session.',
-    );
-  }
-
-  Future<void> _showDeleteSessionDialog(
-    BuildContext context,
-    LectureSession lectureSession,
-  ) async {
-    await showDialog(
-      context: context,
-      builder: (_) {
-        return DeleteConfirmationDialog(
-          title: 'Delete Lecture Session',
-          itemName:
-              '${widget.courseCode} — ${lectureSession.lectureSessionName}',
-          onDelete: () async {
-            await _deleteSession(context, lectureSession);
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteSession(
-    BuildContext context,
-    LectureSession lectureSession,
-  ) async {
-    final provider = context.read<LectureSessionProvider>();
-
-    final success = await provider.deleteLectureSession(lectureSession);
-
-    if (!context.mounted) return;
-
-    _showResult(
-      context,
-      success
-          ? 'Lecture session deleted.'
-          : provider.errorMessage ?? 'Failed to delete lecture session.',
-    );
-  }
-
-  void _viewAttendance(BuildContext context, LectureSession lectureSession) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(
-          lectureSession: lectureSession,
-          courseCode: widget.courseCode,
-          courseName: widget.courseName,
-        ),
-      ),
-    );
-  }
-
-  void _showResult(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
   }
 }

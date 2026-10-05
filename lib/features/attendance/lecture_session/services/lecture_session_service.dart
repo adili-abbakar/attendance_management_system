@@ -183,18 +183,13 @@ class LectureSessionService {
     );
   }
 
+  double _roundToTwoDecimals(double value) {
+    return (value * 100).round() / 100;
+  }
+
   Future<double> calculateAverageAttendance() async {
     final db = await _databaseService.database;
 
-    /*
-     * Do not join course students, lecture sessions and attendance
-     * records directly.
-     *
-     * Doing that multiplies rows and causes attendance counts to
-     * become artificially large.
-     *
-     * Instead, calculate each value independently for every course.
-     */
     final result = await db.rawQuery('''
       SELECT
         COALESCE(
@@ -258,14 +253,7 @@ class LectureSessionService {
 
     final percentage = (totalAttendance / totalPossibleAttendance) * 100;
 
-    /*
-     * Attendance percentage should never exceed 100%.
-     *
-     * The SQL above already prevents the previous multiplication
-     * problem, but this also protects the displayed statistic from
-     * bad/duplicate data.
-     */
-    return percentage.clamp(0.0, 100.0);
+    return _roundToTwoDecimals(percentage.clamp(0.0, 100.0));
   }
 
   Future<double> calculateCourseAverageAttendance(Course course) async {
@@ -311,7 +299,7 @@ class LectureSessionService {
         (attendanceRecordCount / (course.studentCount * lectureSessionsCount)) *
         100;
 
-    return percentage.clamp(0.0, 100.0);
+    return _roundToTwoDecimals(percentage.clamp(0.0, 100.0));
   }
 
   Future<int> getLectureSessionCount(int courseId) async {
@@ -350,7 +338,7 @@ class LectureSessionService {
     return maps.map(LectureSession.fromMap).toList();
   }
 
-Future<LectureSessionAttendanceStats> getLectureSessionAttendanceStats(
+  Future<LectureSessionAttendanceStats> getLectureSessionAttendanceStats(
     int lectureSessionId,
   ) async {
     final db = await _databaseService.database;

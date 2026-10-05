@@ -110,13 +110,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   Future<void> _openLectureSessions() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => LectureSessionsPage(
-          courseId: widget.course.id!,
-          courseName: widget.course.title,
-          courseCode: widget.course.code,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => LectureSessionsPage(course: widget.course)),
     );
   }
 

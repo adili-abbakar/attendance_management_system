@@ -1,3 +1,4 @@
+import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
 import 'package:attendance_management_system/features/courses/enrollments/services/course_enrollment_service.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
@@ -5,7 +6,11 @@ import 'package:attendance_management_system/features/students/models/student.da
 import 'package:flutter/material.dart';
 
 class CourseDetailsProvider extends ChangeNotifier {
-  CourseDetailsProvider(this.course);
+  CourseDetailsProvider(this.course) {
+    LectureSessionProvider.statisticsChanged.addListener(
+      _handleLectureSessionChange,
+    );
+  }
 
   final Course course;
 
@@ -48,12 +53,26 @@ class CourseDetailsProvider extends ChangeNotifier {
 
   int? get lectureSessionsCount => _lectureSessionsCount;
 
-  Future<void> loadStatistics(Course course) async {
-    _averageCourseAttendance = await LectureSessionService.instance
-        .calculateCourseAverageAttendance(course);
+  void _handleLectureSessionChange() {
+    loadStatistics(course);
+  }
 
-    _lectureSessionsCount = await LectureSessionService.instance
-        .getLectureSessionCount(course.id ?? 0);
+  Future<void> loadStatistics(Course course) async {
+    try {
+      final service = LectureSessionService.instance;
+
+      final results = await Future.wait([
+        service.calculateCourseAverageAttendance(course),
+        service.getLectureSessionCount(course.id ?? 0),
+      ]);
+
+      _averageCourseAttendance = results[0] as double;
+      _lectureSessionsCount = results[1] as int;
+
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    }
 
     notifyListeners();
   }
@@ -65,8 +84,7 @@ class CourseDetailsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _students =
-          await CourseEnrollmentService.instance.getStudentsForCourse(
+      _students = await CourseEnrollmentService.instance.getStudentsForCourse(
         course.id!,
       );
 
@@ -79,6 +97,10 @@ class CourseDetailsProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> refresh() async {
+    await Future.wait([loadStudents(), loadStatistics(course)]);
   }
 
   int get totalPages {
@@ -96,10 +118,7 @@ class CourseDetailsProvider extends ChangeNotifier {
       return [];
     }
 
-    final end = (start + _pageSize).clamp(
-      0,
-      _filteredStudents.length,
-    );
+    final end = (start + _pageSize).clamp(0, _filteredStudents.length);
 
     return _filteredStudents.sublist(start, end);
   }
@@ -142,44 +161,30 @@ class CourseDetailsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _applyFilters({
-    bool notify = true,
-  }) {
+  void _applyFilters({bool notify = true}) {
     var results = List<Student>.from(_students);
 
-    // Active/inactive filter.
     if (_showActiveOnly) {
-      results = results
-          .where((student) => student.isActive)
-          .toList();
+      results = results.where((student) => student.isActive).toList();
     }
 
-    // Search filter.
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
 
       results = results.where((student) {
-        return student.fullName
-                .toLowerCase()
-                .contains(query) ||
-            student.admissionNumber
-                .toLowerCase()
-                .contains(query);
+        return student.fullName.toLowerCase().contains(query) ||
+            student.admissionNumber.toLowerCase().contains(query);
       }).toList();
     }
 
-    // Sorting.
     results.sort((a, b) {
       final comparison = a.fullName.compareTo(b.fullName);
 
-      return _sortAscending
-          ? comparison
-          : -comparison;
+      return _sortAscending ? comparison : -comparison;
     });
 
     _filteredStudents = results;
 
-    // Any change to filtering/search/sorting starts from page 1.
     _currentPage = 1;
 
     if (notify) {
@@ -187,26 +192,19 @@ class CourseDetailsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> refresh() async {
-    await loadStudents();
-  }
-
   Future<bool> removeStudent(Student student) async {
     try {
-      final success =
-          await CourseEnrollmentService.instance
-              .removeStudentFromCourse(
-        courseId: course.id!,
-        studentId: student.id!,
-      );
+      final success = await CourseEnrollmentService.instance
+          .removeStudentFromCourse(
+            courseId: course.id!,
+            studentId: student.id!,
+          );
 
       if (!success) {
         return false;
       }
 
-      _students.removeWhere(
-        (studentItem) => studentItem.id == student.id,
-      );
+      _students.removeWhere((studentItem) => studentItem.id == student.id);
 
       _applyFilters();
 
@@ -218,5 +216,14 @@ class CourseDetailsProvider extends ChangeNotifier {
 
       return false;
     }
+  }
+
+  @override
+  void dispose() {
+    LectureSessionProvider.statisticsChanged.removeListener(
+      _handleLectureSessionChange,
+    );
+
+    super.dispose();
   }
 }

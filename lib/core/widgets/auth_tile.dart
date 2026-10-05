@@ -1,6 +1,6 @@
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/auth/pages/login/login_page.dart';
-import 'package:attendance_management_system/features/splash/splash_screen.dart';
+import 'package:attendance_management_system/features/welcome/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -80,7 +80,7 @@ class AuthTile extends StatelessWidget {
             navigator.pop();
 
             navigator.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const SplashScreen()),
+              MaterialPageRoute(builder: (_) => const WelcomeScreen()),
               (_) => false,
             );
           },

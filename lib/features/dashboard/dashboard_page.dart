@@ -143,11 +143,8 @@ class _DashboardPageState extends State<DashboardPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(
-          lectureSession: session,
-          courseName: course.title,
-          courseCode: course.code,
-        ),
+        builder: (_) =>
+            ActiveAttendancePage(lectureSession: session, course: course),
       ),
     );
   }
@@ -233,84 +230,7 @@ class _DashboardPageState extends State<DashboardPage> {
       MaterialPageRoute(
         builder: (_) => LectureSessionDetailsPage(
           lectureSessionId: lectureSession.id!,
-          courseName: course.title,
-          courseCode: course.code,
-          startSession: (session) =>
-              _startSessionFromDashboard(context, session, course),
-          completeSession: (session) =>
-              _completeSessionFromDashboard(context, session),
-          viewAttendance: (session) =>
-              _viewAttendanceFromDashboard(context, session, course),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _startSessionFromDashboard(
-    BuildContext context,
-    LectureSession lectureSession,
-    Course course,
-  ) async {
-    final provider = context.read<LectureSessionProvider>();
-
-    final success = await provider.startLectureSession(lectureSession);
-
-    if (!context.mounted) return;
-
-    if (!success) {
-      _showResult(
-        context,
-        provider.errorMessage ?? 'Failed to start lecture session.',
-      );
-      return;
-    }
-
-    final updatedSession =
-        provider.selectedLectureSession ??
-        lectureSession.copyWith(status: LectureSessionStatus.active);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(
-          lectureSession: updatedSession,
-          courseName: course.title,
-          courseCode: course.code,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _completeSessionFromDashboard(
-    BuildContext context,
-    LectureSession lectureSession,
-  ) async {
-    final provider = context.read<LectureSessionProvider>();
-
-    final success = await provider.completeLectureSession(lectureSession);
-
-    if (!context.mounted) return;
-
-    _showResult(
-      context,
-      success
-          ? 'Lecture session completed.'
-          : provider.errorMessage ?? 'Failed to complete lecture session.',
-    );
-  }
-
-  void _viewAttendanceFromDashboard(
-    BuildContext context,
-    LectureSession lectureSession,
-    Course course,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ActiveAttendancePage(
-          lectureSession: lectureSession,
-          courseCode: course.code,
-          courseName: course.title,
+          course: course,
         ),
       ),
     );
@@ -346,12 +266,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ? null
           : () => _openLectureSessionDetails(context, session, course),
     );
-  }
-
-  void _showResult(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

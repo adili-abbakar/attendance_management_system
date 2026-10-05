@@ -1,30 +1,19 @@
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/core/table/table.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/helpers/lecture_session_helper.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/models/lecture_session.dart';
+import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:flutter/material.dart';
 
 class LectureSessionTable extends StatelessWidget {
   const LectureSessionTable({
     super.key,
     required this.sessions,
-    required this.onTap,
-    required this.onUpdate,
-    required this.onDetails,
-    required this.onAttendance,
-    required this.onStart,
-    required this.onComplete,
-    required this.onDelete,
+    required this.course,
   });
 
   final List<LectureSession> sessions;
-
-  final ValueChanged<LectureSession> onTap;
-  final ValueChanged<LectureSession> onUpdate;
-  final ValueChanged<LectureSession> onDetails;
-  final ValueChanged<LectureSession> onAttendance;
-  final ValueChanged<LectureSession> onStart;
-  final ValueChanged<LectureSession> onComplete;
-  final ValueChanged<LectureSession> onDelete;
+  final Course course;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +55,8 @@ class LectureSessionTable extends StatelessWidget {
         final session = sessions[index];
 
         return AppTableRow(
-          onTap: () => onTap(session),
+          onTap: () =>
+              LectureSessionHelper.openDetails(context, session, course),
           cells: [
             Text(
               '${index + 1}',
@@ -116,12 +106,36 @@ class LectureSessionTable extends StatelessWidget {
 
             _ActionsButton(
               session: session,
-              onUpdate: onUpdate,
-              onDetails: onDetails,
-              onAttendance: onAttendance,
-              onStart: onStart,
-              onComplete: onComplete,
-              onDelete: onDelete,
+              onUpdate: (session) {
+                LectureSessionHelper.updateSession(
+                  context,
+                  session,
+                  course.id!,
+                );
+              },
+              onDetails: (session) {
+                LectureSessionHelper.openDetails(context, session, course);
+              },
+              onAttendance: (session) {
+                LectureSessionHelper.openDetails(context, session, course);
+              },
+              onStart: (session) async {
+                await LectureSessionHelper.startSession(
+                  context,
+                  session,
+                  course: course,
+                );
+              },
+              onComplete: (session) async {
+                await LectureSessionHelper.completeSession(context, session);
+              },
+              onDelete: (session) async {
+                await LectureSessionHelper.showDeleteSessionDialog(
+                  context,
+                  session,
+                  course.code,
+                );
+              },
             ),
           ],
         );

@@ -256,7 +256,8 @@ class _CoursePageState extends State<CoursePage> {
                                         builder: (_) => ChangeNotifierProvider(
                                           create: (_) =>
                                               CourseDetailsProvider(course)
-                                                ..loadStudents(),
+                                                ..loadStudents()
+                                                ..loadStatistics(course),
                                           child: CourseDetailsPage(
                                             course: course,
                                           ),
