@@ -5,6 +5,8 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/courses/enrollments/tables/course_student_table.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/tables/course_table.dart';
+import 'package:attendance_management_system/features/students/models/student.dart';
+import 'package:attendance_management_system/features/students/tables/student_table.dart';
 
 class LectureSessionService {
   LectureSessionService._();
@@ -375,5 +377,52 @@ class LectureSessionService {
       presentCount: (row['present_count'] as int?) ?? 0,
       totalStudents: (row['total_students'] as int?) ?? 0,
     );
+  }
+
+  Future<List<Student>> getPresentStudents(int lectureSessionId) async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT s.*
+    FROM ${StudentTable.tableName} s
+    INNER JOIN ${CourseStudentTable.tableName} cs
+      ON cs.${CourseStudentTable.studentId} = s.${StudentTable.id}
+    INNER JOIN ${LectureSessionTable.tableName} ls
+      ON ls.${LectureSessionTable.courseId} = cs.${CourseStudentTable.courseId}
+    INNER JOIN ${AttendanceRecordTable.tableName} ar
+      ON ar.${AttendanceRecordTable.studentId} = s.${StudentTable.id}
+      AND ar.${AttendanceRecordTable.lectureSessionId} = ls.${LectureSessionTable.id}
+    WHERE ls.${LectureSessionTable.id} = ?
+    ORDER BY s.${StudentTable.fullName} ASC
+    ''',
+      [lectureSessionId],
+    );
+
+    return result.map(Student.fromMap).toList();
+  }
+
+  Future<List<Student>> getAbsentStudents(int lectureSessionId) async {
+    final db = await _databaseService.database;
+
+    final result = await db.rawQuery(
+      '''
+    SELECT s.*
+    FROM ${StudentTable.tableName} s
+    INNER JOIN ${CourseStudentTable.tableName} cs
+      ON cs.${CourseStudentTable.studentId} = s.${StudentTable.id}
+    INNER JOIN ${LectureSessionTable.tableName} ls
+      ON ls.${LectureSessionTable.courseId} = cs.${CourseStudentTable.courseId}
+    LEFT JOIN ${AttendanceRecordTable.tableName} ar
+      ON ar.${AttendanceRecordTable.studentId} = s.${StudentTable.id}
+      AND ar.${AttendanceRecordTable.lectureSessionId} = ls.${LectureSessionTable.id}
+    WHERE ls.${LectureSessionTable.id} = ?
+      AND ar.${AttendanceRecordTable.id} IS NULL
+    ORDER BY s.${StudentTable.fullName} ASC
+    ''',
+      [lectureSessionId],
+    );
+
+    return result.map(Student.fromMap).toList();
   }
 }

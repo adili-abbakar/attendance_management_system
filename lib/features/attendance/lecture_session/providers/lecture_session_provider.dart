@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:attendance_management_system/features/attendance/lecture_session/models/models.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
+import 'package:attendance_management_system/features/students/models/student.dart';
 
 class LectureSessionProvider extends ChangeNotifier {
   final LectureSessionService _lectureSessionService;
@@ -28,6 +29,9 @@ class LectureSessionProvider extends ChangeNotifier {
 
   LectureSessionAttendanceStats? _selectedSessionAttendanceStats;
 
+  List<Student> _presentStudents = [];
+  List<Student> _absentStudents = [];
+
   bool get isLoading => _isLoading;
 
   String? get errorMessage => _errorMessage;
@@ -46,6 +50,10 @@ class LectureSessionProvider extends ChangeNotifier {
 
   List<LectureSession> get todayLectureSessions =>
       List.unmodifiable(_todayLectureSessions);
+
+  List<Student> get presentStudents => List.unmodifiable(_presentStudents);
+
+  List<Student> get absentStudents => List.unmodifiable(_absentStudents);
 
   void _notifyStatisticsChanged() {
     statisticsChanged.value++;
@@ -141,7 +149,11 @@ class LectureSessionProvider extends ChangeNotifier {
     _selectedCourseId = courseId;
     _selectedLectureSession = null;
     _selectedSessionAttendanceStats = null;
+
     _lectureSessions = [];
+
+    _presentStudents = [];
+    _absentStudents = [];
 
     _clearError();
 
@@ -152,7 +164,11 @@ class LectureSessionProvider extends ChangeNotifier {
     _selectedCourseId = null;
     _selectedLectureSession = null;
     _selectedSessionAttendanceStats = null;
+
     _lectureSessions = [];
+
+    _presentStudents = [];
+    _absentStudents = [];
 
     _clearError();
 
@@ -209,6 +225,9 @@ class LectureSessionProvider extends ChangeNotifier {
         _selectedLectureSession = null;
         _selectedSessionAttendanceStats = null;
 
+        _presentStudents = [];
+        _absentStudents = [];
+
         _setError('Lecture session not found.');
 
         return null;
@@ -219,6 +238,14 @@ class LectureSessionProvider extends ChangeNotifier {
       _selectedSessionAttendanceStats = await _lectureSessionService
           .getLectureSessionAttendanceStats(lectureSessionId);
 
+      final students = await Future.wait([
+        _lectureSessionService.getPresentStudents(lectureSessionId),
+        _lectureSessionService.getAbsentStudents(lectureSessionId),
+      ]);
+
+      _presentStudents = students[0];
+      _absentStudents = students[1];
+
       _replaceSessionInList(lectureSession);
       _replaceSessionInTodayList(lectureSession);
 
@@ -226,6 +253,9 @@ class LectureSessionProvider extends ChangeNotifier {
     } catch (e) {
       _selectedLectureSession = null;
       _selectedSessionAttendanceStats = null;
+
+      _presentStudents = [];
+      _absentStudents = [];
 
       _setError('Failed to load lecture session.');
 
@@ -277,6 +307,14 @@ class LectureSessionProvider extends ChangeNotifier {
 
         _selectedSessionAttendanceStats = await _lectureSessionService
             .getLectureSessionAttendanceStats(updatedSession.id!);
+
+        final students = await Future.wait([
+          _lectureSessionService.getPresentStudents(updatedSession.id!),
+          _lectureSessionService.getAbsentStudents(updatedSession.id!),
+        ]);
+
+        _presentStudents = students[0];
+        _absentStudents = students[1];
       }
 
       await loadLectureSessionsByCourse(lectureSession.courseId);
@@ -305,6 +343,9 @@ class LectureSessionProvider extends ChangeNotifier {
       if (_selectedLectureSession?.id == lectureSession.id) {
         _selectedLectureSession = null;
         _selectedSessionAttendanceStats = null;
+
+        _presentStudents = [];
+        _absentStudents = [];
       }
 
       _removeSessionFromLists(lectureSession.id!);
@@ -404,6 +445,29 @@ class LectureSessionProvider extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<bool> loadSessionStudents(int lectureSessionId) async {
+    try {
+      final students = await Future.wait([
+        _lectureSessionService.getPresentStudents(lectureSessionId),
+        _lectureSessionService.getAbsentStudents(lectureSessionId),
+      ]);
+
+      _presentStudents = students[0];
+      _absentStudents = students[1];
+
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      _presentStudents = [];
+      _absentStudents = [];
+
+      _setError('Failed to load session students.');
+
+      return false;
     }
   }
 
