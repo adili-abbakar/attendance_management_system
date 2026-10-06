@@ -1,3 +1,5 @@
+import 'package:attendance_management_system/core/buttons/buttons.dart';
+import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/features/qr/enums/qr_export_option.dart';
 import 'package:attendance_management_system/features/qr/providers/qr_export_provider.dart';
 import 'package:attendance_management_system/features/qr/widgets/student_selection_tile.dart';
@@ -16,20 +18,92 @@ class BulkQrExportDialog extends StatefulWidget {
 
 class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
   final TextEditingController _searchController = TextEditingController();
+
+  static const List<QrExportOption> _bulkExportOptions = [
+    QrExportOption.printPdf,
+    QrExportOption.pdf,
+    QrExportOption.zipPng,
+    QrExportOption.zipPdf,
+  ];
+
   QrExportOption _option = QrExportOption.printPdf;
   String _search = '';
 
   List<Student> get _filteredStudents {
-    if (_search.trim().isEmpty) {
+    final query = _search.trim().toLowerCase();
+
+    if (query.isEmpty) {
       return widget.students;
     }
-
-    final query = _search.toLowerCase();
 
     return widget.students.where((student) {
       return student.fullName.toLowerCase().contains(query) ||
           student.admissionNumber.toLowerCase().contains(query);
     }).toList();
+  }
+
+  IconData get _exportIcon {
+    return switch (_option) {
+      QrExportOption.printPdf => Icons.print_rounded,
+      QrExportOption.pdf => Icons.picture_as_pdf_rounded,
+      QrExportOption.zipPdf => Icons.folder_zip_rounded,
+      QrExportOption.zipPng => Icons.folder_zip_rounded,
+
+      // This option is not available in this dialog.
+      QrExportOption.png => Icons.image_rounded,
+    };
+  }
+
+  String get _exportButtonText {
+    return switch (_option) {
+      QrExportOption.printPdf => 'Print',
+      QrExportOption.pdf => 'Export PDF',
+      QrExportOption.zipPdf => 'Export ZIP',
+      QrExportOption.zipPng => 'Export ZIP',
+
+      // This option is not available in this dialog.
+      QrExportOption.png => 'Export PNG',
+    };
+  }
+
+  Future<void> _export(BuildContext context, QrExportProvider provider) async {
+    if (provider.isLoading || !provider.hasSelection) {
+      return;
+    }
+
+    final students = widget.students.where(provider.isSelected).toList();
+
+    if (students.isEmpty) {
+      return;
+    }
+
+    final result = _option == QrExportOption.printPdf
+        ? await provider.printStudents(students: students)
+        : await provider.export(students: students, option: _option);
+
+    if (!context.mounted) return;
+
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.success
+              ? (result.message ?? 'Operation completed successfully.')
+              : (result.message ?? 'Operation failed.'),
+        ),
+      ),
+    );
+
+    provider.clearSelection();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+
+    setState(() {
+      _search = '';
+    });
   }
 
   @override
@@ -40,28 +114,75 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final r = AppResponsive.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final screenSize = MediaQuery.sizeOf(context);
+
+    final availableWidth = screenSize.width - (r.dialogInset * 2);
+
+    final dialogWidth = availableWidth < r.dialogWidth
+        ? availableWidth
+        : r.dialogWidth;
+
+    final dialogHeight = screenSize.height * 0.86;
+
     return Consumer<QrExportProvider>(
       builder: (context, provider, _) {
+        final students = _filteredStudents;
+
         return Dialog(
-          child: SizedBox(
-            width: 500,
-            height: 650,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: r.dialogInset,
+            vertical: r.dialogInset,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: dialogWidth,
+              maxHeight: dialogHeight,
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(r.spacingM),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // ----------------------------------------------------------------
+                  // Header
+                  // ----------------------------------------------------------------
                   Text(
                     'Export QR Cards',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontSize: r.titleLarge,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.spacingM),
 
+                  // ----------------------------------------------------------------
+                  // Search
+                  // ----------------------------------------------------------------
                   TextField(
                     controller: _searchController,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.search),
+                    enabled: !provider.isLoading,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        size: r.iconMedium,
+                      ),
                       hintText: 'Search student...',
+                      suffixIcon: _search.isEmpty
+                          ? null
+                          : IconButton(
+                              tooltip: 'Clear search',
+                              icon: Icon(
+                                Icons.close_rounded,
+                                size: r.iconSmall,
+                              ),
+                              onPressed: provider.isLoading
+                                  ? null
+                                  : _clearSearch,
+                            ),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -70,203 +191,211 @@ class _BulkQrExportDialogState extends State<BulkQrExportDialog> {
                     },
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: r.spacingS),
 
-                  Row(
+                  // ----------------------------------------------------------------
+                  // Selection controls
+                  // ----------------------------------------------------------------
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: r.spacingS,
+                    runSpacing: r.spacingXS,
                     children: [
-                      FilledButton.icon(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () {
-                                provider.selectAll(widget.students);
-                              },
-                        icon: const Icon(Icons.select_all),
-                        label: const Text('Select All'),
+                      Wrap(
+                        spacing: r.spacingXS,
+                        runSpacing: r.spacingXS,
+                        children: [
+                          AppTextButton(
+                            text: 'Select All',
+                            icon: Icons.select_all_rounded,
+                            onPressed:
+                                provider.isLoading || widget.students.isEmpty
+                                ? null
+                                : () {
+                                    provider.selectAll(widget.students);
+                                  },
+                          ),
+                          AppTextButton(
+                            text: 'Clear',
+                            icon: Icons.clear_all_rounded,
+                            onPressed:
+                                provider.isLoading || !provider.hasSelection
+                                ? null
+                                : provider.clearSelection,
+                          ),
+                        ],
                       ),
-
-                      const SizedBox(width: 12),
-
-                      OutlinedButton.icon(
-                        onPressed: provider.isLoading
-                            ? null
-                            : provider.clearSelection,
-                        icon: const Icon(Icons.clear_all),
-                        label: const Text('Clear'),
-                      ),
-
-                      const Spacer(),
-
-                      Text(
-                        '${provider.selectedCount} Selected',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.spacingS,
+                          vertical: r.spacingXS,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(r.radius),
+                        ),
+                        child: Text(
+                          '${provider.selectedCount} selected',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: r.body,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.spacingS),
 
+                  // ----------------------------------------------------------------
+                  // Student list
+                  // ----------------------------------------------------------------
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: _filteredStudents.length,
-                      itemBuilder: (_, index) {
-                        final student = _filteredStudents[index];
+                    child: students.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(r.spacingM),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.person_search_rounded,
+                                    size: r.iconLarge,
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                  SizedBox(height: r.spacingS),
+                                  Text(
+                                    _search.trim().isEmpty
+                                        ? 'No students available.'
+                                        : 'No students found.',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontSize: r.body,
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: students.length,
+                            itemBuilder: (context, index) {
+                              final student = students[index];
 
-                        return StudentSelectionTile(
-                          student: student,
-                          selected: provider.isSelected(student),
-                          onChanged: (_) {
-                            provider.toggleStudent(student);
-                          },
-                        );
-                      },
-                    ),
+                              return StudentSelectionTile(
+                                student: student,
+                                selected: provider.isSelected(student),
+                                onChanged: (_) {
+                                  if (provider.isLoading) return;
+
+                                  provider.toggleStudent(student);
+                                },
+                              );
+                            },
+                          ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.spacingM),
 
-                  const SizedBox(height: 16),
-
+                  // ----------------------------------------------------------------
+                  // Export format
+                  // ----------------------------------------------------------------
                   DropdownButtonFormField<QrExportOption>(
                     initialValue: _option,
                     decoration: const InputDecoration(
                       labelText: 'Export Format',
                       border: OutlineInputBorder(),
                     ),
-
-                    items: const [
-                      DropdownMenuItem(
-                        value: QrExportOption.printPdf,
-                        child: Text('Print PDF'),
-                      ),
-                      DropdownMenuItem(
-                        value: QrExportOption.pdf,
-                        child: Text('PDF Document'),
-                      ),
-                      DropdownMenuItem(
-                        value: QrExportOption.zipPdf,
-                        child: Text('ZIP (Individual PDFs)'),
-                      ),
-                      DropdownMenuItem(
-                        value: QrExportOption.zipPng,
-                        child: Text('ZIP (Individual PNGs)'),
-                      ),
-                    ],
+                    items: _bulkExportOptions.map((option) {
+                      return DropdownMenuItem<QrExportOption>(
+                        value: option,
+                        child: Text(option.label),
+                      );
+                    }).toList(),
                     onChanged: provider.isLoading
                         ? null
                         : (value) {
-                            if (value != null) {
-                              setState(() => _option = value);
-                            }
+                            if (value == null) return;
+
+                            setState(() {
+                              _option = value;
+                            });
                           },
                   ),
 
-                  const SizedBox(height: 16),
-
+                  // ----------------------------------------------------------------
+                  // Progress
+                  // ----------------------------------------------------------------
                   if (provider.isLoading) ...[
+                    SizedBox(height: r.spacingM),
+
                     LinearProgressIndicator(
                       value: provider.progressValue == 0
                           ? null
                           : provider.progressValue,
-                      minHeight: 10.0,
-                      borderRadius: BorderRadius.circular(8.0),
+                      minHeight: 6,
+                      borderRadius: BorderRadius.circular(r.radius),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: r.spacingS),
 
                     Row(
                       children: [
                         Expanded(
                           child: Text(
                             provider.progressMessage,
-                            style: Theme.of(context).textTheme.bodySmall,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: r.body,
+                            ),
                           ),
                         ),
+                        SizedBox(width: r.spacingS),
                         Text(
                           '${provider.progress}/${provider.total}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: r.body,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 16),
                   ],
 
+                  SizedBox(height: r.spacingM),
+
+                  // ----------------------------------------------------------------
+                  // Actions
+                  // ----------------------------------------------------------------
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
+                        child: AppTextButton(
+                          text: 'Cancel',
                           onPressed: provider.isLoading
                               ? null
                               : () {
                                   provider.clearSelection();
                                   Navigator.pop(context);
                                 },
-                          child: const Text('Cancel'),
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      SizedBox(width: r.spacingS),
 
                       Expanded(
-                        child: FilledButton.icon(
+                        child: PrimaryButton(
+                          width: double.infinity,
+                          text: _exportButtonText,
+                          icon: _exportIcon,
+                          isLoading: provider.isLoading,
                           onPressed:
                               provider.isLoading || !provider.hasSelection
                               ? null
-                              : () async {
-                                  final students = widget.students
-                                      .where(provider.isSelected)
-                                      .toList();
-
-                                  final result =
-                                      _option == QrExportOption.printPdf
-                                      ? await provider.printStudents(
-                                          students: students,
-                                        )
-                                      : await provider.export(
-                                          students: students,
-                                          option: _option,
-                                        );
-
-                                  if (!context.mounted) return;
-
-                                  Navigator.pop(context);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        result.success
-                                            ? (result.message ??
-                                                  'Operation completed successfully.')
-                                            : (result.message ??
-                                                  'Operation failed.'),
-                                      ),
-                                    ),
-                                  );
-
-                                  provider.clearSelection();
-                                },
-                          icon: provider.isLoading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Icon(switch (_option) {
-                                  QrExportOption.printPdf => Icons.print,
-                                  QrExportOption.pdf => Icons.picture_as_pdf,
-                                  QrExportOption.zipPdf => Icons.folder_zip,
-                                  QrExportOption.zipPng => Icons.folder_zip,
-                                  _ => Icons.save,
-                                }),
-                          label: Text(switch (_option) {
-                            QrExportOption.printPdf => 'Print PDF',
-                            QrExportOption.pdf => 'Export PDF',
-                            QrExportOption.zipPdf => 'Export ZIP',
-                            QrExportOption.zipPng => 'Export ZIP',
-                            _ => 'Export',
-                          }),
+                              : () => _export(context, provider),
                         ),
                       ),
                     ],
