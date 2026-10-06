@@ -8,7 +8,7 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/attendance/lecture_session/pages/lecture_session_details_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/pages/todays_sessions_page.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_tile.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_sessions_page/lecture_session_tile.dart';
 import 'package:attendance_management_system/features/attendance/verification/helpers/attendance_verification_helper.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';

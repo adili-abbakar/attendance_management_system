@@ -1,5 +1,5 @@
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_tile.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_sessions_page/lecture_session_tile.dart';
 import 'package:flutter/material.dart';
 
 class TodaysSessionsPage extends StatelessWidget {

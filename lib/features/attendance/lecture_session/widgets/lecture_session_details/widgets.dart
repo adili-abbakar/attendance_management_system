@@ -1,7 +1,5 @@
 library;
 
-export 'lecture_session_table.dart';
-export 'lecture_session_tile.dart';
 export 'lecture_session_attendance_summary.dart';
 export 'lecture_session_information_card.dart';
 export 'lecture_session_management_actions.dart';

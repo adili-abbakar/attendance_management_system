@@ -1,7 +1,7 @@
 import 'package:attendance_management_system/core/responsive/app_responsive.dart';
 import 'package:attendance_management_system/core/widgets/widgets.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
-import 'package:attendance_management_system/features/attendance/lecture_session/widgets/widgets.dart';
+import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_session_details/widgets.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

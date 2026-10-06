@@ -66,7 +66,6 @@ class LectureSessionTable extends StatelessWidget {
                 color: colors.onSurfaceVariant,
               ),
             ),
-
             Text(
               session.lectureSessionName,
               maxLines: 1,
@@ -77,33 +76,27 @@ class LectureSessionTable extends StatelessWidget {
                 color: colors.onSurface,
               ),
             ),
-
             Text(
               session.weekNumber.toString(),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: r.body, color: colors.onSurface),
             ),
-
             Text(
               _formatDate(session.lectureDate),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
             Text(
               '${session.fromTime} – ${session.toTime}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
             Text(
               _formatDuration(session.durationMinutes),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
             _StatusBadge(status: session.status),
-
             _ActionsButton(
               session: session,
               onUpdate: (session) {
