@@ -15,6 +15,7 @@ import 'package:attendance_management_system/features/auth/providers/auth_provid
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
+import 'package:attendance_management_system/features/reports/pages/reports_page.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -335,7 +336,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 QuickActionCard(
                   title: 'Reports',
                   icon: Icons.analytics_outlined,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ReportsPage()),
+                    );
+                  },
                 ),
               ],
             ),

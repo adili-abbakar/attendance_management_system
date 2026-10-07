@@ -10,6 +10,8 @@ import 'package:attendance_management_system/features/auth/providers/auth_provid
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:attendance_management_system/features/qr/qr.dart';
+import 'package:attendance_management_system/features/reports/providers/report_provider.dart';
+import 'package:attendance_management_system/features/reports/services/report_service.dart';
 import 'package:attendance_management_system/features/students/import/providers/student_import_provider.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:attendance_management_system/features/academic_session/services/academic_session_service.dart';
@@ -55,7 +57,7 @@ Future<void> main() async {
           create: (context) =>
               StudentImportProvider(context.read<StudentProvider>()),
         ),
-        ChangeNotifierProvider( 
+        ChangeNotifierProvider(
           create: (_) => QrExportProvider(
             pdfService: const QrPdfService(),
             pngService: const QrPngService(),
@@ -67,6 +69,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => AttendanceProvider(AttendanceService.instance),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReportProvider(ReportService.instance),
         ),
       ],
       child: const MyApp(),

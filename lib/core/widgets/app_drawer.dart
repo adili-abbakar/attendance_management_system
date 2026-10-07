@@ -3,6 +3,7 @@ import 'package:attendance_management_system/features/auth/providers/auth_provid
 import 'package:attendance_management_system/features/academic_session/pages/academic_session_page.dart';
 import 'package:attendance_management_system/features/courses/pages/course_page.dart';
 import 'package:attendance_management_system/features/levels/pages/level_page.dart';
+import 'package:attendance_management_system/features/reports/pages/reports_page.dart';
 import 'package:attendance_management_system/features/students/pages/student_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -127,7 +128,14 @@ class AppDrawer extends StatelessWidget {
                   _DrawerTile(
                     icon: Icons.bar_chart_outlined,
                     title: "Reports",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ReportsPage()),
+                      );
+                    },
                   ),
 
                   const Divider(),

@@ -5,12 +5,12 @@ class StatCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.value,
-    required this.icon,
+    this.icon,
   });
 
   final String title;
   final Object? value;
-  final IconData icon;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
