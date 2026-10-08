@@ -1,7 +1,7 @@
+import 'package:attendance_management_system/features/dashboard/widgets/stat_card.dart';
 import 'package:flutter/material.dart';
 
 import 'package:attendance_management_system/features/reports/models/attendance_report.dart';
-import 'package:attendance_management_system/features/reports/widgets/report_summary_item.dart';
 
 class ReportSummary extends StatelessWidget {
   final AttendanceReport report;
@@ -14,10 +14,10 @@ class ReportSummary extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        ReportSummaryItem(label: 'Students', value: '${report.totalStudents}'),
-        ReportSummaryItem(label: 'Sessions', value: '${report.totalSessions}'),
-        ReportSummaryItem(
-          label: 'Attendance',
+        StatCard(title: 'Students', value: '${report.totalStudents}'),
+        StatCard(title: 'Sessions', value: '${report.totalSessions}'),
+        StatCard(
+          title: 'Attendance',
           value: '${report.attendancePercentage.toStringAsFixed(1)}%',
         ),
       ],

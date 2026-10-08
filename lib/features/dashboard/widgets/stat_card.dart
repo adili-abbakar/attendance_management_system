@@ -26,11 +26,13 @@ class StatCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: scheme.primaryContainer,
-              child: Icon(icon, color: scheme.primary, size: 22),
-            ),
+            if (icon != null)
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: scheme.primaryContainer,
+                child: Icon(icon, color: scheme.primary, size: 22),
+              ),
+
             const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,

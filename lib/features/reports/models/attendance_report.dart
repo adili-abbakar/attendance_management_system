@@ -5,6 +5,13 @@ class AttendanceReport {
   final int? courseId;
   final String? courseCode;
   final String? courseTitle;
+  final String? levelName;
+  final String? academicSessionName;
+  final int? semester;
+
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final DateTime generatedAt;
 
   final int totalStudents;
   final int totalSessions;
@@ -19,6 +26,12 @@ class AttendanceReport {
     this.courseId,
     this.courseCode,
     this.courseTitle,
+    this.levelName,
+    this.academicSessionName,
+    this.semester,
+    this.startDate,
+    this.endDate,
+    required this.generatedAt,
     required this.totalStudents,
     required this.totalSessions,
     required this.totalPresent,
@@ -29,7 +42,8 @@ class AttendanceReport {
   });
 
   factory AttendanceReport.empty() {
-    return const AttendanceReport(
+    return AttendanceReport(
+      generatedAt: DateTime.now(),
       totalStudents: 0,
       totalSessions: 0,
       totalPresent: 0,
@@ -42,6 +56,12 @@ class AttendanceReport {
     int? courseId,
     String? courseCode,
     String? courseTitle,
+    String? levelName,
+    String? academicSessionName,
+    int? semester,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? generatedAt,
     int? totalStudents,
     int? totalSessions,
     int? totalPresent,
@@ -54,12 +74,17 @@ class AttendanceReport {
       courseId: courseId ?? this.courseId,
       courseCode: courseCode ?? this.courseCode,
       courseTitle: courseTitle ?? this.courseTitle,
+      levelName: levelName ?? this.levelName,
+      academicSessionName: academicSessionName ?? this.academicSessionName,
+      semester: semester ?? this.semester,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      generatedAt: generatedAt ?? this.generatedAt,
       totalStudents: totalStudents ?? this.totalStudents,
       totalSessions: totalSessions ?? this.totalSessions,
       totalPresent: totalPresent ?? this.totalPresent,
       totalAbsent: totalAbsent ?? this.totalAbsent,
-      attendancePercentage:
-          attendancePercentage ?? this.attendancePercentage,
+      attendancePercentage: attendancePercentage ?? this.attendancePercentage,
       sessions: sessions ?? this.sessions,
       students: students ?? this.students,
     );
@@ -107,6 +132,8 @@ class StudentAttendanceReport {
   final int sessionsMissed;
   final double attendancePercentage;
 
+  final List<StudentSessionAttendance> sessionAttendance;
+
   const StudentAttendanceReport({
     required this.studentId,
     required this.fullName,
@@ -115,6 +142,22 @@ class StudentAttendanceReport {
     required this.sessionsAttended,
     required this.sessionsMissed,
     required this.attendancePercentage,
+    this.sessionAttendance = const [],
+  });
+}
+
+@immutable
+class StudentSessionAttendance {
+  final int lectureSessionId;
+  final int sessionNumber;
+  final bool present;
+  final DateTime? scannedAt;
+
+  const StudentSessionAttendance({
+    required this.lectureSessionId,
+    required this.sessionNumber,
+    required this.present,
+    this.scannedAt,
   });
 }
 

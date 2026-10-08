@@ -21,7 +21,14 @@ class ReportService {
 
     final courseRows = await db.query(
       CourseTable.tableName,
-      columns: [CourseTable.id, CourseTable.code, CourseTable.title],
+      columns: [
+        CourseTable.id,
+        CourseTable.code,
+        CourseTable.title,
+        CourseTable.levelId,
+        CourseTable.academicSessionId,
+        CourseTable.semester,
+      ],
       where: '${CourseTable.id} = ?',
       whereArgs: [courseId],
       limit: 1,
@@ -32,6 +39,8 @@ class ReportService {
     }
 
     final course = courseRows.first;
+
+    final courseDetails = await _getCourseDetails(db, course: course);
 
     final sessions = await _getCourseSessions(
       db,
@@ -103,6 +112,12 @@ class ReportService {
       courseId: courseId,
       courseCode: course[CourseTable.code] as String,
       courseTitle: course[CourseTable.title] as String,
+      levelName: courseDetails.levelName,
+      academicSessionName: courseDetails.academicSessionName,
+      semester: course[CourseTable.semester] as int,
+      startDate: startDate,
+      endDate: endDate,
+      generatedAt: DateTime.now(),
       totalStudents: totalStudents,
       totalSessions: sessions.length,
       totalPresent: totalPresent,
@@ -110,6 +125,50 @@ class ReportService {
       attendancePercentage: overallPercentage,
       sessions: sessionReports,
       students: students,
+    );
+  }
+
+  Future<_CourseDetails> _getCourseDetails(
+    Database db, {
+    required Map<String, dynamic> course,
+  }) async {
+    final levelId = course[CourseTable.levelId] as int;
+    final academicSessionId = course[CourseTable.academicSessionId] as int;
+
+    String? levelName;
+    String? academicSessionName;
+
+    final levelRows = await db.rawQuery(
+      '''
+      SELECT name
+      FROM levels
+      WHERE id = ?
+      LIMIT 1
+      ''',
+      [levelId],
+    );
+
+    if (levelRows.isNotEmpty) {
+      levelName = levelRows.first['name'] as String?;
+    }
+
+    final sessionRows = await db.rawQuery(
+      '''
+      SELECT name
+      FROM academic_sessions
+      WHERE id = ?
+      LIMIT 1
+      ''',
+      [academicSessionId],
+    );
+
+    if (sessionRows.isNotEmpty) {
+      academicSessionName = sessionRows.first['name'] as String?;
+    }
+
+    return _CourseDetails(
+      levelName: levelName,
+      academicSessionName: academicSessionName,
     );
   }
 
@@ -191,49 +250,85 @@ class ReportService {
         s.full_name AS full_name,
         s.admission_number AS admission_number,
 
-        COUNT(
-          DISTINCT CASE
-            WHEN ar.status = 'present'
-            THEN ar.lecture_session_id
-          END
-        ) AS attended
+        ls.id AS lecture_session_id,
+        ls.session_number AS session_number,
+
+        ar.${AttendanceRecordTable.status}
+            AS attendance_status,
+
+        ar.${AttendanceRecordTable.scannedAt}
+            AS scanned_at
 
       FROM ${CourseStudentTable.tableName} cs
 
       INNER JOIN students s
         ON s.id = cs.${CourseStudentTable.studentId}
 
+      CROSS JOIN ${LectureSessionTable.tableName} ls
+
       LEFT JOIN ${AttendanceRecordTable.tableName} ar
         ON ar.${AttendanceRecordTable.studentId} = s.id
-        AND ar.${AttendanceRecordTable.lectureSessionId}
-            IN ($placeholders)
+        AND ar.${AttendanceRecordTable.lectureSessionId} = ls.id
 
       WHERE cs.${CourseStudentTable.courseId} = ?
+        AND ls.${LectureSessionTable.courseId} = ?
+        AND ls.${LectureSessionTable.id}
+            IN ($placeholders)
 
-      GROUP BY
-        s.id,
-        s.full_name,
-        s.admission_number
-
-      ORDER BY s.full_name ASC
+      ORDER BY
+        s.full_name ASC,
+        ls.${LectureSessionTable.lectureDate} ASC,
+        ls.${LectureSessionTable.sessionNumber} ASC
       ''',
-      [...sessionIds, courseId],
+      [courseId, courseId, ...sessionIds],
     );
 
-    return result.map((row) {
-      final attended = _toInt(row['attended']);
-      final totalSessions = sessionIds.length;
+    final students = <int, _StudentReportBuilder>{};
+
+    for (final row in result) {
+      final studentId = row['student_id'] as int;
+
+      final builder = students.putIfAbsent(
+        studentId,
+        () => _StudentReportBuilder(
+          studentId: studentId,
+          fullName: row['full_name'] as String? ?? '',
+          admissionNumber: row['admission_number'] as String? ?? '',
+        ),
+      );
+
+      final scannedAt = row['scanned_at'];
+
+      builder.sessionAttendance.add(
+        StudentSessionAttendance(
+          lectureSessionId: row['lecture_session_id'] as int,
+          sessionNumber: row['session_number'] as int,
+          present: row['attendance_status'] == 'present',
+          scannedAt: scannedAt == null
+              ? null
+              : DateTime.tryParse(scannedAt as String),
+        ),
+      );
+    }
+
+    final totalSessions = sessionIds.length;
+
+    return students.values.map((builder) {
+      final attended = builder.sessionAttendance
+          .where((attendance) => attendance.present)
+          .length;
 
       final missed = (totalSessions - attended).clamp(0, totalSessions);
 
       return StudentAttendanceReport(
-        studentId: row['student_id'] as int,
-        fullName: row['full_name'] as String? ?? '',
-        admissionNumber: row['admission_number'] as String? ?? '',
+        studentId: builder.studentId,
+        fullName: builder.fullName,
+        admissionNumber: builder.admissionNumber,
         totalSessions: totalSessions,
         sessionsAttended: attended,
         sessionsMissed: missed,
         attendancePercentage: _calculatePercentage(attended, totalSessions),
+        sessionAttendance: List.unmodifiable(builder.sessionAttendance),
       );
     }).toList();
   }
@@ -251,10 +346,10 @@ class ReportService {
         s.admission_number AS admission_number,
 
         ar.${AttendanceRecordTable.status}
-          AS attendance_status,
+            AS attendance_status,
 
         ar.${AttendanceRecordTable.scannedAt}
-          AS scanned_at
+            AS scanned_at
 
       FROM ${LectureSessionTable.tableName} ls
 
@@ -317,11 +412,33 @@ class ReportService {
 
   String _dateOnly(DateTime date) {
     final year = date.year.toString().padLeft(4, '0');
-
     final month = date.month.toString().padLeft(2, '0');
-
     final day = date.day.toString().padLeft(2, '0');
 
     return '$year-$month-$day';
   }
+}
+
+class _CourseDetails {
+  final String? levelName;
+  final String? academicSessionName;
+
+  const _CourseDetails({
+    required this.levelName,
+    required this.academicSessionName,
+  });
+}
+
+class _StudentReportBuilder {
+  final int studentId;
+  final String fullName;
+  final String admissionNumber;
+
+  final List<StudentSessionAttendance> sessionAttendance = [];
+
+  _StudentReportBuilder({
+    required this.studentId,
+    required this.fullName,
+    required this.admissionNumber,
+  });
 }
