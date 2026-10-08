@@ -16,7 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ReportsPage extends StatefulWidget {
-  const ReportsPage({super.key});
+  final Course? course;
+  const ReportsPage({super.key, this.course});
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();
@@ -52,6 +53,19 @@ class _ReportsPageState extends State<ReportsPage> {
     await context.read<ReportProvider>().generateCourseReport(
       courseId: course.id!,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _selectedCourse = widget.course;
+
+    if (_selectedCourse != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _generateReport();
+      });
+    }
   }
 
   @override

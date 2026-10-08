@@ -11,6 +11,7 @@ import 'package:attendance_management_system/features/courses/providers/course_d
 import 'package:attendance_management_system/features/courses/widgets/course_details/course_details.dart';
 import 'package:attendance_management_system/features/qr/dialogs/student_qr_dialog.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
+import 'package:attendance_management_system/features/reports/pages/reports_page.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
 import 'package:attendance_management_system/features/students/providers/student_provider.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
@@ -110,7 +111,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   Future<void> _openLectureSessions() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => LectureSessionsPage(course: widget.course)),
+      MaterialPageRoute(
+        builder: (_) => LectureSessionsPage(course: widget.course),
+      ),
     );
   }
 
@@ -156,6 +159,15 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     await context.read<CourseDetailsProvider>().loadStudents();
   }
 
+  Future<void> _generateReport() async {
+    final course = widget.course;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReportsPage(course: course)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = AppResponsive.of(context);
@@ -195,6 +207,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     onVerifyAttendance: _openAttendanceVerification,
                     onRefresh: provider.loadStudents,
                     onExportBulkQr: _showBulkExportDialog,
+                    onGenerateReport: _generateReport,
                   ),
                   SizedBox(height: r.spacingL),
 

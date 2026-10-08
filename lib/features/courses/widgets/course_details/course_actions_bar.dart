@@ -11,6 +11,7 @@ class CourseActionsBar extends StatelessWidget {
     required this.onVerifyAttendance,
     required this.onRefresh,
     required this.onExportBulkQr,
+    required this.onGenerateReport,
   });
 
   final VoidCallback onImportStudents;
@@ -19,6 +20,7 @@ class CourseActionsBar extends StatelessWidget {
   final VoidCallback onVerifyAttendance;
   final VoidCallback onRefresh;
   final VoidCallback onExportBulkQr;
+  final VoidCallback onGenerateReport;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +76,13 @@ class CourseActionsBar extends StatelessWidget {
               text: 'Refresh',
               icon: Icons.refresh_rounded,
               onPressed: onRefresh,
+              fullWidth: false,
+            ),
+
+            AppOutlinedButton(
+              text: 'Generate Report',
+              icon: Icons.description_outlined,
+              onPressed: onGenerateReport,
               fullWidth: false,
             ),
           ],
