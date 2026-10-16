@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../models/attendance_report.dart';
-import '../services/report_exporter.dart';
-
 class ReportExportDialog extends StatelessWidget {
-  final AttendanceReport report;
+  const ReportExportDialog({super.key});
 
-  const ReportExportDialog({super.key, required this.report});
-
-  static Future<ReportExportFormat?> show(
-    BuildContext context, {
-    required AttendanceReport report,
-  }) {
-    return showDialog<ReportExportFormat>(
+  static Future<bool?> show(BuildContext context) {
+    return showDialog<bool>(
       context: context,
-      builder: (_) => ReportExportDialog(report: report),
+      builder: (_) => const ReportExportDialog(),
     );
   }
 
@@ -22,18 +14,14 @@ class ReportExportDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Export Report'),
-      content: const Text('Choose the format for your attendance report.'),
+      content: const Text('Export your attendance report as an Excel file?'),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.pop(context, ReportExportFormat.pdf);
-          },
-          child: const Text('PDF'),
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: () {
-            Navigator.pop(context, ReportExportFormat.excel);
-          },
+          onPressed: () => Navigator.pop(context, true),
           child: const Text('Excel'),
         ),
       ],

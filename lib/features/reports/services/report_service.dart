@@ -54,7 +54,6 @@ class ReportService {
     final sessionReports = <LectureSessionReport>[];
 
     var totalPresent = 0;
-    var totalAbsent = 0;
 
     for (final session in sessions) {
       final sessionId = session[LectureSessionTable.id] as int;
@@ -72,7 +71,6 @@ class ReportService {
       );
 
       totalPresent += presentCount;
-      totalAbsent += absentCount;
 
       sessionReports.add(
         LectureSessionReport(
@@ -120,8 +118,6 @@ class ReportService {
       generatedAt: DateTime.now(),
       totalStudents: totalStudents,
       totalSessions: sessions.length,
-      totalPresent: totalPresent,
-      totalAbsent: totalAbsent,
       attendancePercentage: overallPercentage,
       sessions: sessionReports,
       students: students,

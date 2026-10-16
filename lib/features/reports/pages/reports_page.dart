@@ -1,10 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:attendance_management_system/core/widgets/app_bar_widget.dart';
 import 'package:attendance_management_system/core/widgets/app_drawer.dart';
 import 'package:attendance_management_system/features/attendance/attendance/dialogs/select_course_dialog.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
+import 'package:attendance_management_system/features/reports/helpers/report_helper.dart';
 import 'package:attendance_management_system/features/reports/models/attendance_report.dart';
 import 'package:attendance_management_system/features/reports/providers/report_provider.dart';
 import 'package:attendance_management_system/features/reports/services/report_exporter.dart';
@@ -15,7 +14,7 @@ import 'package:attendance_management_system/features/reports/widgets/report_fil
 import 'package:attendance_management_system/features/reports/widgets/report_session_section.dart';
 import 'package:attendance_management_system/features/reports/widgets/report_student_section.dart';
 import 'package:attendance_management_system/features/reports/widgets/report_summary.dart';
-import 'package:file_selector/file_selector.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,12 +34,13 @@ class _ReportsPageState extends State<ReportsPage> {
   @override
   void initState() {
     super.initState();
-
     _selectedCourse = widget.course;
 
     if (_selectedCourse != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _generateReport();
+        if (mounted) {
+          _generateReport();
+        }
       });
     }
   }
@@ -53,182 +53,63 @@ class _ReportsPageState extends State<ReportsPage> {
       builder: (_) => SelectCourseDialog(courses: courses),
     );
 
-    if (!mounted || course == null) {
-      return;
-    }
+    if (!mounted || course == null) return;
 
-    setState(() {
-      _selectedCourse = course;
-    });
+    setState(() => _selectedCourse = course);
   }
 
   Future<void> _generateReport() async {
-    final course = _selectedCourse;
+    final courseId = _selectedCourse?.id;
 
-    if (course == null || course.id == null || course.id! <= 0) {
-      return;
-    }
+    if (courseId == null || courseId <= 0) return;
 
     await context.read<ReportProvider>().generateCourseReport(
-      courseId: course.id!,
+      courseId: courseId,
     );
   }
 
-  Future<void> _showExportOptions(AttendanceReport report) async {
-    if (_isExporting || !_hasReport(report)) {
-      return;
-    }
+  Future<void> _exportExcel(AttendanceReport report) async {
+    if (_isExporting || !ReportHelper.hasReport(report)) return;
 
-    final format = await showDialog<ReportExportFormat>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Export Attendance Report'),
-          content: const Text('Choose the format you want to save.'),
-          actions: [
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop(ReportExportFormat.pdf);
-              },
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('PDF'),
-            ),
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop(ReportExportFormat.excel);
-              },
-              icon: const Icon(Icons.table_chart_outlined),
-              label: const Text('Excel'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (!mounted || format == null) {
-      return;
-    }
-
-    await _saveReport(report: report, format: format);
-  }
-
-  Future<void> _saveReport({
-    required AttendanceReport report,
-    required ReportExportFormat format,
-  }) async {
-    if (_isExporting) {
-      return;
-    }
-
-    setState(() {
-      _isExporting = true;
-    });
+    setState(() => _isExporting = true);
 
     try {
-      final exporter = ReportExporter.instance;
+      final bytes = await ReportExporter.instance.exportExcel(report);
 
-      final Uint8List bytes = await exporter.export(report, format);
+      if (!mounted) return;
 
-      if (!mounted) {
-        return;
-      }
+      final fileName = ReportHelper.buildFileName(report);
 
-      final fileName = _buildFileName(report, format);
-
-      final location = await getSaveLocation(
-        suggestedName: fileName,
-        acceptedTypeGroups: [
-          XTypeGroup(
-            label: _formatName(format),
-            extensions: [_fileExtension(format)],
-            mimeTypes: [_mimeType(format)],
-          ),
-        ],
+      final savedFile = await FilePicker.saveFile(
+        dialogTitle: 'Save Attendance Report',
+        fileName: fileName,
+        bytes: bytes,
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
       );
 
-      if (!mounted || location == null) {
-        return;
-      }
+      if (!mounted) return;
 
-      final file = XFile.fromData(
-        bytes,
-        name: fileName,
-        mimeType: _mimeType(format),
-      );
-
-      await file.saveTo(location.path);
-
-      if (!mounted) {
+      if (savedFile == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Export cancelled.')));
         return;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${_formatName(format)} report saved successfully.'),
-        ),
+        const SnackBar(content: Text('Excel report saved successfully.')),
       );
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to save report: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save Excel report: $error')),
+      );
     } finally {
       if (mounted) {
-        setState(() {
-          _isExporting = false;
-        });
+        setState(() => _isExporting = false);
       }
-    }
-  }
-
-  String _buildFileName(AttendanceReport report, ReportExportFormat format) {
-    final courseCode = _sanitizeFileName(report.courseCode ?? 'COURSE');
-
-    final sessionCount = report.totalSessions;
-
-    return '${courseCode}_${sessionCount}_Sessions_'
-        'Attendance_Report.${_fileExtension(format)}';
-  }
-
-  String _sanitizeFileName(String value) {
-    final sanitized = value
-        .trim()
-        .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
-        .replaceAll(RegExp(r'\s+'), '_');
-
-    return sanitized.isEmpty ? 'COURSE' : sanitized;
-  }
-
-  String _fileExtension(ReportExportFormat format) {
-    switch (format) {
-      case ReportExportFormat.pdf:
-        return 'pdf';
-
-      case ReportExportFormat.excel:
-        return 'xlsx';
-    }
-  }
-
-  String _mimeType(ReportExportFormat format) {
-    switch (format) {
-      case ReportExportFormat.pdf:
-        return 'application/pdf';
-
-      case ReportExportFormat.excel:
-        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    }
-  }
-
-  String _formatName(ReportExportFormat format) {
-    switch (format) {
-      case ReportExportFormat.pdf:
-        return 'PDF';
-
-      case ReportExportFormat.excel:
-        return 'Excel';
     }
   }
 
@@ -251,7 +132,6 @@ class _ReportsPageState extends State<ReportsPage> {
           }
 
           final report = provider.report;
-          final hasReport = _hasReport(report);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -263,28 +143,35 @@ class _ReportsPageState extends State<ReportsPage> {
                   onSelectCourse: _selectCourse,
                   onGenerate: _generateReport,
                 ),
-
                 const SizedBox(height: 24),
-
-                if (!hasReport)
+                if (!ReportHelper.hasReport(report))
                   const EmptyReportView()
                 else ...[
-                  _buildReportActions(report),
-
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: _isExporting
+                          ? null
+                          : () => _exportExcel(report),
+                      icon: _isExporting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.table_chart_outlined),
+                      label: Text(
+                        _isExporting ? 'Exporting...' : 'Export Excel',
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
-
                   ReportCourseHeader(report: report),
-
                   const SizedBox(height: 24),
-
                   ReportSummary(report: report),
-
                   const SizedBox(height: 24),
-
                   ReportSessionSection(sessions: report.sessions),
-
                   const SizedBox(height: 24),
-
                   ReportStudentSection(students: report.students),
                 ],
               ],
@@ -293,28 +180,5 @@ class _ReportsPageState extends State<ReportsPage> {
         },
       ),
     );
-  }
-
-  Widget _buildReportActions(AttendanceReport report) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: OutlinedButton.icon(
-        onPressed: _isExporting ? null : () => _showExportOptions(report),
-        icon: _isExporting
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.file_download_outlined),
-        label: Text(_isExporting ? 'Preparing...' : 'Export Report'),
-      ),
-    );
-  }
-
-  bool _hasReport(AttendanceReport report) {
-    return report.courseId != null ||
-        report.totalStudents > 0 ||
-        report.totalSessions > 0;
   }
 }

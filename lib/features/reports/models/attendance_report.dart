@@ -15,8 +15,6 @@ class AttendanceReport {
 
   final int totalStudents;
   final int totalSessions;
-  final int totalPresent;
-  final int totalAbsent;
   final double attendancePercentage;
 
   final List<LectureSessionReport> sessions;
@@ -34,8 +32,6 @@ class AttendanceReport {
     required this.generatedAt,
     required this.totalStudents,
     required this.totalSessions,
-    required this.totalPresent,
-    required this.totalAbsent,
     required this.attendancePercentage,
     this.sessions = const [],
     this.students = const [],
@@ -46,8 +42,6 @@ class AttendanceReport {
       generatedAt: DateTime.now(),
       totalStudents: 0,
       totalSessions: 0,
-      totalPresent: 0,
-      totalAbsent: 0,
       attendancePercentage: 0,
     );
   }
@@ -64,8 +58,6 @@ class AttendanceReport {
     DateTime? generatedAt,
     int? totalStudents,
     int? totalSessions,
-    int? totalPresent,
-    int? totalAbsent,
     double? attendancePercentage,
     List<LectureSessionReport>? sessions,
     List<StudentAttendanceReport>? students,
@@ -82,8 +74,6 @@ class AttendanceReport {
       generatedAt: generatedAt ?? this.generatedAt,
       totalStudents: totalStudents ?? this.totalStudents,
       totalSessions: totalSessions ?? this.totalSessions,
-      totalPresent: totalPresent ?? this.totalPresent,
-      totalAbsent: totalAbsent ?? this.totalAbsent,
       attendancePercentage: attendancePercentage ?? this.attendancePercentage,
       sessions: sessions ?? this.sessions,
       students: students ?? this.students,

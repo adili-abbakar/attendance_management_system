@@ -13,6 +13,7 @@ class PdfReportBuilder {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.fromLTRB(28, 28, 28, 28),
+        maxPages: 1000,
         header: (context) => _pageHeader(report, context),
         footer: (context) => _footer(context),
         build: (context) {
@@ -26,18 +27,15 @@ class PdfReportBuilder {
             _sessionSummary(report),
             pw.SizedBox(height: 20),
 
-            _studentAttendance(report),
+            _sectionTitle('STUDENT ATTENDANCE'),
+            pw.SizedBox(height: 8),
+            _studentAttendanceTable(report),
           ];
         },
       ),
     );
-
     return document.save();
   }
-
-  // ---------------------------------------------------------------------------
-  // Report Header
-  // ---------------------------------------------------------------------------
 
   pw.Widget _reportHeader(AttendanceReport report) {
     return pw.Column(
@@ -78,10 +76,6 @@ class PdfReportBuilder {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Summary
-  // ---------------------------------------------------------------------------
-
   pw.Widget _summary(AttendanceReport report) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -114,10 +108,6 @@ class PdfReportBuilder {
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Session Summary
-  // ---------------------------------------------------------------------------
 
   pw.Widget _sessionSummary(AttendanceReport report) {
     return pw.Column(
@@ -163,42 +153,35 @@ class PdfReportBuilder {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Student Attendance
-  // ---------------------------------------------------------------------------
-
-  pw.Widget _studentAttendance(AttendanceReport report) {
+  pw.Widget _studentAttendanceTable(AttendanceReport report) {
     final headers = <String>[
       '#',
       'Admission No.',
       ...report.sessions.map(
-        (session) =>
-            'S${session.sessionNumber}\n'
-            '${_formatShortDate(session.lectureDate)}',
+        (session) => _formatShortDate(session.lectureDate),
       ),
       'Present',
       'Absent',
       '%',
     ];
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        _sectionTitle('STUDENT ATTENDANCE'),
-        pw.SizedBox(height: 8),
-        pw.TableHelper.fromTextArray(
-          headers: headers,
-          data: _buildStudentRows(report),
-          headerStyle: pw.TextStyle(
-            fontWeight: pw.FontWeight.bold,
-            fontSize: 7,
-          ),
-          cellStyle: const pw.TextStyle(fontSize: 7),
-          cellPadding: const pw.EdgeInsets.all(3),
-          border: pw.TableBorder.all(color: PdfColors.grey400),
-          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-        ),
-      ],
+    final rows = _buildStudentRows(report);
+
+    if (rows.isEmpty) {
+      return pw.Text(
+        'No student attendance records found.',
+        style: const pw.TextStyle(fontSize: 9),
+      );
+    }
+
+    return pw.TableHelper.fromTextArray(
+      headers: headers,
+      data: rows,
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7),
+      cellStyle: const pw.TextStyle(fontSize: 7),
+      cellPadding: const pw.EdgeInsets.all(3),
+      border: pw.TableBorder.all(color: PdfColors.grey400),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
     );
   }
 
@@ -239,10 +222,6 @@ class PdfReportBuilder {
     return rows;
   }
 
-  // ---------------------------------------------------------------------------
-  // Page Header / Footer
-  // ---------------------------------------------------------------------------
-
   pw.Widget _pageHeader(AttendanceReport report, pw.Context context) {
     if (context.pageNumber == 1) {
       return pw.SizedBox();
@@ -272,10 +251,6 @@ class PdfReportBuilder {
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // PDF Helpers
-  // ---------------------------------------------------------------------------
 
   pw.Widget _sectionTitle(String title) {
     return pw.Text(
@@ -312,10 +287,6 @@ class PdfReportBuilder {
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Formatting
-  // ---------------------------------------------------------------------------
 
   String _percentage(double value) {
     return '${value.toStringAsFixed(1)}%';
