@@ -5,10 +5,10 @@ import 'package:excel_plus/excel_plus.dart';
 import '../models/attendance_report.dart';
 
 class ExcelReportBuilder {
-  static const _worksheetName = 'Sheet1';
+  static const _overviewSheetName = 'Report Overview';
+  static const _sessionSheetName = 'Lecture Sessions';
+  static const _studentAttendanceSheetName = 'Student Attendance';
   static const _overviewSummaryRow = 9;
-  static const _sessionDetailsStartRow = 15;
-  static const _studentAttendanceStartOffset = 3;
   static const _sessionDataRowOffset = 2;
 
   static const _serialNumberColumn = 0;
@@ -51,11 +51,11 @@ class ExcelReportBuilder {
 
   Future<Uint8List> build(AttendanceReport report) async {
     final excel = Excel.createExcel();
-    final sheet = excel[_worksheetName];
+    excel.rename(excel.sheetOrder.first, _overviewSheetName);
 
-    _addOverview(sheet, report);
-    _addSessionDetails(sheet, report);
-    _addStudentAttendance(sheet, report);
+    _addOverview(excel[_overviewSheetName], report);
+    _addSessionDetails(excel[_sessionSheetName], report);
+    _addStudentAttendance(excel[_studentAttendanceSheetName], report);
 
     final bytes = excel.save();
 
@@ -113,7 +113,7 @@ class ExcelReportBuilder {
   }
 
   void _addSessionDetails(Sheet sheet, AttendanceReport report) {
-    final startRow = _sessionDetailsStartRow;
+    const startRow = 0;
 
     _write(sheet, startRow, 0, 'LECTURE SESSION DETAILS');
 
@@ -169,10 +169,7 @@ class ExcelReportBuilder {
   }
 
   void _addStudentAttendance(Sheet sheet, AttendanceReport report) {
-    final startRow =
-        _sessionDetailsStartRow +
-        _studentAttendanceStartOffset +
-        report.sessions.length;
+    const startRow = 0;
 
     _write(sheet, startRow, 0, 'STUDENT ATTENDANCE DETAILS');
 
