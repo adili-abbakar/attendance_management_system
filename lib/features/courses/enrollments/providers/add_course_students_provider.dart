@@ -24,7 +24,6 @@ class AddCourseStudentsProvider extends ChangeNotifier {
   final Set<int> _selectedStudentIds = {};
 
   String _searchQuery = '';
-  bool _showActiveOnly = true;
   bool _sortAscending = true;
 
   int _currentPage = 1;
@@ -55,8 +54,6 @@ class AddCourseStudentsProvider extends ChangeNotifier {
 
   int get totalPages =>
       (_filteredStudents.length / _pageSize).ceil().clamp(1, 999999);
-
-  bool get showActiveOnly => _showActiveOnly;
 
   bool get sortAscending => _sortAscending;
 
@@ -92,11 +89,6 @@ class AddCourseStudentsProvider extends ChangeNotifier {
 
   void search(String value) {
     _searchQuery = value;
-    _applyFilters();
-  }
-
-  void setShowActiveOnly(bool value) {
-    _showActiveOnly = value;
     _applyFilters();
   }
 
@@ -161,10 +153,6 @@ class AddCourseStudentsProvider extends ChangeNotifier {
 
   void _applyFilters({bool notify = true}) {
     var results = List<Student>.from(_students);
-
-    if (_showActiveOnly) {
-      results = results.where((e) => e.isActive).toList();
-    }
 
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();

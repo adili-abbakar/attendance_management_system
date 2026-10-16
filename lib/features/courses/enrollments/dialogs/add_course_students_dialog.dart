@@ -145,9 +145,7 @@ class _AddCourseStudentsDialogState extends State<AddCourseStudentsDialog> {
                           const SizedBox(height: 12),
 
                           AddStudentFilters(
-                            showActiveOnly: provider.showActiveOnly,
                             sortAscending: provider.sortAscending,
-                            onShowActiveChanged: provider.setShowActiveOnly,
                             onSortChanged: provider.setSortAscending,
                           ),
 

@@ -4,8 +4,6 @@ class Student {
   final String admissionNumber;
   final String fullName;
 
-  final bool isActive;
-
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -13,7 +11,6 @@ class Student {
     this.id,
     required this.admissionNumber,
     required this.fullName,
-    required this.isActive,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -22,7 +19,6 @@ class Student {
     int? id,
     String? admissionNumber,
     String? fullName,
-    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -30,7 +26,6 @@ class Student {
       id: id ?? this.id,
       admissionNumber: admissionNumber ?? this.admissionNumber,
       fullName: fullName ?? this.fullName,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -41,7 +36,6 @@ class Student {
       id: map['id'] as int?,
       admissionNumber: map['admission_number'] as String,
       fullName: map['full_name'] as String,
-      isActive: (map['is_active'] as int) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -52,7 +46,6 @@ class Student {
       'id': id,
       'admission_number': admissionNumber,
       'full_name': fullName,
-      'is_active': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -64,7 +57,6 @@ class Student {
     return Student(
       admissionNumber: '',
       fullName: '',
-      isActive: true,
       createdAt: now,
       updatedAt: now,
     );

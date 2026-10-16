@@ -52,29 +52,13 @@ class AddStudentsTable extends StatelessWidget {
                   dataRowMaxHeight: phone ? 52 : 60,
 
                   columns: [
+                    DataColumn(label: Text('#', style: headingStyle)),
+                    const DataColumn(label: SizedBox(width: 24)),
                     DataColumn(
-                      label: Text('#', style: headingStyle),
-                    ),
-                    const DataColumn(
-                      label: SizedBox(width: 24),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'Admission Number',
-                        style: headingStyle,
-                      ),
+                      label: Text('Admission Number', style: headingStyle),
                     ),
                     DataColumn(
-                      label: Text(
-                        'Student Name',
-                        style: headingStyle,
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'Status',
-                        style: headingStyle,
-                      ),
+                      label: Text('Student Name', style: headingStyle),
                     ),
                   ],
 

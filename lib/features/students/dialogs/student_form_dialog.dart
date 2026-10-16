@@ -23,8 +23,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
   late final TextEditingController _admissionNumberController;
   late final TextEditingController _nameController;
 
-  bool _isActive = true;
-
   bool _isSaving = false;
   String? _generalError;
 
@@ -39,8 +37,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
     _nameController = TextEditingController(
       text: widget.student?.fullName ?? '',
     );
-
-    _isActive = widget.student?.isActive ?? true;
   }
 
   @override
@@ -64,7 +60,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       id: widget.student?.id,
       admissionNumber: _admissionNumberController.text.trim(),
       fullName: _nameController.text.trim(),
-      isActive: _isActive,
       createdAt: widget.student?.createdAt ?? now,
       updatedAt: now,
     );
@@ -100,15 +95,11 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       saveIcon: widget.isEditing ? Icons.edit_rounded : Icons.save_rounded,
       onSave: _save,
       children: [
-        _buildAdmissionNumberField(r),
-
-        SizedBox(height: r.spacingM),
-
         _buildNameField(r),
 
         SizedBox(height: r.spacingM),
 
-        _buildActiveSwitch(r),
+        _buildAdmissionNumberField(r),
       ],
     );
   }
@@ -147,22 +138,6 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
 
         return null;
       },
-    );
-  }
-
-  Widget _buildActiveSwitch(AppResponsive r) {
-    return SwitchListTile(
-      value: _isActive,
-      onChanged: _isSaving
-          ? null
-          : (value) {
-              setState(() {
-                _isActive = value;
-              });
-            },
-      title: Text('Active', style: TextStyle(fontSize: r.body)),
-      secondary: Icon(Icons.toggle_on_outlined, size: r.iconMedium),
-      contentPadding: EdgeInsets.zero,
     );
   }
 }

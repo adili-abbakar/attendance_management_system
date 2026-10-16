@@ -31,38 +31,6 @@ class AvailableStudentRow extends DataRow {
            ),
 
            DataCell(Text(student.fullName), onTap: () => onChanged(student)),
-
-           DataCell(
-             Builder(
-               builder: (context) {
-                 final colors = Theme.of(context).colorScheme;
-                 final statusColor = student.isActive
-                     ? Colors.green
-                     : colors.error;
-
-                 return Tooltip(
-                   message: student.isActive
-                       ? 'Active student'
-                       : 'Inactive student',
-                   child: Row(
-                     mainAxisSize: MainAxisSize.min,
-                     children: [
-                       Icon(
-                         student.isActive ? Icons.check_circle : Icons.cancel,
-                         size: 18,
-                         color: statusColor,
-                       ),
-
-                       const SizedBox(width: 6),
-
-                       Text(student.isActive ? 'Active' : 'Inactive'),
-                     ],
-                   ),
-                 );
-               },
-             ),
-             onTap: () => onChanged(student),
-           ),
          ],
        );
 }

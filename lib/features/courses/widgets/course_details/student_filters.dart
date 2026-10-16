@@ -3,14 +3,9 @@ import 'package:flutter/material.dart';
 class StudentFilters extends StatelessWidget {
   const StudentFilters({
     super.key,
-    required this.showActiveOnly,
-    required this.onShowActiveChanged,
     required this.sortAscending,
     required this.onSortChanged,
   });
-
-  final bool showActiveOnly;
-  final ValueChanged<bool> onShowActiveChanged;
 
   final bool sortAscending;
   final ValueChanged<bool> onSortChanged;
@@ -23,41 +18,6 @@ class StudentFilters extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeInOut,
-          child: FilterChip(
-            showCheckmark: false,
-            selected: showActiveOnly,
-            elevation: 0,
-            pressElevation: 0,
-            visualDensity: VisualDensity.compact,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            side: BorderSide(
-              color: showActiveOnly ? colors.primary : colors.outlineVariant,
-            ),
-            backgroundColor: colors.surface,
-            selectedColor: colors.surfaceContainerHighest,
-            avatar: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(scale: animation, child: child),
-              ),
-              child: Icon(
-                Icons.check_circle_outline,
-                key: ValueKey(showActiveOnly),
-                size: 16,
-                color: showActiveOnly
-                    ? colors.primary
-                    : colors.onSurfaceVariant,
-              ),
-            ),
-            label: const Text('Active Only', style: TextStyle(fontSize: 13)),
-            onSelected: onShowActiveChanged,
-          ),
-        ),
-
         AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,

@@ -11,12 +11,15 @@ class AcademicSessionProvider extends ChangeNotifier {
   List<AcademicSession> _academicSessions = [];
 
   bool _isLoading = false;
+  bool _hasLoaded = false;
 
   String? _error;
 
   List<AcademicSession> get academicSessions => _academicSessions;
 
   bool get isLoading => _isLoading;
+
+  bool get hasLoaded => _hasLoaded;
 
   String? get error => _error;
   String? _academicSessionNameError;
@@ -32,6 +35,7 @@ class AcademicSessionProvider extends ChangeNotifier {
       _error = e.toString();
     }
 
+    _hasLoaded = true;
     _setLoading(false);
   }
 
@@ -44,7 +48,8 @@ class AcademicSessionProvider extends ChangeNotifier {
     try {
       final result = await _service.createAcademicSession(
         _normalizeAcademicSession(
-          academicSession.copyWith(createdAt: DateTime.now())),
+          academicSession.copyWith(createdAt: DateTime.now()),
+        ),
       );
 
       if (!result.success) {
@@ -74,7 +79,9 @@ class AcademicSessionProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-     final result = await _service.updateAcademicSession(_normalizeAcademicSession(academicSession));
+      final result = await _service.updateAcademicSession(
+        _normalizeAcademicSession(academicSession),
+      );
 
       if (!result.success) {
         _academicSessionNameError = result.academicSessionNameError;
@@ -100,7 +107,9 @@ class AcademicSessionProvider extends ChangeNotifier {
     try {
       await _service.deleteAcademicSession(id);
 
-      _academicSessions.removeWhere((academicSession) => academicSession.id == id);
+      _academicSessions.removeWhere(
+        (academicSession) => academicSession.id == id,
+      );
 
       notifyListeners();
 
@@ -115,7 +124,9 @@ class AcademicSessionProvider extends ChangeNotifier {
 
   AcademicSession? getAcademicSessionById(int id) {
     try {
-      return _academicSessions.firstWhere((academicSession) => academicSession.id == id);
+      return _academicSessions.firstWhere(
+        (academicSession) => academicSession.id == id,
+      );
     } catch (_) {
       return null;
     }

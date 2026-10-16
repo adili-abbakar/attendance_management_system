@@ -183,7 +183,6 @@ class StudentImportService {
         Student(
           admissionNumber: admissionNumber,
           fullName: fullName,
-          isActive: true,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),

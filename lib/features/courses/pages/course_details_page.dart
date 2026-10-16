@@ -219,9 +219,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   SizedBox(height: r.spacingS),
 
                   StudentFilters(
-                    showActiveOnly: provider.showActiveOnly,
                     sortAscending: provider.sortAscending,
-                    onShowActiveChanged: provider.setShowActiveOnly,
                     onSortChanged: provider.setSortAscending,
                   ),
 

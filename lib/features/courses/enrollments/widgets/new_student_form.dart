@@ -17,7 +17,6 @@ class _NewStudentFormState extends State<NewStudentForm> {
   late final TextEditingController _admissionController;
   late final TextEditingController _nameController;
 
-  bool _isActive = true;
   bool _isSaving = false;
 
   String? _generalError;
@@ -52,7 +51,6 @@ class _NewStudentFormState extends State<NewStudentForm> {
     final student = Student(
       admissionNumber: _admissionController.text.trim(),
       fullName: _nameController.text.trim(),
-      isActive: _isActive,
       createdAt: now,
       updatedAt: now,
     );
@@ -112,22 +110,6 @@ class _NewStudentFormState extends State<NewStudentForm> {
               }
               return null;
             },
-          ),
-
-          const SizedBox(height: 12),
-
-          SwitchListTile(
-            value: _isActive,
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Active'),
-            onChanged: _isSaving
-                ? null
-                : (value) {
-                    setState(() {
-                      _isActive = value;
-                    });
-                  },
           ),
 
           if (_generalError != null) ...[

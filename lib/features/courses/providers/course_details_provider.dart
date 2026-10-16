@@ -21,7 +21,6 @@ class CourseDetailsProvider extends ChangeNotifier {
   List<Student> _filteredStudents = [];
 
   String _searchQuery = '';
-  bool _showActiveOnly = false;
   bool _sortAscending = true;
 
   int _currentPage = 1;
@@ -40,8 +39,6 @@ class CourseDetailsProvider extends ChangeNotifier {
   List<Student> get filteredStudents => _filteredStudents;
 
   String get searchQuery => _searchQuery;
-
-  bool get showActiveOnly => _showActiveOnly;
 
   bool get sortAscending => _sortAscending;
 
@@ -129,12 +126,6 @@ class CourseDetailsProvider extends ChangeNotifier {
     _applyFilters();
   }
 
-  void setShowActiveOnly(bool value) {
-    _showActiveOnly = value;
-
-    _applyFilters();
-  }
-
   void setSortAscending(bool value) {
     _sortAscending = value;
 
@@ -163,10 +154,6 @@ class CourseDetailsProvider extends ChangeNotifier {
 
   void _applyFilters({bool notify = true}) {
     var results = List<Student>.from(_students);
-
-    if (_showActiveOnly) {
-      results = results.where((student) => student.isActive).toList();
-    }
 
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();

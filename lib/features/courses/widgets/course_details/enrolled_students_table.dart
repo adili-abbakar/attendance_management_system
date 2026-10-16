@@ -34,22 +34,8 @@ class EnrolledStudentsTable extends StatelessWidget {
           minWidth: 55,
           alignment: Alignment.center,
         ),
-        AppTableColumn(
-          label: 'Admission No.',
-          flex: 2,
-          minWidth: 150,
-        ),
-        AppTableColumn(
-          label: 'Student Name',
-          flex: 3,
-          minWidth: 180,
-        ),
-        AppTableColumn(
-          label: 'Status',
-          flex: 2,
-          minWidth: 110,
-          alignment: Alignment.center,
-        ),
+        AppTableColumn(label: 'Admission No.', flex: 2, minWidth: 150),
+        AppTableColumn(label: 'Student Name', flex: 3, minWidth: 180),
         AppTableColumn(
           label: 'Actions',
           flex: 2,
@@ -81,15 +67,7 @@ class EnrolledStudentsTable extends StatelessWidget {
               student.fullName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: r.body,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
-            _StatusBadge(
-              label: student.isActive ? 'Active' : 'Inactive',
-              active: student.isActive,
+              style: TextStyle(fontSize: r.body, fontWeight: FontWeight.w500),
             ),
 
             Row(
@@ -114,47 +92,6 @@ class EnrolledStudentsTable extends StatelessWidget {
           ],
         );
       }),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.label,
-    required this.active,
-  });
-
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final r = AppResponsive.of(context);
-    final colors = Theme.of(context).colorScheme;
-
-    final backgroundColor = active
-        ? colors.primary.withValues(alpha: 0.10)
-        : colors.error.withValues(alpha: 0.10);
-
-    final foregroundColor = active ? colors.primary : colors.error;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: r.spacingS,
-        vertical: r.spacingXS,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: r.caption,
-          fontWeight: FontWeight.w700,
-          color: foregroundColor,
-        ),
-      ),
     );
   }
 }
@@ -184,11 +121,7 @@ class _TableActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(r.radius),
         child: Padding(
           padding: EdgeInsets.all(r.spacingXS),
-          child: Icon(
-            icon,
-            size: r.iconSmall,
-            color: color ?? colors.primary,
-          ),
+          child: Icon(icon, size: r.iconSmall, color: color ?? colors.primary),
         ),
       ),
     );
@@ -205,12 +138,9 @@ class _EmptyStudentsTable extends StatelessWidget {
       child: Card(
         child: Padding(
           padding: EdgeInsets.all(32),
-          child: Center(
-            child: Text('No students enrolled in this course.'),
-          ),
+          child: Center(child: Text('No students enrolled in this course.')),
         ),
       ),
     );
   }
 }
-

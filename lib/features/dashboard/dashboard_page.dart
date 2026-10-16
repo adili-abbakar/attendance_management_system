@@ -12,6 +12,7 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/attendance/verification/helpers/attendance_verification_helper.dart';
 import 'package:attendance_management_system/features/auth/models/user.dart';
 import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
+import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/qr/dialogs/bulk_qr_export_dialog.dart';
@@ -39,6 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.wait([
         context.read<StudentProvider>().loadStudents(),
+        context.read<AcademicSessionProvider>().loadAcademicSessions(),
         context.read<CourseProvider>().loadCourses(),
         context.read<CourseProvider>().getCoursesCount(),
         context.read<LectureSessionProvider>().loadTodayLectureSessions(),
@@ -272,6 +274,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final studentProvider = context.watch<StudentProvider>();
+    final academicSessionProvider = context.watch<AcademicSessionProvider>();
     final courseProvider = context.watch<CourseProvider>();
     final lectureSessionProvider = context.watch<LectureSessionProvider>();
 
@@ -309,7 +312,17 @@ class _DashboardPageState extends State<DashboardPage> {
                   value: '${lectureSessionProvider.averageAttendance ?? '-'} %',
                   icon: Icons.fact_check,
                 ),
-                StatCard(title: 'Reports', value: '12', icon: Icons.bar_chart),
+                StatCard(
+                  title: 'Academic Sessions',
+                  value:
+                      !academicSessionProvider.hasLoaded ||
+                          academicSessionProvider.isLoading ||
+                          academicSessionProvider.error != null
+                      ? '-'
+                      : academicSessionProvider.academicSessions.length
+                            .toString(),
+                  icon: Icons.calendar_month,
+                ),
               ],
             ),
           ),

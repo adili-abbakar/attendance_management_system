@@ -32,13 +32,14 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
 
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
 
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -51,6 +52,56 @@ class DatabaseService {
     await db.execute(CourseStudentTable.createTable);
     await db.execute(LectureSessionTable.createTable);
     await db.execute(AttendanceRecordTable.createTable);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TEMP TABLE _students_before_activity_removal AS
+        SELECT id, admission_number, full_name, created_at, updated_at
+        FROM students
+      ''');
+      await db.execute('''
+        CREATE TEMP TABLE _course_students_before_activity_removal AS
+        SELECT * FROM ${CourseStudentTable.tableName}
+      ''');
+      await db.execute('''
+        CREATE TEMP TABLE _attendance_records_before_activity_removal AS
+        SELECT * FROM ${AttendanceRecordTable.tableName}
+      ''');
+
+      await db.execute(AttendanceRecordTable.dropTable);
+      await db.execute('DROP TABLE ${CourseStudentTable.tableName}');
+      await db.execute(StudentTable.dropTable);
+      await db.execute(StudentTable.createTable);
+
+      await db.execute('''
+        INSERT INTO ${StudentTable.tableName}
+          (${StudentTable.id}, ${StudentTable.admissionNumber},
+           ${StudentTable.fullName}, ${StudentTable.createdAt},
+           ${StudentTable.updatedAt})
+        SELECT id, admission_number, full_name, created_at, updated_at
+        FROM _students_before_activity_removal
+      ''');
+
+      await db.execute(CourseStudentTable.createTable);
+      await db.execute('''
+        INSERT INTO ${CourseStudentTable.tableName}
+        SELECT * FROM _course_students_before_activity_removal
+      ''');
+
+      await db.execute(AttendanceRecordTable.createTable);
+      await db.execute('''
+        INSERT INTO ${AttendanceRecordTable.tableName}
+        SELECT * FROM _attendance_records_before_activity_removal
+      ''');
+
+      await db.execute(
+        'DROP TABLE _attendance_records_before_activity_removal',
+      );
+      await db.execute('DROP TABLE _course_students_before_activity_removal');
+      await db.execute('DROP TABLE _students_before_activity_removal');
+    }
   }
 
   Future<void> closeDatabase() async {
