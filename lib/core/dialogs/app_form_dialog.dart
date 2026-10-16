@@ -146,7 +146,7 @@ class AppFormDialog extends StatelessWidget {
         ),
 
         PrimaryButton(
-          width: 120,
+          width: 180,
           text: isSaving ? savingButtonText : saveButtonText,
           icon: saveIcon,
           isLoading: isSaving,

@@ -4,11 +4,10 @@ import 'package:attendance_management_system/features/qr/png/png.dart';
 import 'package:attendance_management_system/features/qr/zip/zip.dart';
 import 'package:attendance_management_system/features/qr/results/qr_export_result.dart';
 import 'package:attendance_management_system/features/students/models/student.dart';
-import 'package:file_selector/file_selector.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:share_plus/share_plus.dart';
 
 class QrExportProvider extends ChangeNotifier {
   QrExportProvider({
@@ -42,8 +41,7 @@ class QrExportProvider extends ChangeNotifier {
 
   int get selectedCount => _selectedStudentIds.length;
 
-  Set<int> get selectedStudentIds =>
-      Set.unmodifiable(_selectedStudentIds);
+  Set<int> get selectedStudentIds => Set.unmodifiable(_selectedStudentIds);
 
   int get progress => _progress;
 
@@ -213,9 +211,7 @@ class QrExportProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
 
-      return QrExportResult.failure(
-        message: _errorMessage,
-      );
+      return QrExportResult.failure(message: _errorMessage);
     } finally {
       _isLoading = false;
 
@@ -231,12 +227,8 @@ class QrExportProvider extends ChangeNotifier {
   // PDF export
   // ---------------------------------------------------------------------------
 
-  Future<QrExportResult> _exportPdf(
-    List<Student> students,
-  ) async {
-    final bytes = await pdfService.generate(
-      students: students,
-    );
+  Future<QrExportResult> _exportPdf(List<Student> students) async {
+    final bytes = await pdfService.generate(students: students);
 
     final fileName = students.length == 1
         ? '${students.first.admissionNumber}.pdf'
@@ -245,7 +237,6 @@ class QrExportProvider extends ChangeNotifier {
     return _deliverFile(
       bytes: bytes,
       fileName: fileName,
-      mimeType: 'application/pdf',
       successMessage: 'PDF exported successfully.',
       exportedCount: students.length,
     );
@@ -270,19 +261,14 @@ class QrExportProvider extends ChangeNotifier {
     }
 
     if (repaintKey == null) {
-      return QrExportResult.failure(
-        message: 'Unable to capture QR card.',
-      );
+      return QrExportResult.failure(message: 'Unable to capture QR card.');
     }
 
-    final bytes = await pngService.generate(
-      repaintKey: repaintKey,
-    );
+    final bytes = await pngService.generate(repaintKey: repaintKey);
 
     return _deliverFile(
       bytes: bytes,
       fileName: '${students.first.admissionNumber}.png',
-      mimeType: 'image/png',
       successMessage: 'PNG exported successfully.',
       exportedCount: 1,
     );
@@ -292,9 +278,7 @@ class QrExportProvider extends ChangeNotifier {
   // Bulk PNG ZIP export
   // ---------------------------------------------------------------------------
 
-  Future<QrExportResult> _exportZipPng(
-    List<Student> students,
-  ) async {
+  Future<QrExportResult> _exportZipPng(List<Student> students) async {
     final controller = ScreenshotController();
     final files = <String, Uint8List>{};
 
@@ -330,9 +314,7 @@ class QrExportProvider extends ChangeNotifier {
       message: 'Creating ZIP archive...',
     );
 
-    final zipBytes = await zipService.generate(
-      files: files,
-    );
+    final zipBytes = await zipService.generate(files: files);
 
     _updateProgress(
       current: students.length,
@@ -343,7 +325,6 @@ class QrExportProvider extends ChangeNotifier {
     return _deliverFile(
       bytes: zipBytes,
       fileName: 'attendance_qr_cards_png.zip',
-      mimeType: 'application/zip',
       successMessage: 'PNG ZIP exported successfully.',
       exportedCount: students.length,
     );
@@ -353,9 +334,7 @@ class QrExportProvider extends ChangeNotifier {
   // Bulk PDF ZIP export
   // ---------------------------------------------------------------------------
 
-  Future<QrExportResult> _exportZipPdf(
-    List<Student> students,
-  ) async {
+  Future<QrExportResult> _exportZipPdf(List<Student> students) async {
     final files = <String, Uint8List>{};
 
     _updateProgress(
@@ -373,8 +352,7 @@ class QrExportProvider extends ChangeNotifier {
         message: 'Generating PDF ${i + 1} of ${students.length}',
       );
 
-      files['${student.admissionNumber}.pdf'] =
-          await pdfService.generateSingle(
+      files['${student.admissionNumber}.pdf'] = await pdfService.generateSingle(
         student: student,
       );
     }
@@ -385,9 +363,7 @@ class QrExportProvider extends ChangeNotifier {
       message: 'Creating ZIP archive...',
     );
 
-    final zipBytes = await zipService.generate(
-      files: files,
-    );
+    final zipBytes = await zipService.generate(files: files);
 
     _updateProgress(
       current: students.length,
@@ -398,174 +374,55 @@ class QrExportProvider extends ChangeNotifier {
     return _deliverFile(
       bytes: zipBytes,
       fileName: 'attendance_qr_cards_pdf.zip',
-      mimeType: 'application/zip',
       successMessage: 'PDF ZIP exported successfully.',
       exportedCount: students.length,
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Cross-platform file delivery
-  // ---------------------------------------------------------------------------
-  //
-  // Desktop:
-  //   Windows / Linux / macOS
-  //   -> Native Save As dialog
-  //
-  // Mobile:
-  //   Android / iOS
-  //   -> Native share/export sheet
-  //
-  // Web:
-  //   -> Share/download fallback
-  //
-  // This is the only place where the destination behavior is decided.
-  // File generation remains completely separate from file delivery.
-  // ---------------------------------------------------------------------------
-
+  // Save generated files using the native file picker on every platform.
   Future<QrExportResult> _deliverFile({
     required Uint8List bytes,
     required String fileName,
-    required String mimeType,
     required String successMessage,
     required int exportedCount,
   }) async {
     if (bytes.isEmpty) {
-      return QrExportResult.failure(
-        message: 'The generated file is empty.',
-      );
-    }
-
-    if (_shouldUseShare()) {
-      return _shareFile(
-        bytes: bytes,
-        fileName: fileName,
-        mimeType: mimeType,
-        successMessage: successMessage,
-        exportedCount: exportedCount,
-      );
+      return QrExportResult.failure(message: 'The generated file is empty.');
     }
 
     return _saveFile(
       bytes: bytes,
       fileName: fileName,
-      mimeType: mimeType,
       successMessage: successMessage,
       exportedCount: exportedCount,
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Platform decision
-  // ---------------------------------------------------------------------------
-
-  bool _shouldUseShare() {
-    if (kIsWeb) {
-      return true;
-    }
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-        return true;
-
-      case TargetPlatform.windows:
-      case TargetPlatform.linux:
-      case TargetPlatform.macOS:
-        return false;
-
-      case TargetPlatform.fuchsia:
-        return true;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Desktop file saving
-  // ---------------------------------------------------------------------------
-
   Future<QrExportResult> _saveFile({
     required Uint8List bytes,
     required String fileName,
-    required String mimeType,
     required String successMessage,
     required int exportedCount,
   }) async {
     final extension = _fileExtension(fileName);
 
-    final location = await getSaveLocation(
-      suggestedName: fileName,
-      acceptedTypeGroups: [
-        XTypeGroup(
-          label: 'Export file',
-          extensions: [extension],
-          mimeTypes: [mimeType],
-        ),
-      ],
+    final savedPath = await FilePicker.saveFile(
+      dialogTitle: 'Save QR Card Export',
+      fileName: fileName,
+      bytes: bytes,
+      type: FileType.custom,
+      allowedExtensions: [extension],
     );
 
-    if (location == null) {
-      return QrExportResult.failure(
-        message: 'Export cancelled.',
-      );
+    if (savedPath == null && !kIsWeb) {
+      return QrExportResult.failure(message: 'Export cancelled.');
     }
-
-    final file = XFile.fromData(
-      bytes,
-      name: fileName,
-      mimeType: mimeType,
-    );
-
-    await file.saveTo(location.path);
 
     return QrExportResult.success(
       exportedCount: exportedCount,
       message: successMessage,
     );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Mobile / Web file sharing
-  // ---------------------------------------------------------------------------
-
-  Future<QrExportResult> _shareFile({
-    required Uint8List bytes,
-    required String fileName,
-    required String mimeType,
-    required String successMessage,
-    required int exportedCount,
-  }) async {
-    final file = XFile.fromData(
-      bytes,
-      name: fileName,
-      mimeType: mimeType,
-    );
-
-    final result = await SharePlus.instance.share(
-      ShareParams(
-        files: [file],
-        fileNameOverrides: [fileName],
-        title: fileName,
-        downloadFallbackEnabled: true,
-      ),
-    );
-
-    switch (result.status) {
-      case ShareResultStatus.success:
-        return QrExportResult.success(
-          exportedCount: exportedCount,
-          message: successMessage,
-        );
-
-      case ShareResultStatus.dismissed:
-        return QrExportResult.failure(
-          message: 'Export cancelled.',
-        );
-
-      case ShareResultStatus.unavailable:
-        return QrExportResult.failure(
-          message: 'No file-sharing option is available on this device.',
-        );
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -586,9 +443,7 @@ class QrExportProvider extends ChangeNotifier {
   // Printing
   // ---------------------------------------------------------------------------
 
-  Future<QrExportResult> printStudent({
-    required Student student,
-  }) async {
+  Future<QrExportResult> printStudent({required Student student}) async {
     if (_isLoading) {
       return QrExportResult.failure(
         message: 'Another operation is already in progress.',
@@ -601,9 +456,7 @@ class QrExportProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await pdfService.printSingle(
-        student: student,
-      );
+      await pdfService.printSingle(student: student);
 
       return QrExportResult.success(
         exportedCount: 1,
@@ -612,9 +465,7 @@ class QrExportProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
 
-      return QrExportResult.failure(
-        message: _errorMessage,
-      );
+      return QrExportResult.failure(message: _errorMessage);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -642,9 +493,7 @@ class QrExportProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await pdfService.print(
-        students: students,
-      );
+      await pdfService.print(students: students);
 
       return QrExportResult.success(
         exportedCount: students.length,
@@ -653,9 +502,7 @@ class QrExportProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
 
-      return QrExportResult.failure(
-        message: _errorMessage,
-      );
+      return QrExportResult.failure(message: _errorMessage);
     } finally {
       _isLoading = false;
       notifyListeners();
