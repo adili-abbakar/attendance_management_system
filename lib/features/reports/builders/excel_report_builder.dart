@@ -57,6 +57,10 @@ class ExcelReportBuilder {
     _addSessionDetails(excel[_sessionSheetName], report);
     _addStudentAttendance(excel[_studentAttendanceSheetName], report);
 
+    for (final sheet in excel.sheets.values) {
+      _autoFitColumns(sheet);
+    }
+
     final bytes = excel.save();
 
     if (bytes == null || bytes.isEmpty) {
@@ -67,26 +71,26 @@ class ExcelReportBuilder {
   }
 
   void _addOverview(Sheet sheet, AttendanceReport report) {
-    _write(sheet, 0, 0, 'LECTURE ATTENDANCE REPORT');
-    _write(sheet, 1, 0, 'Course Code');
+    _write(sheet, 0, 0, 'LECTURE ATTENDANCE REPORT', bold: true);
+    _write(sheet, 1, 0, 'Course Code', bold: true);
     _write(sheet, 1, 1, report.courseCode ?? 'N/A');
 
-    _write(sheet, 2, 0, 'Course Title');
+    _write(sheet, 2, 0, 'Course Title', bold: true);
     _write(sheet, 2, 1, report.courseTitle ?? 'N/A');
 
-    _write(sheet, 3, 0, 'Level');
+    _write(sheet, 3, 0, 'Level', bold: true);
     _write(sheet, 3, 1, report.levelName ?? 'N/A');
 
-    _write(sheet, 4, 0, 'Academic Session');
+    _write(sheet, 4, 0, 'Academic Session', bold: true);
     _write(sheet, 4, 1, report.academicSessionName ?? 'N/A');
 
-    _write(sheet, 5, 0, 'Semester');
+    _write(sheet, 5, 0, 'Semester', bold: true);
     _write(sheet, 5, 1, report.semester ?? 'N/A', alignment: _centerAlignment);
 
-    _write(sheet, 6, 0, 'Reporting Period');
+    _write(sheet, 6, 0, 'Reporting Period', bold: true);
     _write(sheet, 6, 1, _getReportPeriod(report), alignment: _centerAlignment);
 
-    _write(sheet, 7, 0, 'Generated On');
+    _write(sheet, 7, 0, 'Generated On', bold: true);
     _write(
       sheet,
       7,
@@ -95,14 +99,20 @@ class ExcelReportBuilder {
       alignment: _centerAlignment,
     );
 
-    _write(sheet, _overviewSummaryRow, 0, 'ATTENDANCE SUMMARY');
-    _write(sheet, _overviewSummaryRow + 1, 0, 'Total Students');
+    _write(sheet, _overviewSummaryRow, 0, 'ATTENDANCE SUMMARY', bold: true);
+    _write(sheet, _overviewSummaryRow + 1, 0, 'Total Students', bold: true);
     _write(sheet, _overviewSummaryRow + 1, 1, report.totalStudents);
 
-    _write(sheet, _overviewSummaryRow + 2, 0, 'Total Lecture Sessions');
+    _write(
+      sheet,
+      _overviewSummaryRow + 2,
+      0,
+      'Total Lecture Sessions',
+      bold: true,
+    );
     _write(sheet, _overviewSummaryRow + 2, 1, report.totalSessions);
 
-    _write(sheet, _overviewSummaryRow + 3, 0, 'Overall Attendance');
+    _write(sheet, _overviewSummaryRow + 3, 0, 'Overall Attendance', bold: true);
     _write(
       sheet,
       _overviewSummaryRow + 3,
@@ -115,7 +125,7 @@ class ExcelReportBuilder {
   void _addSessionDetails(Sheet sheet, AttendanceReport report) {
     const startRow = 0;
 
-    _write(sheet, startRow, 0, 'LECTURE SESSION DETAILS');
+    _write(sheet, startRow, 0, 'LECTURE SESSION DETAILS', bold: true);
 
     for (var column = 0; column < _sessionHeaders.length; column++) {
       _write(
@@ -124,6 +134,7 @@ class ExcelReportBuilder {
         column,
         _sessionHeaders[column],
         alignment: _sessionHeaderAlignments[column],
+        bold: true,
       );
     }
 
@@ -171,7 +182,7 @@ class ExcelReportBuilder {
   void _addStudentAttendance(Sheet sheet, AttendanceReport report) {
     const startRow = 0;
 
-    _write(sheet, startRow, 0, 'STUDENT ATTENDANCE DETAILS');
+    _write(sheet, startRow, 0, 'STUDENT ATTENDANCE DETAILS', bold: true);
 
     final headers = <String>[
       'S/N',
@@ -196,6 +207,7 @@ class ExcelReportBuilder {
         column,
         headers[column],
         alignment: isTextColumn ? _leftAlignment : _centerAlignment,
+        bold: true,
       );
     }
 
@@ -259,6 +271,7 @@ class ExcelReportBuilder {
     int column,
     Object value, {
     HorizontalAlign? alignment,
+    bool bold = false,
   }) {
     final cell = sheet.cell(
       CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row),
@@ -275,7 +288,14 @@ class ExcelReportBuilder {
     cell.cellStyle = CellStyle(
       horizontalAlign:
           alignment ?? (value is num ? _centerAlignment : _leftAlignment),
+      bold: bold,
     );
+  }
+
+  void _autoFitColumns(Sheet sheet) {
+    for (var column = 0; column < sheet.maxColumns; column++) {
+      sheet.setColumnAutoFit(column);
+    }
   }
 
   String _sanitizeXmlText(String value) {
