@@ -1,12 +1,9 @@
-import 'package:attendance_management_system/core/widgets/auth_tile.dart';
-import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/academic_session/pages/academic_session_page.dart';
 import 'package:attendance_management_system/features/courses/pages/course_page.dart';
 import 'package:attendance_management_system/features/levels/pages/level_page.dart';
 import 'package:attendance_management_system/features/reports/pages/reports_page.dart';
 import 'package:attendance_management_system/features/students/pages/student_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -15,7 +12,6 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final user = context.read<AuthProvider>().currentUser;
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -29,13 +25,17 @@ class AppDrawer extends StatelessWidget {
                   CircleAvatar(
                     radius: 36,
                     backgroundColor: colors.primaryContainer,
-                    child: Icon(Icons.person, size: 40, color: colors.primary),
+                    child: Icon(
+                      Icons.fact_check_outlined,
+                      size: 40,
+                      color: colors.primary,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
 
                   Text(
-                    user?.name ?? 'Guest',
+                    'Attendance Management',
                     style: text.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -44,7 +44,7 @@ class AppDrawer extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   Text(
-                    "Lecturer",
+                    'Academic operations',
                     style: text.bodyMedium?.copyWith(color: colors.primary),
                   ),
                 ],
@@ -141,12 +141,6 @@ class AppDrawer extends StatelessWidget {
                   const Divider(),
 
                   _DrawerTile(
-                    icon: Icons.person_outline,
-                    title: "Profile",
-                    onTap: () {},
-                  ),
-
-                  _DrawerTile(
                     icon: Icons.settings_outlined,
                     title: "Settings",
                     onTap: () {},
@@ -154,10 +148,6 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-
-            const Divider(),
-
-            Padding(padding: const EdgeInsets.all(12), child: AuthTile()),
           ],
         ),
       ),

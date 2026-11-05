@@ -6,7 +6,6 @@ import 'package:attendance_management_system/features/attendance/attendance/prov
 import 'package:attendance_management_system/features/attendance/attendance/services/attendance_service.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/services/lecture_session_service.dart';
-import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
 import 'package:attendance_management_system/features/levels/providers/level_provider.dart';
 import 'package:attendance_management_system/features/qr/qr.dart';
@@ -39,7 +38,6 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(
           create: (_) => CourseProvider(CourseService.instance),
         ),

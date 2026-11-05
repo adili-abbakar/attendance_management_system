@@ -8,8 +8,6 @@ import 'package:attendance_management_system/features/students/tables/student_ta
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../features/auth/tables/user_table.dart';
-
 class DatabaseService {
   DatabaseService._();
 
@@ -32,7 +30,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
 
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -44,7 +42,6 @@ class DatabaseService {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute(UserTable.createTable);
     await db.execute(LevelTable.createTable);
     await db.execute(AcademicSessionTable.createTable);
     await db.execute(CourseTable.createTable);
@@ -55,6 +52,10 @@ class DatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      await db.execute('DROP TABLE IF EXISTS users');
+    }
+
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TEMP TABLE _students_before_activity_removal AS

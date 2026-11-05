@@ -10,8 +10,6 @@ import 'package:attendance_management_system/features/attendance/lecture_session
 import 'package:attendance_management_system/features/attendance/lecture_session/providers/lecture_session_provider.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/widgets/lecture_sessions_page/lecture_session_tile.dart';
 import 'package:attendance_management_system/features/attendance/verification/helpers/attendance_verification_helper.dart';
-import 'package:attendance_management_system/features/auth/models/user.dart';
-import 'package:attendance_management_system/features/auth/providers/auth_provider.dart';
 import 'package:attendance_management_system/features/academic_session/providers/academic_session_provider.dart';
 import 'package:attendance_management_system/features/courses/models/course.dart';
 import 'package:attendance_management_system/features/courses/providers/course_provider.dart';
@@ -31,8 +29,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  User? get user => context.read<AuthProvider>().currentUser;
-
   @override
   void initState() {
     super.initState();
@@ -291,7 +287,7 @@ class _DashboardPageState extends State<DashboardPage> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          DashboardHeader(userName: user?.name ?? 'Guest', role: 'Lecturer'),
+          const DashboardHeader(),
 
           DashboardSection(
             title: 'Statistics',
@@ -314,6 +310,17 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 StatCard(
                   title: 'Academic Sessions',
+                  value:
+                      !academicSessionProvider.hasLoaded ||
+                          academicSessionProvider.isLoading ||
+                          academicSessionProvider.error != null
+                      ? '-'
+                      : academicSessionProvider.academicSessions.length
+                            .toString(),
+                  icon: Icons.calendar_month,
+                ),
+                StatCard(
+                  title: 'Absent Student',
                   value:
                       !academicSessionProvider.hasLoaded ||
                           academicSessionProvider.isLoading ||
