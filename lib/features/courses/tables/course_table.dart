@@ -5,6 +5,7 @@ class CourseTable {
   static const String tableName = 'courses';
 
   static const String id = 'id';
+  static const String recordUuid = 'record_uuid';
   static const String code = 'code';
   static const String title = 'title';
   static const String levelId = 'level_id';
@@ -18,6 +19,7 @@ class CourseTable {
       '''
       CREATE TABLE $tableName (
         $id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $recordUuid TEXT NOT NULL UNIQUE,
         $code TEXT NOT NULL,
         $title TEXT NOT NULL,
 

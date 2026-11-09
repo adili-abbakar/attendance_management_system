@@ -1,5 +1,8 @@
+import 'package:uuid/uuid.dart';
+
 class Course {
   final int? id;
+  final String? recordUuid;
 
   final String code;
   final String title;
@@ -18,6 +21,7 @@ class Course {
 
   const Course({
     this.id,
+    this.recordUuid,
     required this.code,
     required this.title,
     required this.levelId,
@@ -33,6 +37,7 @@ class Course {
 
   Course copyWith({
     int? id,
+    String? recordUuid,
     String? code,
     String? title,
     int? levelId,
@@ -47,6 +52,7 @@ class Course {
   }) {
     return Course(
       id: id ?? this.id,
+      recordUuid: recordUuid ?? this.recordUuid,
       code: code ?? this.code,
       title: title ?? this.title,
       levelId: levelId ?? this.levelId,
@@ -64,6 +70,7 @@ class Course {
   factory Course.fromMap(Map<String, dynamic> map) {
     return Course(
       id: map['id'] as int?,
+      recordUuid: map['record_uuid'] as String?,
       code: map['code'] as String,
       title: map['title'] as String,
 
@@ -79,27 +86,28 @@ class Course {
 
       isActive: (map['is_active'] as int) == 1,
 
-      createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String).toUtc(),
+      updatedAt: DateTime.parse(map['updated_at'] as String).toUtc(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'record_uuid': recordUuid ?? const Uuid().v4(),
       'code': code,
       'title': title,
       'level_id': levelId,
       'academic_session_id': academicSessionId,
       'semester': semester,
       'is_active': isActive ? 1 : 0,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
   factory Course.empty() {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
 
     return Course(
       code: '',

@@ -17,6 +17,11 @@ import 'package:attendance_management_system/features/academic_session/services/
 import 'package:attendance_management_system/features/courses/services/course_service.dart';
 import 'package:attendance_management_system/features/levels/services/level_service.dart';
 import 'package:attendance_management_system/features/students/services/student_service.dart';
+import 'package:attendance_management_system/features/sync/providers/sync_provider.dart';
+import 'package:attendance_management_system/features/sync/services/device_identity_service.dart';
+import 'package:attendance_management_system/features/sync/services/pairing_service.dart';
+import 'package:attendance_management_system/features/sync/services/sync_engine_service.dart';
+import 'package:attendance_management_system/features/sync/services/sync_manifest_service.dart';
 import 'package:attendance_management_system/features/welcome/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -70,6 +75,14 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => ReportProvider(ReportService.instance),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SyncProvider(
+            deviceIdentityService: DeviceIdentityService.instance,
+            pairingService: PairingService.instance,
+            manifestService: SyncManifestService.instance,
+            syncEngineService: SyncEngineService.instance,
+          ),
         ),
       ],
       child: const MyApp(),

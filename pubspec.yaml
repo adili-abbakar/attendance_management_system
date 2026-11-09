@@ -35,6 +35,10 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.4.0
 
+  # sync and identity
+  crypto: ^3.0.7
+  uuid: ^4.5.1
+
   # exportiation
   file_selector: ^1.1.0
   pdf: ^3.13.0

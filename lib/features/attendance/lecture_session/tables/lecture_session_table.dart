@@ -4,6 +4,7 @@ class LectureSessionTable {
   static const String tableName = 'lecture_sessions';
 
   static const String id = 'id';
+  static const String recordUuid = 'record_uuid';
   static const String courseId = 'course_id';
   static const String sessionNumber = 'session_number';
   static const String weekNumber = 'week_number';
@@ -20,6 +21,7 @@ class LectureSessionTable {
       '''
       CREATE TABLE $tableName (
         $id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $recordUuid TEXT NOT NULL UNIQUE,
 
         $courseId INTEGER NOT NULL,
         $sessionNumber INTEGER NOT NULL,

@@ -2,6 +2,7 @@ class StudentTable {
   static const String tableName = 'students';
 
   static const String id = 'id';
+  static const String recordUuid = 'record_uuid';
 
   static const String admissionNumber = 'admission_number';
   static const String fullName = 'full_name';
@@ -12,6 +13,7 @@ class StudentTable {
       '''
     CREATE TABLE $tableName (
       $id INTEGER PRIMARY KEY AUTOINCREMENT,
+      $recordUuid TEXT NOT NULL UNIQUE,
 
       $admissionNumber TEXT NOT NULL,
       $fullName TEXT NOT NULL,

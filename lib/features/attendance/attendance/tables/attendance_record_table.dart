@@ -5,21 +5,27 @@ class AttendanceRecordTable {
   static const String tableName = 'attendance_records';
 
   static const String id = 'id';
+  static const String recordUuid = 'record_uuid';
   static const String lectureSessionId = 'lecture_session_id';
   static const String studentId = 'student_id';
   static const String status = 'status';
   static const String scannedAt = 'scanned_at';
+  static const String createdAt = 'created_at';
+  static const String updatedAt = 'updated_at';
 
   static const String createTable =
       '''
       CREATE TABLE $tableName (
         $id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $recordUuid TEXT NOT NULL UNIQUE,
 
         $lectureSessionId INTEGER NOT NULL,
         $studentId INTEGER NOT NULL,
 
         $status TEXT NOT NULL DEFAULT 'present',
         $scannedAt TEXT NOT NULL,
+        $createdAt TEXT NOT NULL,
+        $updatedAt TEXT NOT NULL,
 
         FOREIGN KEY ($lectureSessionId)
           REFERENCES ${LectureSessionTable.tableName}(${LectureSessionTable.id})

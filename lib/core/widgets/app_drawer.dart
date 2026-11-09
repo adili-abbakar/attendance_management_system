@@ -3,6 +3,7 @@ import 'package:attendance_management_system/features/courses/pages/course_page.
 import 'package:attendance_management_system/features/levels/pages/level_page.dart';
 import 'package:attendance_management_system/features/reports/pages/reports_page.dart';
 import 'package:attendance_management_system/features/students/pages/student_page.dart';
+import 'package:attendance_management_system/features/sync/pages/sync_page.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -140,6 +141,17 @@ class AppDrawer extends StatelessWidget {
 
                   const Divider(),
 
+                  _DrawerTile(
+                    icon: Icons.sync_outlined,
+                    title: "Synchronization",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SyncPage()),
+                      );
+                    },
+                  ),
                   _DrawerTile(
                     icon: Icons.settings_outlined,
                     title: "Settings",

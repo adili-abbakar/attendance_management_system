@@ -28,7 +28,7 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
@@ -310,17 +310,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 StatCard(
                   title: 'Academic Sessions',
-                  value:
-                      !academicSessionProvider.hasLoaded ||
-                          academicSessionProvider.isLoading ||
-                          academicSessionProvider.error != null
-                      ? '-'
-                      : academicSessionProvider.academicSessions.length
-                            .toString(),
-                  icon: Icons.calendar_month,
-                ),
-                StatCard(
-                  title: 'Absent Student',
                   value:
                       !academicSessionProvider.hasLoaded ||
                           academicSessionProvider.isLoading ||
