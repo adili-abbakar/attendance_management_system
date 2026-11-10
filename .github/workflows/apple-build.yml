@@ -1,0 +1,44 @@
+name: Build macOS and iOS
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apple:
+    name: Build macOS and iOS (Unsigned)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS Release
+        run: flutter build macos --release
+
+      - name: Build iOS Release (Unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-app
+          path: build/macos/Build/Products/Release/
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-app
+          path: build/ios/iphoneos/Runner.app
