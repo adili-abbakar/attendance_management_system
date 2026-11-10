@@ -1,6 +1,6 @@
 {
-    "name": "attendance_management_system",
-    "short_name": "attendance_management_system",
+    "name": "UniAttend",
+    "short_name": "UniAttend",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
