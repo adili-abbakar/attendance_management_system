@@ -118,13 +118,7 @@ class AppDrawer extends StatelessWidget {
                       );
                     },
                   ),
-
-                  _DrawerTile(
-                    icon: Icons.fact_check_outlined,
-                    title: "Attendance",
-                    onTap: () {},
-                  ),
-
+                  
                   _DrawerTile(
                     icon: Icons.bar_chart_outlined,
                     title: "Reports",
