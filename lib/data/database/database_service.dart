@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:attendance_management_system/features/academic_session/tables/academic_session_table.dart';
 import 'package:attendance_management_system/features/attendance/attendance/tables/attendance_record_table.dart';
 import 'package:attendance_management_system/features/attendance/lecture_session/tables/lecture_session_table.dart';
@@ -6,9 +8,8 @@ import 'package:attendance_management_system/features/courses/tables/course_tabl
 import 'package:attendance_management_system/features/levels/tables/level_table.dart';
 import 'package:attendance_management_system/features/students/tables/student_table.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../../features/auth/tables/user_table.dart';
 
 class DatabaseService {
   DatabaseService._();
@@ -16,6 +17,8 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._();
 
   static Database? _database;
+
+  static const String _databaseName = 'attendance_management.db';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -25,14 +28,32 @@ class DatabaseService {
     return _database!;
   }
 
-  Future<Database> _initializeDatabase() async {
-    final databasePath = await getDatabasesPath();
+  /// Returns a writable database location for the current platform.
+  Future<String> _getDatabasePath() async {
+    String directoryPath;
 
-    final path = join(databasePath, 'attendance_management.db');
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // Desktop: Store the database in the user's application support folder.
+      final directory = await getApplicationSupportDirectory();
+
+      directoryPath = directory.path;
+    } else {
+      // Android and iOS: Use their standard SQLite database directory.
+      directoryPath = await getDatabasesPath();
+    }
+
+    // Ensure the directory exists.
+    await Directory(directoryPath).create(recursive: true);
+
+    return join(directoryPath, _databaseName);
+  }
+
+  Future<Database> _initializeDatabase() async {
+    final path = await _getDatabasePath();
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
 
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -44,7 +65,6 @@ class DatabaseService {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute(UserTable.createTable);
     await db.execute(LevelTable.createTable);
     await db.execute(AcademicSessionTable.createTable);
     await db.execute(CourseTable.createTable);
@@ -55,24 +75,33 @@ class DatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      await db.execute('DROP TABLE IF EXISTS users');
+    }
+
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TEMP TABLE _students_before_activity_removal AS
         SELECT id, admission_number, full_name, created_at, updated_at
         FROM students
       ''');
+
       await db.execute('''
         CREATE TEMP TABLE _course_students_before_activity_removal AS
         SELECT * FROM ${CourseStudentTable.tableName}
       ''');
+
       await db.execute('''
         CREATE TEMP TABLE _attendance_records_before_activity_removal AS
         SELECT * FROM ${AttendanceRecordTable.tableName}
       ''');
 
       await db.execute(AttendanceRecordTable.dropTable);
+
       await db.execute('DROP TABLE ${CourseStudentTable.tableName}');
+
       await db.execute(StudentTable.dropTable);
+
       await db.execute(StudentTable.createTable);
 
       await db.execute('''
@@ -85,12 +114,14 @@ class DatabaseService {
       ''');
 
       await db.execute(CourseStudentTable.createTable);
+
       await db.execute('''
         INSERT INTO ${CourseStudentTable.tableName}
         SELECT * FROM _course_students_before_activity_removal
       ''');
 
       await db.execute(AttendanceRecordTable.createTable);
+
       await db.execute('''
         INSERT INTO ${AttendanceRecordTable.tableName}
         SELECT * FROM _attendance_records_before_activity_removal
@@ -99,23 +130,27 @@ class DatabaseService {
       await db.execute(
         'DROP TABLE _attendance_records_before_activity_removal',
       );
+
       await db.execute('DROP TABLE _course_students_before_activity_removal');
+
       await db.execute('DROP TABLE _students_before_activity_removal');
     }
   }
 
   Future<void> closeDatabase() async {
-    final db = await database;
-    db.close();
+    if (_database == null) return;
+
+    await _database!.close();
+
+    _database = null;
   }
 
   Future<void> deleteDatabaseFile() async {
-    final databasePath = await getDatabasesPath();
+    // Close the database before deleting it.
+    await closeDatabase();
 
-    final path = join(databasePath, 'attendance_management.db');
+    final path = await _getDatabasePath();
 
     await deleteDatabase(path);
-
-    _database = null;
   }
 }

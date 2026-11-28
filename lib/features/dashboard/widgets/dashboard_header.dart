@@ -1,18 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DashboardHeader extends StatelessWidget {
-  const DashboardHeader({
-    super.key,
-    required this.userName,
-    required this.role,
-    this.onNotificationPressed,
-    this.onProfilePressed,
-  });
-
-  final String userName;
-  final String role;
-  final VoidCallback? onNotificationPressed;
-  final VoidCallback? onProfilePressed;
+  const DashboardHeader({super.key});
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -66,7 +55,7 @@ class DashboardHeader extends StatelessWidget {
             radius: 22,
             backgroundColor: colors.primaryContainer,
             child: Icon(
-              Icons.person,
+              Icons.fact_check_outlined,
               color: colors.primary,
               size: 22,
             ),
@@ -89,7 +78,7 @@ class DashboardHeader extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 Text(
-                  userName,
+                  'Attendance Overview',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: text.titleMedium?.copyWith(
@@ -99,57 +88,14 @@ class DashboardHeader extends StatelessWidget {
 
                 const SizedBox(height: 2),
 
-                Wrap(
-                  spacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      role,
-                      style: text.bodySmall?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      "•",
-                      style: text.bodySmall?.copyWith(
-                        color: colors.outline,
-                      ),
-                    ),
-                    Text(
-                      _date(),
-                      style: text.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                Text(
+                  _date(),
+                  style: text.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
-          ),
-
-          IconButton(
-            onPressed: onNotificationPressed,
-            constraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
-            ),
-            padding: EdgeInsets.zero,
-            iconSize: 22,
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.notifications_outlined),
-          ),
-
-          IconButton(
-            onPressed: onProfilePressed,
-            constraints: const BoxConstraints(
-              minWidth: 40,
-              minHeight: 40,
-            ),
-            padding: EdgeInsets.zero,
-            iconSize: 22,
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.account_circle_outlined),
           ),
         ],
       ),
